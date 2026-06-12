@@ -209,3 +209,33 @@ The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleI
 - Scene 4 does not need immediate map simplification.
 - The current evidence supports presenting Scene 4 as a case where constraint-state initialization is critical.
 - We can still keep map simplification as a fallback if later full-scale experiments show excessive runtime or unstable results.
+
+## 2026-06-12 Small-Scale Ablation Diagnostics
+
+- Added `run_cove_ae_ablation_diagnostics.m`.
+- Default ablation diagnostic configuration:
+  - scenes `[1, 2, 4]`
+  - `Base-AE`
+  - `COVE-AE-w/o-Init`
+  - `COVE-AE-w/o-Feedback`
+  - `COVE-AE-w/o-RepairReuse`
+  - `COVE-AE`
+  - `nRuns = 5`
+  - `popSize = 10`
+  - `maxIter = 30`
+- The script exports:
+  - `cove_ae_ablation_diagnostics.csv`
+  - `cove_ae_ablation_diagnostic_summary.csv`
+  - `cove_ae_ablation_diagnostic_summary.mat`
+- Fixed the ablation `Base-AE` configuration so it uses the natural AE config instead of inheriting `COVE-AE` reference initialization.
+
+### Current Small-Scale Ablation Findings
+
+- Constraint-state initialization is strongly supported:
+  - `COVE-AE-w/o-Init` is much weaker on Scenes 2 and 4.
+  - Scene 4 reaches feasibility reliably only when the constraint-state initialization templates are enabled.
+- Sparse repair/reuse is useful in Scene 2:
+  - Full `COVE-AE` reached higher feasibility than `COVE-AE-w/o-RepairReuse` in the short diagnostic.
+- Violation feedback still needs strengthening:
+  - `COVE-AE-w/o-Feedback` is currently competitive with or better than full `COVE-AE` on some short diagnostic cases.
+  - Next tuning should make violation feedback contribute more clearly to obstacle/NFZ handling without excessive runtime overhead.

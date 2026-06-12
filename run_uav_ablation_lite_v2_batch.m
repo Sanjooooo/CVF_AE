@@ -187,6 +187,7 @@ algCfg.referenceNoiseScale = cfg.referenceNoiseScale;
 
 switch upper(strtrim(algName))
     case 'BASE-AE'
+        algCfg = getUAVAlgorithmConfig('AE', params, cfg);
         algCfg.runner = 'AE';
         algCfg.useConstraintStateInit = false;
         algCfg.useViolationFeedback = false;
