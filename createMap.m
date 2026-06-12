@@ -4,7 +4,6 @@ function map = createMap(params)
 % sceneId:
 %   1 - baseline urban corridor scene
 %   2 - dense obstacle scene
-%   3 - high-risk / multi-NFZ scene
 %   4 - urban delivery corridor scene
 
 if ~isfield(params, 'sceneId')
@@ -82,36 +81,6 @@ switch sceneId
 
         map.baseWind = [2.8, 1.4, 0.0];
 
-    case 3
-        % ================================================================
-        % Scene 3: High-risk / multi-NFZ
-        % ================================================================
-        map.obstacles = [
-            18 32 18 34  0 26;
-            40 54 20 36  0 32;
-            64 80 18 34  0 28;
-            22 38 56 72  0 30;
-            48 62 52 68  0 34;
-            70 84 58 76  0 32
-        ];
-
-        map.nfz = [
-            28 46 10  0 42;
-            56 42  9  0 42;
-            74 46  8  0 42;
-            46 78 10  0 42
-        ];
-
-        map.windHotspots = [
-            24 28 20 10 1.2;
-            46 30 20  9 1.4;
-            68 30 18 10 1.3;
-            40 62 22 11 1.5;
-            70 72 20 12 1.4
-        ];
-
-        map.baseWind = [3.2, 1.8, 0.0];
-
     case 4
         % ================================================================
         % Scene 4: Urban delivery corridor (revised)
@@ -178,6 +147,6 @@ switch sceneId
         map.baseWind = [2.9, 1.6, 0.0];
 
     otherwise
-        error('Unsupported sceneId: %d. Use 1, 2, 3, or 4.', sceneId);
+        error('Unsupported sceneId: %d. Use 1, 2, or 4.', sceneId);
 end
 end

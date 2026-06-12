@@ -138,3 +138,10 @@ The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleI
 - Add at least one harder scenario before formal experiments.
 - Decide whether `Legacy-FAEAE` should appear in ablation or only in a separate legacy comparison.
 - Add improved non-AE baselines after the COVE-AE mechanism stabilizes.
+
+## 2026-06-12 Scene Cleanup
+
+- Confirmed that the inherited FAEAE paper pipeline used code scenes `[1, 2, 4]`.
+- Code Scene 4 was displayed as Paper Scene 3 in old paper scripts and legacy documentation.
+- Removed the unused real code `sceneId == 3` branch from `createMap.m`.
+- `createMap.m` now supports only code scenes 1, 2, and 4.
