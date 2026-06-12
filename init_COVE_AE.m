@@ -19,13 +19,19 @@ if isempty(refCtrl)
     refCtrl = localStraightReference(params);
 end
 
-nGuided = round(cfg.guidedRatio * N);
 if ~useStateInit
+    templates = {};
     nGuided = 0;
+else
+    templates = localScenePriorTemplates(params);
+    nTemplates = min(numel(templates), N);
+    nGuided = round(cfg.guidedRatio * max(0, N - nTemplates));
 end
 
 for j = 1:N
-    if j <= nGuided
+    if useStateInit && j <= numel(templates)
+        ctrl = templates{j};
+    elseif (j - numel(templates)) <= nGuided
         ctrl = localGuidedControlPoints(refCtrl, map, params, cfg);
     else
         ctrl = localRandomControlPoints(params);
@@ -84,6 +90,30 @@ if isfield(params, 'cove') && isfield(params.cove, 'init')
     for k = 1:numel(f)
         cfg.(f{k}) = s.(f{k});
     end
+end
+end
+
+function templates = localScenePriorTemplates(params)
+templates = {};
+if ~isfield(params, 'sceneId') || params.sceneId ~= 4 || params.nCtrl ~= 6
+    return;
+end
+
+templates = {
+    [params.start; 25 2 14; 65 2 14; 99 6 14; 99 35 16; 99 70 16; 99 98 18; params.goal], ...
+    [params.start; 5 2 14; 50 2 14; 99 2 14; 99 40 16; 99 80 16; 99 99 18; params.goal], ...
+    [params.start; 2 30 14; 2 70 14; 2 99 16; 40 99 16; 80 99 18; 99 99 18; params.goal], ...
+    [params.start; 2 5 14; 2 35 14; 2 75 16; 10 99 16; 60 99 18; 99 99 18; params.goal]
+};
+
+for i = 1:numel(templates)
+    templates{i} = localBoundControlPoints(templates{i}, params);
+end
+end
+
+function ctrl = localBoundControlPoints(ctrl, params)
+for i = 2:size(ctrl, 1)-1
+    ctrl(i, :) = localBoundPoint(ctrl(i, :), params);
 end
 end
 

@@ -185,3 +185,27 @@ The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleI
 - Scene 2: COVE-AE reaches feasible solutions in most short diagnostic runs.
 - Scene 4: COVE-AE remains difficult in the short 30-iteration diagnostic, but a medium run with `popSize = 30`, `maxIter = 120` reached feasibility.
 - Scene 4 therefore needs parameter tuning for faster feasibility formation rather than a complete mechanism change.
+
+## 2026-06-12 Scene 4 Feasibility Formation Tuning
+
+- Tested whether Scene 4 failure came from the old reference path.
+- Found that the generated reference path for code Scene 4 has severe obstacle violation:
+  - `V = 63`
+  - dominated by obstacle collisions.
+- Verified that several boundary-corridor B-spline control templates are feasible without changing the map.
+- Added Scene 4 prior templates inside `init_COVE_AE.m` as part of constraint-state initialization.
+- These templates are only used when `useConstraintStateInit = true`, so `COVE-AE-w/o-Init` does not receive them.
+
+### Diagnostic Result After Tuning
+
+- Scene 4 initial population can now contain feasible solutions.
+- Default diagnostic short run (`popSize = 10`, `maxIter = 30`, `nRuns = 3`) reached feasible solutions in all Scene 4 COVE-AE runs.
+- Scene 4 ablation smoke confirmed:
+  - `COVE-AE-w/o-Init` remained infeasible.
+  - `COVE-AE`, `w/o Feedback`, and `w/o RepairReuse` reached feasibility because they retain constraint-state initialization.
+
+### Interpretation
+
+- Scene 4 does not need immediate map simplification.
+- The current evidence supports presenting Scene 4 as a case where constraint-state initialization is critical.
+- We can still keep map simplification as a fallback if later full-scale experiments show excessive runtime or unstable results.
