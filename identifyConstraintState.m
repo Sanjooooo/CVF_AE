@@ -18,15 +18,16 @@ else
 end
 
 feasibleRatio = mean(feas);
+hasFeasible = any(feas);
 diversity = localDiversity(pop, params);
 recentImprovement = localRecentImprovement(bestHist, iter, cfg.window);
 
 isStagnant = iter > cfg.window && recentImprovement < cfg.improvementTol;
 
-if isStagnant && diversity < cfg.recoveryDiversityMax
+if isStagnant && (diversity < cfg.recoveryDiversityMax || iter > 2 * cfg.window)
     name = 'StagnationRecovery';
     id = 4;
-elseif feasibleRatio < cfg.formationFeasibleRatio || meanViolation > cfg.highViolation
+elseif ~hasFeasible && (feasibleRatio < cfg.formationFeasibleRatio || meanViolation > cfg.highViolation)
     name = 'FeasibilityFormation';
     id = 1;
 elseif feasibleRatio < cfg.refinementFeasibleRatio
@@ -45,6 +46,7 @@ state.meanViolation = meanViolation;
 state.diversity = diversity;
 state.recentImprovement = recentImprovement;
 state.isStagnant = isStagnant;
+state.hasFeasible = hasFeasible;
 end
 
 function cfg = localDefaultStateParams(params)
@@ -52,7 +54,7 @@ cfg.window = 15;
 cfg.improvementTol = 1e-4;
 cfg.formationFeasibleRatio = 0.20;
 cfg.refinementFeasibleRatio = 0.65;
-cfg.highViolation = 10;
+cfg.highViolation = 30;
 cfg.recoveryDiversityMax = 0.08;
 
 if isfield(params, 'cove') && isfield(params.cove, 'state')

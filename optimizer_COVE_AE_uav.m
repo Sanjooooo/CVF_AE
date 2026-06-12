@@ -66,7 +66,7 @@ for t = 1:params.maxIter
             opFeedback = localEmptyFeedback();
         end
 
-        [Xnew, opInfo] = applyOperator_COVE_AE(i, pop, bestX, refX, elitePool, state, opFeedback, memory, t, params);
+        [Xnew, opInfo] = applyOperator_COVE_AE(i, pop, bestX, refX, elitePool, state, opFeedback, memory, t, params, map);
         operatorHistory(t, opInfo.id) = operatorHistory(t, opInfo.id) + 1;
 
         [fnew, dnew] = objFun(Xnew);

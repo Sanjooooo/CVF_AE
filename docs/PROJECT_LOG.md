@@ -158,3 +158,30 @@ The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleI
 - Replaced the inline Scene 4 override in `run_single_uav_algorithm_case.m`.
 - Applied the same override in main comparison, ablation, parameter sensitivity, and path plotting scripts.
 - Verified Scene 4 smoke runs through direct setup, single-run dispatch, main comparison batch, and ablation batch.
+
+## 2026-06-12 COVE-AE Diagnostic Batch
+
+- Added reusable diagnostic scripts:
+  - `run_cove_ae_diagnostics.m`
+  - `summarize_cove_ae_diagnostics.m`
+- Default diagnostic configuration:
+  - scenes `[1, 2, 4]`
+  - algorithms `AE` and `COVE-AE`
+  - `nRuns = 3`
+  - `popSize = 10`
+  - `maxIter = 30`
+- The diagnostic summary exports `cove_ae_diagnostics.csv` with state fractions, operator counts, first feasible iteration, repair counts, and final feasibility metrics.
+
+### Diagnostic Findings
+
+- Initial diagnostic showed COVE-AE stayed too long in `FeasibilityFormation` after finding feasible individuals.
+- Updated `identifyConstraintState.m` so that once any feasible individual exists, the state can move to preservation/refinement even if the population mean violation is still high.
+- Added a lightweight structure-aware avoidance step to `applyOperator_COVE_AE.m` for obstacle/NFZ/risk feedback.
+- The avoidance step uses capped B-spline sampling and limited violation hits to keep overhead bounded.
+
+### Current Behavior Snapshot
+
+- Scene 1: COVE-AE reaches feasible solutions in the short diagnostic.
+- Scene 2: COVE-AE reaches feasible solutions in most short diagnostic runs.
+- Scene 4: COVE-AE remains difficult in the short 30-iteration diagnostic, but a medium run with `popSize = 30`, `maxIter = 120` reached feasibility.
+- Scene 4 therefore needs parameter tuning for faster feasibility formation rather than a complete mechanism change.

@@ -1,5 +1,9 @@
-function [Xnew, opInfo] = applyOperator_COVE_AE(i, pop, bestX, refX, elitePool, state, feedback, memory, iter, params)
+function [Xnew, opInfo] = applyOperator_COVE_AE(i, pop, bestX, refX, elitePool, state, feedback, memory, iter, params, map)
 %APPLYOPERATOR_COVE_AE Lightweight operator driven by state and violations.
+
+if nargin < 11
+    map = [];
+end
 
 [N, D] = size(pop); %#ok<ASGLU>
 x = pop(i, :);
@@ -32,6 +36,7 @@ end
 bias = localViolationMask(feedback, params);
 noise = (2 * rand(1, D) - 1) .* span .* bias;
 reuseStep = localReuseStep(memory, D);
+avoidStep = localAvoidanceStep(x, map, params, feedback);
 
 switch state.id
     case 1
@@ -41,7 +46,8 @@ switch state.id
             (0.20 + 0.20 * (1 - tau)) * rand(1, D) .* dirElite + ...
             0.18 * diff1 + ...
             (0.08 + 0.10 * (1 - tau)) * noise + ...
-            0.18 * reuseStep;
+            0.18 * reuseStep + ...
+            0.35 * avoidStep;
 
     case 2
         opId = 2;
@@ -51,7 +57,8 @@ switch state.id
             0.16 * diff1 + ...
             0.08 * rand(1, D) .* dirRef + ...
             0.08 * noise + ...
-            0.22 * reuseStep;
+            0.22 * reuseStep + ...
+            0.25 * avoidStep;
 
     case 3
         opId = 3;
@@ -60,7 +67,8 @@ switch state.id
             (0.30 + 0.12 * tau) * rand(1, D) .* dirSample + ...
             0.08 * diff1 + ...
             0.04 * noise + ...
-            0.10 * reuseStep;
+            0.10 * reuseStep + ...
+            0.12 * avoidStep;
 
     otherwise
         opId = 4;
@@ -69,7 +77,8 @@ switch state.id
             0.18 * diff2 + ...
             0.22 * rand(1, D) .* dirBest + ...
             0.10 * randn(1, D) .* span .* bias + ...
-            0.25 * reuseStep;
+            0.25 * reuseStep + ...
+            0.20 * avoidStep;
 end
 
 Xnew = x + step;
@@ -118,6 +127,107 @@ step = zeros(1, D);
 if isstruct(memory) && isfield(memory, 'repairStep') && numel(memory.repairStep) == D
     step = memory.repairStep(:)';
 end
+end
+
+function step = localAvoidanceStep(X, map, params, feedback)
+step = zeros(1, params.dim);
+if isempty(map) || ~isstruct(map)
+    return;
+end
+if ~ismember(feedback.dominantType, {'obstacle', 'nfz', 'risk'})
+    return;
+end
+
+ctrl = decodeSolution(X, params);
+nAvoidSamples = min(params.nSamples, 80);
+path = bsplinePath(ctrl, params.degree, nAvoidSamples);
+deltaCtrl = zeros(size(ctrl));
+hitCount = zeros(size(ctrl, 1), 1);
+maxHits = 8;
+hits = 0;
+
+for m = 2:size(path, 1)-1
+    [isViol, dir, depth] = localPointAvoidance(path(m, :), map);
+    if ~isViol
+        continue;
+    end
+
+    k = localNearestInteriorControlPoint(path(m, :), ctrl);
+    mag = min(4.0, max(1.0, depth + 0.75));
+    deltaCtrl(k, :) = deltaCtrl(k, :) + mag * dir;
+    hitCount(k) = hitCount(k) + 1;
+    hits = hits + 1;
+
+    if hits >= maxHits
+        break;
+    end
+end
+
+if hits == 0
+    return;
+end
+
+for k = 2:size(ctrl, 1)-1
+    if hitCount(k) > 0
+        deltaCtrl(k, :) = deltaCtrl(k, :) / hitCount(k);
+    end
+end
+
+step = encodeControlPoints(deltaCtrl);
+limit = 0.08 * (params.ub(:)' - params.lb(:)');
+step = min(max(step, -limit), limit);
+end
+
+function [isViol, dir, depth] = localPointAvoidance(p, map)
+isViol = false;
+dir = [0, 0, 0];
+depth = 0;
+
+for k = 1:size(map.obstacles, 1)
+    box = map.obstacles(k, :);
+    if p(1) >= box(1) && p(1) <= box(2) && ...
+       p(2) >= box(3) && p(2) <= box(4) && ...
+       p(3) >= box(5) && p(3) <= box(6)
+        dx = [abs(p(1) - box(1)), abs(box(2) - p(1))];
+        dy = [abs(p(2) - box(3)), abs(box(4) - p(2))];
+        candidates = [dx(1), dx(2), dy(1), dy(2)];
+        [depth, side] = min(candidates);
+        switch side
+            case 1
+                dir = [-1, 0, 0];
+            case 2
+                dir = [1, 0, 0];
+            case 3
+                dir = [0, -1, 0];
+            otherwise
+                dir = [0, 1, 0];
+        end
+        isViol = true;
+        return;
+    end
+end
+
+for k = 1:size(map.nfz, 1)
+    cyl = map.nfz(k, :);
+    dxy = [p(1) - cyl(1), p(2) - cyl(2), 0];
+    dist = norm(dxy);
+    if dist <= cyl(3) && p(3) >= cyl(4) && p(3) <= cyl(5)
+        if dist < 1e-9
+            dxy = [1, 0, 0];
+            dist = 1;
+        end
+        dir = dxy / dist;
+        depth = cyl(3) - dist;
+        isViol = true;
+        return;
+    end
+end
+end
+
+function k = localNearestInteriorControlPoint(p, ctrl)
+inner = ctrl(2:end-1, :);
+[~, idx] = min(sum((inner - p).^2, 2));
+k = idx + 1;
 end
 
 function X = localSmoothControlVector(X, params, gamma)
