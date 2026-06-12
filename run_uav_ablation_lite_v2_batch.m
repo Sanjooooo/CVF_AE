@@ -1,13 +1,13 @@
 function summary = run_uav_ablation_lite_v2_batch(cfg)
 %RUN_UAV_ABLATION_LITE_V2_BATCH
-% UAV ablation batch for lite-v2 FAEAE.
+% UAV ablation batch for COVE-AE.
 %
 % Ablation groups:
 %   1) Base-AE
-%   2) AE+Init
-%   3) AE+Init+AOS
-%   4) AE+Init+AOS+Repair
-%   5) FAEAE
+%   2) COVE-AE-w/o-Init
+%   3) COVE-AE-w/o-Feedback
+%   4) COVE-AE-w/o-RepairReuse
+%   5) COVE-AE
 %
 % Output files:
 % - uav_comparison_runs.csv
@@ -25,7 +25,7 @@ if ~isfield(cfg, 'sceneIds') || isempty(cfg.sceneIds)
     cfg.sceneIds = [1, 2, 4];
 end
 if ~isfield(cfg, 'algorithms') || isempty(cfg.algorithms)
-    cfg.algorithms = {'Base-AE', 'AE+Init', 'AE+Init+AOS', 'AE+Init+AOS+Repair', 'FAEAE'};
+    cfg.algorithms = {'Base-AE', 'COVE-AE-w/o-Init', 'COVE-AE-w/o-Feedback', 'COVE-AE-w/o-RepairReuse', 'COVE-AE'};
 end
 if ~isfield(cfg, 'nRuns') || isempty(cfg.nRuns)
     cfg.nRuns = 30;
@@ -34,7 +34,7 @@ if ~isfield(cfg, 'baseSeed') || isempty(cfg.baseSeed)
     cfg.baseSeed = 20260329;
 end
 if ~isfield(cfg, 'resultDir') || isempty(cfg.resultDir)
-    cfg.resultDir = fullfile(pwd, ['results_uav_ablation_lite_v2_' datestr(now, 'yyyymmdd_HHMMSS')]);
+    cfg.resultDir = fullfile(pwd, ['results_uav_ablation_cove_ae_' datestr(now, 'yyyymmdd_HHMMSS')]);
 end
 
 % 为了与主实验一致，给带 Init 的版本统一参考初始化参数
@@ -62,7 +62,7 @@ runRows = [];
 allResults = cell(nScenes, nAlgs);
 
 fprintf('\n============================================================\n');
-fprintf('UAV Ablation Lite-V2 Batch Experiment\n');
+fprintf('UAV COVE-AE Ablation Batch Experiment\n');
 fprintf('Result folder : %s\n', cfg.resultDir);
 fprintf('Run folder    : %s\n', runDir);
 fprintf('Scenes        : %s\n', mat2str(cfg.sceneIds));
@@ -118,8 +118,13 @@ for s = 1:nScenes
                     sceneId, {algName}, r, runSeed, ...
                     result.bestFitness, result.runtime, ...
                     logical(result.finalFeasible), result.finalViolation, ...
+                    localResultScalar(result, 'nEvals'), ...
+                    localResultScalar(result, 'firstFeasibleIter'), ...
+                    localResultScalar(result, 'firstFeasibleTime'), ...
+                    localResultScalar(result, 'repairCount'), ...
+                    localResultScalar(result, 'repairSuccessCount'), ...
                     elapsed, ...
-                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','WallClock'} );
+                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','NEvals','FirstFeasibleIter','FirstFeasibleTime','RepairCount','RepairSuccessCount','WallClock'} );
 
                 if isempty(runRows)
                     runRows = row;
@@ -174,46 +179,41 @@ end
 
 % ========================================================================
 function algCfg = localGetAblationConfig(algName, params, cfg)
-% 全五组统一走 lite-v2 骨架
-% 差别只在模块开关
-
-algCfg = getUAVAlgorithmConfig('FAEAE', params, cfg);
-algCfg.runner = 'FAEAE_LITE_V2';
-
-% 统一给带 Init 的版本设置参考初始化参数
+algCfg = getUAVAlgorithmConfig('COVE-AE', params, cfg);
+algCfg.runner = 'COVE_AE';
 algCfg.referenceInitRatio = cfg.referenceInitRatio;
 algCfg.referenceNoiseScale = cfg.referenceNoiseScale;
 
 switch upper(strtrim(algName))
     case 'BASE-AE'
-        algCfg.useReferenceInit = false;
-        algCfg.useAOS = false;
-        algCfg.useRepair = false;
-        algCfg.useRegen = false;
+        algCfg.runner = 'AE';
+        algCfg.useConstraintStateInit = false;
+        algCfg.useViolationFeedback = false;
+        algCfg.useSparseRepairReuse = false;
 
-    case 'AE+INIT'
-        algCfg.useReferenceInit = true;
-        algCfg.useAOS = false;
-        algCfg.useRepair = false;
-        algCfg.useRegen = false;
+    case {'COVE-AE-W/O-INIT', 'COVE_AE_W/O_INIT'}
+        algCfg.useConstraintStateInit = false;
+        algCfg.useViolationFeedback = true;
+        algCfg.useSparseRepairReuse = true;
 
-    case 'AE+INIT+AOS'
-        algCfg.useReferenceInit = true;
-        algCfg.useAOS = true;
-        algCfg.useRepair = false;
-        algCfg.useRegen = false;
+    case {'COVE-AE-W/O-FEEDBACK', 'COVE_AE_W/O_FEEDBACK'}
+        algCfg.useConstraintStateInit = true;
+        algCfg.useViolationFeedback = false;
+        algCfg.useSparseRepairReuse = true;
 
-    case 'AE+INIT+AOS+REPAIR'
-        algCfg.useReferenceInit = true;
-        algCfg.useAOS = true;
-        algCfg.useRepair = true;
-        algCfg.useRegen = false;
+    case {'COVE-AE-W/O-REPAIRREUSE', 'COVE_AE_W/O_REPAIRREUSE'}
+        algCfg.useConstraintStateInit = true;
+        algCfg.useViolationFeedback = true;
+        algCfg.useSparseRepairReuse = false;
 
-    case 'FAEAE'
-        algCfg.useReferenceInit = true;
-        algCfg.useAOS = true;
-        algCfg.useRepair = true;
-        algCfg.useRegen = true;
+    case {'COVE-AE', 'COVE_AE', 'COVEAE'}
+        algCfg.useConstraintStateInit = true;
+        algCfg.useViolationFeedback = true;
+        algCfg.useSparseRepairReuse = true;
+
+    case 'LEGACY-FAEAE'
+        algCfg = getUAVAlgorithmConfig('FAEAE', params, cfg);
+        algCfg.runner = 'FAEAE_LITE_V2';
 
     otherwise
         error('Unknown ablation algorithm: %s', algName);
@@ -222,8 +222,16 @@ end
 
 % ========================================================================
 function result = localRunSingleAblation(objFun, params, map, refX, algCfg, runSeed)
-% 全部统一走 lite-v2 执行器
-result = optimizer_FAEAE_lite_v2_uav(objFun, params, map, refX, algCfg, runSeed);
+switch upper(algCfg.runner)
+    case 'AE'
+        result = optimizer_AE_uav(objFun, params, map, refX, algCfg, runSeed);
+    case 'COVE_AE'
+        result = optimizer_COVE_AE_uav(objFun, params, map, refX, algCfg, runSeed);
+    case 'FAEAE_LITE_V2'
+        result = optimizer_FAEAE_lite_v2_uav(objFun, params, map, refX, algCfg, runSeed);
+    otherwise
+        error('Unknown ablation runner: %s', algCfg.runner);
+end
 end
 
 % ========================================================================
@@ -288,6 +296,8 @@ function safe = localSafeName(name)
 safe = upper(name);
 safe = strrep(safe, '+', '_');
 safe = strrep(safe, '-', '_');
+safe = strrep(safe, '/', '_');
+safe = strrep(safe, '\', '_');
 safe = strrep(safe, ' ', '_');
 end
 
@@ -402,5 +412,15 @@ for k = 1:numel(f)
     else
         params.(f{k}) = overrides.(f{k});
     end
+end
+end
+
+% ========================================================================
+function v = localResultScalar(result, fieldName)
+if isfield(result, fieldName) && ~isempty(result.(fieldName)) && isnumeric(result.(fieldName))
+    v = result.(fieldName);
+    v = v(1);
+else
+    v = NaN;
 end
 end

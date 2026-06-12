@@ -60,6 +60,15 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.useReferenceInit = false;
             algCfg.referenceInitRatio = 0.0;
 
+        case {'COVE-AE', 'COVE_AE', 'COVEAE'}
+            algCfg.name = 'COVE-AE';
+            algCfg.useReferenceInit = true;
+            algCfg.referenceInitRatio = 0.7;
+
+            algCfg.useConstraintStateInit = true;
+            algCfg.useViolationFeedback = true;
+            algCfg.useSparseRepairReuse = true;
+
         case 'FAEAE'
             algCfg.useReferenceInit = true;
             algCfg.referenceInitRatio = 0.7;
@@ -93,5 +102,5 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
         end
     end
     fprintf('Algorithm %s: useReferenceInit=%d, ratio=%.2f\n', ...
-    algName, algCfg.useReferenceInit, algCfg.referenceInitRatio);
+    algCfg.name, algCfg.useReferenceInit, algCfg.referenceInitRatio);
 end

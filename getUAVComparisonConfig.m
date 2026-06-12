@@ -33,7 +33,7 @@ function cfg = getUAVComparisonConfig(mode)
     % Core comparison settings
     % ------------------------------------------------------------
     cfg.sceneIds = [1, 2, 4];
-    cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'FAEAE'};
+    cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'COVE-AE'};
 
     cfg.baseSeed = 20260316;
     cfg.resumeExisting = true;
@@ -54,19 +54,19 @@ function cfg = getUAVComparisonConfig(mode)
         case 'smoke'
             cfg.nRuns = 3;
             cfg.sceneIds = [1];
-            cfg.algorithms = {'AE', 'PSO', 'FAEAE'};
+            cfg.algorithms = {'AE', 'PSO', 'COVE-AE'};
             modeTag = 'smoke';
 
         case 'mid'
             cfg.nRuns = 10;
             cfg.sceneIds = [1, 2, 4];
-            cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'FAEAE'};
+            cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'COVE-AE'};
             modeTag = 'mid';
 
         case 'formal'
             cfg.nRuns = 30;
             cfg.sceneIds = [1, 2, 4];
-            cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'FAEAE'};
+            cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'COVE-AE'};
             modeTag = 'formal';
 
         otherwise

@@ -1,0 +1,14 @@
+*.asv
+*.fig
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.tmp
+*.log
+
+results_*/
+*_results/
+*_figures/
+*_tables/
+run_records/

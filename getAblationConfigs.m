@@ -1,5 +1,5 @@
 function ablationCfgs = getAblationConfigs(sceneId)
-%GETABLATIONCONFIGS Build the main ablation settings for FAE-AE.
+%GETABLATIONCONFIGS Build COVE-AE ablation settings.
 
 if nargin < 1
     sceneId = 1;
@@ -15,48 +15,38 @@ base.saveBestTopViewFigure = false;
 
 ablationCfgs = repmat(base, 5, 1);
 
-% 1) Base-AE
 ablationCfgs(1) = base;
 ablationCfgs(1).algorithmName = 'Base-AE';
 ablationCfgs(1).outputDir = sprintf('ablation_scene%d_base_ae', sceneId);
-ablationCfgs(1).useInit = false;
-ablationCfgs(1).useAOS = false;
-ablationCfgs(1).useRepair = false;
-ablationCfgs(1).useRegen = false;
+ablationCfgs(1).useConstraintStateInit = false;
+ablationCfgs(1).useViolationFeedback = false;
+ablationCfgs(1).useSparseRepairReuse = false;
 
-% 2) AE + Init
 ablationCfgs(2) = base;
-ablationCfgs(2).algorithmName = 'AE+Init';
-ablationCfgs(2).outputDir = sprintf('ablation_scene%d_init', sceneId);
-ablationCfgs(2).useInit = true;
-ablationCfgs(2).useAOS = false;
-ablationCfgs(2).useRepair = false;
-ablationCfgs(2).useRegen = false;
+ablationCfgs(2).algorithmName = 'COVE-AE-w/o-Init';
+ablationCfgs(2).outputDir = sprintf('ablation_scene%d_cove_wo_init', sceneId);
+ablationCfgs(2).useConstraintStateInit = false;
+ablationCfgs(2).useViolationFeedback = true;
+ablationCfgs(2).useSparseRepairReuse = true;
 
-% 3) AE + Init + AOS
 ablationCfgs(3) = base;
-ablationCfgs(3).algorithmName = 'AE+Init+AOS';
-ablationCfgs(3).outputDir = sprintf('ablation_scene%d_init_aos', sceneId);
-ablationCfgs(3).useInit = true;
-ablationCfgs(3).useAOS = true;
-ablationCfgs(3).useRepair = false;
-ablationCfgs(3).useRegen = false;
+ablationCfgs(3).algorithmName = 'COVE-AE-w/o-Feedback';
+ablationCfgs(3).outputDir = sprintf('ablation_scene%d_cove_wo_feedback', sceneId);
+ablationCfgs(3).useConstraintStateInit = true;
+ablationCfgs(3).useViolationFeedback = false;
+ablationCfgs(3).useSparseRepairReuse = true;
 
-% 4) AE + Init + AOS + Repair
 ablationCfgs(4) = base;
-ablationCfgs(4).algorithmName = 'AE+Init+AOS+Repair';
-ablationCfgs(4).outputDir = sprintf('ablation_scene%d_init_aos_repair', sceneId);
-ablationCfgs(4).useInit = true;
-ablationCfgs(4).useAOS = true;
-ablationCfgs(4).useRepair = true;
-ablationCfgs(4).useRegen = false;
+ablationCfgs(4).algorithmName = 'COVE-AE-w/o-RepairReuse';
+ablationCfgs(4).outputDir = sprintf('ablation_scene%d_cove_wo_repair_reuse', sceneId);
+ablationCfgs(4).useConstraintStateInit = true;
+ablationCfgs(4).useViolationFeedback = true;
+ablationCfgs(4).useSparseRepairReuse = false;
 
-% 5) Full FAE-AE
 ablationCfgs(5) = base;
-ablationCfgs(5).algorithmName = 'FAE-AE';
-ablationCfgs(5).outputDir = sprintf('ablation_scene%d_full_faeae', sceneId);
-ablationCfgs(5).useInit = true;
-ablationCfgs(5).useAOS = true;
-ablationCfgs(5).useRepair = true;
-ablationCfgs(5).useRegen = true;
+ablationCfgs(5).algorithmName = 'COVE-AE';
+ablationCfgs(5).outputDir = sprintf('ablation_scene%d_cove_full', sceneId);
+ablationCfgs(5).useConstraintStateInit = true;
+ablationCfgs(5).useViolationFeedback = true;
+ablationCfgs(5).useSparseRepairReuse = true;
 end

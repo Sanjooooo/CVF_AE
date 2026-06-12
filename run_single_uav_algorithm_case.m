@@ -2,7 +2,7 @@
 %RUN_SINGLE_UAV_ALGORITHM_CASE Run one UAV planning case for one algorithm.
 %
 % Inputs:
-%   algName - 'AE','PSO','GWO','HHO','WOA','FAEAE'
+%   algName - 'AE','PSO','GWO','HHO','WOA','COVE-AE','FAEAE'
 %   sceneId - scene id, e.g. 1/2/4
 %   cfg     - comparison config from getUAVComparisonConfig()
 %   runId   - run index
@@ -112,8 +112,11 @@
         case 'WOA'
             result = optimizer_WOA_uav(objFun, params, map, refX, algCfg, runSeed);
 
+        case {'COVE-AE', 'COVE_AE', 'COVEAE'}
+            result = optimizer_COVE_AE_uav(objFun, params, map, refX, algCfg, runSeed);
+
         case 'FAEAE'
-            result = optimizer_FAEAE_uav(objFun, params, map, refX, algCfg, runSeed);
+            result = optimizer_FAEAE_lite_v2_uav(objFun, params, map, refX, algCfg, runSeed);
 
         otherwise
             error('Unknown algorithm: %s', algName);

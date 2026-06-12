@@ -65,3 +65,76 @@ Do not prioritize now:
 ### Next Work Boundary
 
 No large-scale algorithm code modification should begin until the user confirms the first-stage restructuring plan.
+
+## 2026-06-12 Phase 1 Code Skeleton
+
+### Git Baseline
+
+- Initialized Git in `D:\MATLAB\Project\COVE_AE_matlab`.
+- Added `.gitattributes` for stable line endings and binary MATLAB artifacts.
+- Initial baseline commit: `d17a707 Initialize COVE-AE MATLAB project baseline`.
+
+### Code Changes
+
+- Added independent COVE-AE implementation files:
+  - `optimizer_COVE_AE_uav.m`
+  - `init_COVE_AE.m`
+  - `identifyConstraintState.m`
+  - `analyzeViolationFeedback.m`
+  - `applyOperator_COVE_AE.m`
+- Added `.gitignore` for MATLAB temporary files and generated experiment outputs.
+- Integrated `COVE-AE` into:
+  - `getUAVAlgorithmConfig.m`
+  - `getUAVComparisonConfig.m`
+  - `run_single_uav_algorithm_case.m`
+  - `run_uav_comparison_lite_v2_batch.m`
+- Reworked ablation naming and dispatch around the three COVE-AE mechanisms:
+  - `Base-AE`
+  - `COVE-AE-w/o-Init`
+  - `COVE-AE-w/o-Feedback`
+  - `COVE-AE-w/o-RepairReuse`
+  - `COVE-AE`
+
+### Implemented Mechanism Hooks
+
+- Constraint-state identification records:
+  - feasible ratio
+  - mean violation
+  - diversity
+  - recent best improvement
+  - state name and state id
+- Violation feedback records dominant source among obstacle, NFZ, curvature, altitude, risk, or none.
+- COVE-AE operator uses state id plus violation type to choose perturbation structure.
+- Sparse repair is restricted to elite-side, near-feasible candidates and records repair count and successful repair count.
+- Repair displacement is reused through a lightweight memory vector.
+
+### Efficiency Metrics Added
+
+- `nEvals`
+- `runTime`
+- `firstFeasibleIter`
+- `firstFeasibleTime`
+- `repairCount`
+- `repairSuccessCount`
+- `feasibleRatioHistory`
+- `meanViolationHistory`
+- `diversityHistory`
+- `stateHistory`
+- `operatorHistory`
+
+The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleIter`, `FirstFeasibleTime`, `RepairCount`, and `RepairSuccessCount`.
+
+### Verification
+
+- MATLAB static checks passed for the new COVE-AE files. Remaining analyzer notes are only performance/style hints in existing batch scripts.
+- Direct COVE-AE smoke run passed on Scene 1 with small `popSize` and `maxIter`.
+- `run_single_uav_algorithm_case('COVE-AE', 1, cfg, 1)` passed.
+- Main comparison smoke passed for one Scene 1 COVE-AE run and exported the new efficiency columns.
+- COVE-AE ablation smoke passed for all five ablation configurations.
+
+### Next Steps
+
+- Tune state thresholds and operator coefficients on smoke/mid experiments.
+- Add at least one harder scenario before formal experiments.
+- Decide whether `Legacy-FAEAE` should appear in ablation or only in a separate legacy comparison.
+- Add improved non-AE baselines after the COVE-AE mechanism stabilizes.

@@ -1,6 +1,6 @@
 function summary = run_uav_comparison_lite_v2_batch(cfg)
 %RUN_UAV_COMPARISON_LITE_V2_BATCH
-% UAV main-comparison batch for the staged lite-v2 FAEAE.
+% UAV main-comparison batch for COVE-AE and baseline planners.
 %
 % Output files:
 % - uav_comparison_runs.csv
@@ -22,7 +22,7 @@ if ~isfield(cfg, 'sceneIds') || isempty(cfg.sceneIds)
     cfg.sceneIds = [1, 2, 4];
 end
 if ~isfield(cfg, 'algorithms') || isempty(cfg.algorithms)
-    cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'FAEAE'};
+    cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'COVE-AE'};
 end
 if ~isfield(cfg, 'nRuns') || isempty(cfg.nRuns)
     cfg.nRuns = 30;
@@ -54,7 +54,7 @@ runRows = [];
 allResults = cell(nScenes, nAlgs);
 
 fprintf('\n============================================================\n');
-fprintf('UAV Lite-V2 Batch Experiment\n');
+fprintf('UAV Main Comparison Batch Experiment\n');
 fprintf('Result folder : %s\n', cfg.resultDir);
 fprintf('Run folder    : %s\n', runDir);
 fprintf('Scenes        : %s\n', mat2str(cfg.sceneIds));
@@ -114,8 +114,13 @@ for s = 1:nScenes
                     sceneId, {algName}, r, runSeed, ...
                     result.bestFitness, result.runtime, ...
                     logical(result.finalFeasible), result.finalViolation, ...
+                    localResultScalar(result, 'nEvals'), ...
+                    localResultScalar(result, 'firstFeasibleIter'), ...
+                    localResultScalar(result, 'firstFeasibleTime'), ...
+                    localResultScalar(result, 'repairCount'), ...
+                    localResultScalar(result, 'repairSuccessCount'), ...
                     elapsed, ...
-                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','WallClock'} );
+                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','NEvals','FirstFeasibleIter','FirstFeasibleTime','RepairCount','RepairSuccessCount','WallClock'} );
 
                 if isempty(runRows)
                     runRows = row;
@@ -184,6 +189,8 @@ switch upper(algName)
         result = optimizer_HHO_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'WOA'
         result = optimizer_WOA_uav(objFun, params, map, refX, algCfg, runSeed);
+    case {'COVE-AE', 'COVE_AE', 'COVEAE'}
+        result = optimizer_COVE_AE_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'FAEAE'
         if useLiteFAEAE
             result = optimizer_FAEAE_lite_v2_uav(objFun, params, map, refX, algCfg, runSeed);
@@ -369,5 +376,15 @@ for k = 1:numel(f)
     else
         params.(f{k}) = overrides.(f{k});
     end
+end
+end
+
+% ========================================================================
+function v = localResultScalar(result, fieldName)
+if isfield(result, fieldName) && ~isempty(result.(fieldName)) && isnumeric(result.(fieldName))
+    v = result.(fieldName);
+    v = v(1);
+else
+    v = NaN;
 end
 end
