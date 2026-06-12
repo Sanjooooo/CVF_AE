@@ -78,6 +78,7 @@ function plot_uav_representative_corridor_paths_all_paper(resultDir, manualRunMa
 
         params = defaultParams();
         params.sceneId = sceneId;
+        params = applyUAVSceneOverrides(params);
         params.figView = [-37.5, 30];
         map = createMap(params);
 

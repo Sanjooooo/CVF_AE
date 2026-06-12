@@ -145,3 +145,16 @@ The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleI
 - Code Scene 4 was displayed as Paper Scene 3 in old paper scripts and legacy documentation.
 - Removed the unused real code `sceneId == 3` branch from `createMap.m`.
 - `createMap.m` now supports only code scenes 1, 2, and 4.
+
+## 2026-06-12 Scene Override Unification
+
+- Added `applyUAVSceneOverrides.m` as the shared scene-specific parameter hook.
+- Centralized the code Scene 4 low-altitude corridor settings:
+  - `altMin = 8`
+  - `altMax = 26`
+  - `heightRef = 14`
+  - `weights.H = 1.20`
+  - synchronized `lbSingle`, `ubSingle`, `lb`, and `ub`
+- Replaced the inline Scene 4 override in `run_single_uav_algorithm_case.m`.
+- Applied the same override in main comparison, ablation, parameter sensitivity, and path plotting scripts.
+- Verified Scene 4 smoke runs through direct setup, single-run dispatch, main comparison batch, and ablation batch.

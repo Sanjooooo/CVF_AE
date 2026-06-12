@@ -73,6 +73,7 @@ function plot_uav_best_paths_exact(resultDir)
             % Rebuild params/map for this scene
             params = defaultParams();
             params.sceneId = sceneId;
+            params = applyUAVSceneOverrides(params);
 
             % Make sure plotting uses the repository's normal 3D view first
             params.figView = [-37.5, 30];

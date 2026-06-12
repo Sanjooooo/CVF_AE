@@ -46,6 +46,7 @@ function summary = run_uav_param_sensitivity_lite_v2(cfg)
 
             paramsBase = defaultParams();
             paramsBase.sceneId = sceneId;
+            paramsBase = applyUAVSceneOverrides(paramsBase);
 
             map = createMap(paramsBase);
             refCtrl = generateReferencePath(map, paramsBase);

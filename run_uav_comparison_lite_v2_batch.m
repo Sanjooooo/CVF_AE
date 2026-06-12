@@ -71,6 +71,7 @@ for s = 1:nScenes
     if isfield(cfg, 'paramsOverride') && isstruct(cfg.paramsOverride)
         params = localApplyOverrides(params, cfg.paramsOverride);
     end
+    params = applyUAVSceneOverrides(params);
 
     map = createMap(params);
     refCtrl = generateReferencePath(map, params);
