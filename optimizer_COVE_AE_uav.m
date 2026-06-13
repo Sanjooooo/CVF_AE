@@ -33,6 +33,8 @@ repairSuccessCount = initInfo.repairSuccessCount;
 
 bestHist = inf(params.maxIter, 1);
 stateHistory = cell(params.maxIter, 1);
+feedbackHistory = cell(params.maxIter, 1);
+feedbackScoreHistory = nan(params.maxIter, 5);
 operatorHistory = zeros(params.maxIter, params.cove.nOps);
 feasibleRatioHistory = nan(params.maxIter, 1);
 meanViolationHistory = nan(params.maxIter, 1);
@@ -46,6 +48,8 @@ for t = 1:params.maxIter
     feedback = analyzeViolationFeedback(detail, params);
 
     stateHistory{t} = state.name;
+    feedbackHistory{t} = feedback.dominantType;
+    feedbackScoreHistory(t, 1:min(5, numel(feedback.scores))) = feedback.scores(1:min(5, numel(feedback.scores)));
     feasibleRatioHistory(t) = state.feasibleRatio;
     meanViolationHistory(t) = state.meanViolation;
     diversityHistory(t) = state.diversity;
@@ -127,6 +131,8 @@ result.feasibleRatioHistory = feasibleRatioHistory;
 result.meanViolationHistory = meanViolationHistory;
 result.diversityHistory = diversityHistory;
 result.stateHistory = stateHistory;
+result.feedbackHistory = feedbackHistory;
+result.feedbackScoreHistory = feedbackScoreHistory;
 result.operatorHistory = operatorHistory;
 
 result.bestFitness = bestFit;
@@ -158,6 +164,15 @@ params.cove.repair.maxViolation = 25;
 params.cove.repair.iters = 1;
 params.cove.repair.startFrac = 0.15;
 params.cove.repair.memoryAlpha = 0.25;
+
+params.cove.feedback.strength = 0.70;
+params.cove.feedback.avoidanceSamples = 64;
+params.cove.feedback.avoidanceMaxHits = 10;
+params.cove.feedback.avoidanceLimit = 0.07;
+params.cove.feedback.riskActivation = 0.24;
+params.cove.feedback.riskStepScale = 2.20;
+params.cove.feedback.smoothGamma = 0.32;
+params.cove.feedback.altitudeGain = 0.35;
 end
 
 function params = localApplyAlgorithmConfig(params, algCfg)

@@ -36,7 +36,8 @@ end
 bias = localViolationMask(feedback, params);
 noise = (2 * rand(1, D) - 1) .* span .* bias;
 reuseStep = localReuseStep(memory, D);
-avoidStep = localAvoidanceStep(x, map, params, feedback);
+fbCfg = localFeedbackParams(params);
+feedbackStep = localFeedbackStep(x, map, params, feedback, fbCfg);
 
 switch state.id
     case 1
@@ -47,7 +48,7 @@ switch state.id
             0.18 * diff1 + ...
             (0.08 + 0.10 * (1 - tau)) * noise + ...
             0.18 * reuseStep + ...
-            0.35 * avoidStep;
+            0.36 * feedbackStep;
 
     case 2
         opId = 2;
@@ -58,7 +59,7 @@ switch state.id
             0.08 * rand(1, D) .* dirRef + ...
             0.08 * noise + ...
             0.22 * reuseStep + ...
-            0.25 * avoidStep;
+            0.28 * feedbackStep;
 
     case 3
         opId = 3;
@@ -68,7 +69,7 @@ switch state.id
             0.08 * diff1 + ...
             0.04 * noise + ...
             0.10 * reuseStep + ...
-            0.12 * avoidStep;
+            0.16 * feedbackStep;
 
     otherwise
         opId = 4;
@@ -78,7 +79,7 @@ switch state.id
             0.22 * rand(1, D) .* dirBest + ...
             0.10 * randn(1, D) .* span .* bias + ...
             0.25 * reuseStep + ...
-            0.20 * avoidStep;
+            0.22 * feedbackStep;
 end
 
 Xnew = x + step;
@@ -90,7 +91,7 @@ end
 Xnew = (1 - anchor) * Xnew + anchor * xElite;
 
 if strcmp(feedback.dominantType, 'curvature')
-    Xnew = localSmoothControlVector(Xnew, params, 0.20);
+    Xnew = localSmoothControlVector(Xnew, params, 0.5 * fbCfg.smoothGamma);
 end
 
 Xnew = boundSolution(Xnew, params);
@@ -129,31 +130,92 @@ if isstruct(memory) && isfield(memory, 'repairStep') && numel(memory.repairStep)
 end
 end
 
-function step = localAvoidanceStep(X, map, params, feedback)
+function cfg = localFeedbackParams(params)
+cfg.strength = 0.70;
+cfg.avoidanceSamples = 64;
+cfg.avoidanceMaxHits = 10;
+cfg.avoidanceLimit = 0.07;
+cfg.riskActivation = 0.24;
+cfg.riskStepScale = 2.20;
+cfg.smoothGamma = 0.32;
+cfg.altitudeGain = 0.35;
+
+if isfield(params, 'cove') && isfield(params.cove, 'feedback')
+    s = params.cove.feedback;
+    f = fieldnames(s);
+    for k = 1:numel(f)
+        cfg.(f{k}) = s.(f{k});
+    end
+end
+end
+
+function step = localFeedbackStep(X, map, params, feedback, cfg)
+step = zeros(1, params.dim);
+weights = localFeedbackWeights(feedback);
+if all(weights <= 0)
+    return;
+end
+
+spatialWeight = min(1, weights(1) + weights(2) + 0.75 * weights(5));
+curvWeight = weights(3);
+altWeight = weights(4);
+
+if spatialWeight > 0
+    step = step + spatialWeight * localAvoidanceStep(X, map, params, feedback, weights, cfg);
+end
+if curvWeight > 0
+    step = step + curvWeight * localCurvatureRelaxationStep(X, params, cfg);
+end
+if altWeight > 0
+    step = step + altWeight * localAltitudeStep(X, params, cfg);
+end
+
+step = cfg.strength * step;
+limit = cfg.avoidanceLimit * (params.ub(:)' - params.lb(:)');
+step = min(max(step, -limit), limit);
+end
+
+function weights = localFeedbackWeights(feedback)
+weights = zeros(1, 5);
+if ~isstruct(feedback) || ~isfield(feedback, 'dominantType') || strcmp(feedback.dominantType, 'none')
+    return;
+end
+if isfield(feedback, 'weights') && isnumeric(feedback.weights) && numel(feedback.weights) >= 5
+    weights = feedback.weights(1:5);
+end
+if ~any(isfinite(weights)) || sum(weights, 'omitnan') <= 0
+    weights(:) = 0;
+    return;
+end
+weights(~isfinite(weights)) = 0;
+weights = weights / sum(weights);
+end
+
+function step = localAvoidanceStep(X, map, params, feedback, weights, cfg)
 step = zeros(1, params.dim);
 if isempty(map) || ~isstruct(map)
     return;
 end
-if ~ismember(feedback.dominantType, {'obstacle', 'nfz', 'risk'})
+if ~ismember(feedback.dominantType, {'obstacle', 'nfz', 'risk'}) && sum(weights([1 2 5])) <= 0
     return;
 end
 
 ctrl = decodeSolution(X, params);
-nAvoidSamples = min(params.nSamples, 80);
+nAvoidSamples = min(params.nSamples, cfg.avoidanceSamples);
 path = bsplinePath(ctrl, params.degree, nAvoidSamples);
 deltaCtrl = zeros(size(ctrl));
 hitCount = zeros(size(ctrl, 1), 1);
-maxHits = 8;
+maxHits = cfg.avoidanceMaxHits;
 hits = 0;
 
 for m = 2:size(path, 1)-1
-    [isViol, dir, depth] = localPointAvoidance(path(m, :), map);
+    [isViol, dir, depth] = localPointAvoidance(path(m, :), map, weights, cfg);
     if ~isViol
         continue;
     end
 
     k = localNearestInteriorControlPoint(path(m, :), ctrl);
-    mag = min(4.0, max(1.0, depth + 0.75));
+    mag = min(4.5, max(0.6, depth + 0.75));
     deltaCtrl(k, :) = deltaCtrl(k, :) + mag * dir;
     hitCount(k) = hitCount(k) + 1;
     hits = hits + 1;
@@ -174,11 +236,11 @@ for k = 2:size(ctrl, 1)-1
 end
 
 step = encodeControlPoints(deltaCtrl);
-limit = 0.08 * (params.ub(:)' - params.lb(:)');
+limit = cfg.avoidanceLimit * (params.ub(:)' - params.lb(:)');
 step = min(max(step, -limit), limit);
 end
 
-function [isViol, dir, depth] = localPointAvoidance(p, map)
+function [isViol, dir, depth] = localPointAvoidance(p, map, weights, cfg)
 isViol = false;
 dir = [0, 0, 0];
 depth = 0;
@@ -222,6 +284,75 @@ for k = 1:size(map.nfz, 1)
         return;
     end
 end
+
+if weights(5) > 0 && isfield(map, 'windHotspots') && ~isempty(map.windHotspots)
+    [riskDir, riskDepth] = localRiskAvoidance(p, map, cfg);
+    if riskDepth > 0
+        dir = riskDir;
+        depth = cfg.riskStepScale * riskDepth;
+        isViol = true;
+        return;
+    end
+end
+end
+
+function [dir, depth] = localRiskAvoidance(p, map, cfg)
+dir = [0, 0, 0];
+riskPressure = 0;
+for k = 1:size(map.windHotspots, 1)
+    h = map.windHotspots(k, :);
+    center = h(1:3);
+    sigma = h(4);
+    amp = h(5);
+    d = p - center;
+    d(3) = 0.35 * d(3);
+    d2 = sum(d.^2);
+    pressure = amp * exp(-d2 / (2 * sigma^2));
+    if pressure <= cfg.riskActivation
+        continue;
+    end
+    if norm(d) < 1e-9
+        d = [1, 0.5, 0];
+    end
+    dir = dir + pressure * d / (norm(d) + 1e-9);
+    riskPressure = riskPressure + pressure;
+end
+
+if norm(dir) > 1e-9
+    dir = dir / norm(dir);
+    depth = max(0, riskPressure - cfg.riskActivation);
+else
+    depth = 0;
+end
+end
+
+function step = localCurvatureRelaxationStep(X, params, cfg)
+ctrl = decodeSolution(X, params);
+deltaCtrl = zeros(size(ctrl));
+for k = 3:size(ctrl, 1)-2
+    target = 0.5 * (ctrl(k-1, :) + ctrl(k+1, :));
+    deltaCtrl(k, :) = cfg.smoothGamma * (target - ctrl(k, :));
+end
+step = encodeControlPoints(deltaCtrl);
+limit = 0.06 * (params.ub(:)' - params.lb(:)');
+step = min(max(step, -limit), limit);
+end
+
+function step = localAltitudeStep(X, params, cfg)
+ctrl = decodeSolution(X, params);
+deltaCtrl = zeros(size(ctrl));
+if isfield(params, 'heightRef') && isfinite(params.heightRef)
+    zTarget = params.heightRef;
+else
+    zTarget = 0.5 * (params.altMin + params.altMax);
+end
+for k = 2:size(ctrl, 1)-1
+    dz = zTarget - ctrl(k, 3);
+    deltaCtrl(k, 3) = cfg.altitudeGain * dz;
+end
+step = encodeControlPoints(deltaCtrl);
+limit = 0.05 * (params.ub(:)' - params.lb(:)');
+step = min(max(step, -limit), limit);
 end
 
 function k = localNearestInteriorControlPoint(p, ctrl)

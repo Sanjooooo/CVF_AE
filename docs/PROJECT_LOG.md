@@ -239,3 +239,109 @@ The main comparison and ablation run tables now export `NEvals`, `FirstFeasibleI
 - Violation feedback still needs strengthening:
   - `COVE-AE-w/o-Feedback` is currently competitive with or better than full `COVE-AE` on some short diagnostic cases.
   - Next tuning should make violation feedback contribute more clearly to obstacle/NFZ handling without excessive runtime overhead.
+
+## 2026-06-13 Violation-Feedback Tuning and Default Freeze
+
+### Mechanism Tuning
+
+- Strengthened the COVE-AE violation-feedback operator without adding a new standalone module.
+- `analyzeViolationFeedback.m` now builds feedback scores from near-feasible-weighted violation components:
+  - obstacle: `Cobs`
+  - NFZ: `Cnfz`
+  - curvature: `Ccurv`
+  - altitude: `Calt`
+  - risk: `R / L`
+- Each individual contributes with weight `1 / (1 + V)`, so near-feasible and feasible paths have more influence on the operator feedback than severely infeasible outliers.
+- `applyOperator_COVE_AE.m` now converts the unified feedback vector into one bounded structural feedback step:
+  - obstacle / NFZ / risk: capped sampled avoidance step on the decoded B-spline path.
+  - curvature: control-point smoothing step.
+  - altitude: height-reference pullback step.
+- The feedback step is still embedded in the existing four state-dependent AE operator cases; no separate heavy repair/regeneration module was added.
+- `optimizer_COVE_AE_uav.m` now records `feedbackHistory` and `feedbackScoreHistory`.
+- `summarize_cove_ae_diagnostics.m` and `run_cove_ae_ablation_diagnostics.m` export feedback-type fractions in the diagnostic CSV summaries.
+
+### Small-Scale Ablation Recheck
+
+- Result folder: `results_cove_ae_ablation_feedback_tuned2_20260613_124121`.
+- Configuration:
+  - scenes `[1, 2, 4]`
+  - algorithms `Base-AE`, `COVE-AE-w/o-Init`, `COVE-AE-w/o-Feedback`, `COVE-AE-w/o-RepairReuse`, `COVE-AE`
+  - `nRuns = 5`
+  - `popSize = 10`
+  - `maxIter = 30`
+  - `baseSeed = 20260613`
+
+Key aggregate results:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanFinalViolation | MeanRuntime | MeanNEvals | MeanFirstFeasibleIter |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | COVE-AE-w/o-Feedback | 0.80 | 375.32 | 0.40 | 0.223 | 328.8 | 6.5 |
+| 1 | COVE-AE | 0.60 | 378.43 | 0.40 | 0.314 | 330.4 | 12.67 |
+| 2 | COVE-AE-w/o-Feedback | 0.80 | 530.84 | 1.20 | 0.215 | 321.8 | 16.0 |
+| 2 | COVE-AE | 1.00 | 354.95 | 0.00 | 0.392 | 325.8 | 17.4 |
+| 4 | COVE-AE-w/o-Feedback | 1.00 | 398.52 | 0.00 | 0.199 | 317.4 | 0.0 |
+| 4 | COVE-AE | 1.00 | 399.29 | 0.00 | 0.379 | 315.4 | 0.0 |
+
+Interpretation:
+
+- Scene 2 now gives the clearest evidence for violation feedback: full `COVE-AE` improves feasibility from `0.80` to `1.00`, reduces mean final violation from `1.20` to `0.00`, and lowers mean best fitness from `530.84` to `354.95` relative to `COVE-AE-w/o-Feedback`.
+- Scene 4 remains initialization-dominated: both full `COVE-AE` and `COVE-AE-w/o-Feedback` are feasible from iteration 0 because the Scene 4 constraint-state templates are active.
+- Scene 1 remains mixed in this very short diagnostic; the tuned feedback is not presented as universally dominant from this 5-run smoke-scale check.
+- The runtime overhead is visible but bounded: full `COVE-AE` uses similar evaluation counts and adds path-sampling overhead in the operator.
+
+### Frozen COVE-AE Default Parameters
+
+Default parameter location: `optimizer_COVE_AE_uav.m`, function `localDefaultCoveParams`.
+
+State thresholds:
+
+- `params.cove.state.window = 15`
+- `params.cove.state.improvementTol = 1e-4`
+- `params.cove.state.formationFeasibleRatio = 0.20`
+- `params.cove.state.refinementFeasibleRatio = 0.65`
+- `params.cove.state.highViolation = 10`
+- `params.cove.state.recoveryDiversityMax = 0.08`
+
+Constraint-state initialization:
+
+- `params.cove.init.guidedRatio = 0.70`
+- `params.cove.init.initialRepairQuota = max(1, round(0.20 * params.popSize))`
+- `params.cove.init.initialRepairMaxViolation = 30`
+- `params.cove.init.initialRepairIters = 1`
+- Guided initialization internals in `init_COVE_AE.m` remain:
+  - `clearanceScale = 0.45`
+  - `riskShrink = 1.80`
+  - `minRadius = 1.0`
+  - `maxTrial = 8`
+
+Sparse repair and reuse:
+
+- `params.cove.repair.eliteFrac = 0.35`
+- `params.cove.repair.maxPerIter = max(1, round(0.12 * params.popSize))`
+- `params.cove.repair.maxViolation = 25`
+- `params.cove.repair.iters = 1`
+- `params.cove.repair.startFrac = 0.15`
+- `params.cove.repair.memoryAlpha = 0.25`
+
+Violation feedback and avoidance:
+
+- `params.cove.feedback.strength = 0.70`
+- `params.cove.feedback.avoidanceSamples = 64`
+- `params.cove.feedback.avoidanceMaxHits = 10`
+- `params.cove.feedback.avoidanceLimit = 0.07`
+- `params.cove.feedback.riskActivation = 0.24`
+- `params.cove.feedback.riskStepScale = 2.20`
+- `params.cove.feedback.smoothGamma = 0.32`
+- `params.cove.feedback.altitudeGain = 0.35`
+
+State-dependent feedback-step coefficients in `applyOperator_COVE_AE.m`:
+
+- Feasibility formation: `0.36 * feedbackStep`
+- Feasibility preservation: `0.28 * feedbackStep`
+- Quality refinement: `0.16 * feedbackStep`
+- Stagnation recovery: `0.22 * feedbackStep`
+
+### Stop Boundary
+
+- This commit freezes one COVE-AE default configuration for the current paper-stage code.
+- Do not continue into formal ablation, parameter sensitivity, main comparison, CEC, or map redesign until the next explicit work phase.
