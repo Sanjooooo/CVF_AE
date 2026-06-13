@@ -97,6 +97,34 @@ for s = 1:nScenes
 
         for r = 1:nRuns
             runSeed = cfg.baseSeed + 10000 * sceneId + 100 * a + r;
+            runFile = fullfile(runDir, sprintf('scene%d_%s_run%03d.mat', sceneId, localSafeName(algName), r));
+
+            if localGetFlag(cfg, 'resumeExisting', false) && exist(runFile, 'file')
+                S = load(runFile);
+                if isfield(S, 'result')
+                    result = localNormalizeResultStruct(S.result, sceneId, algName, r, runSeed);
+
+                    if isempty(runs)
+                        runs = result;
+                    else
+                        [runs, result] = localAlignStructArrayAndScalar(runs, result);
+                        runs(end+1) = result;
+                    end
+                    okCount = okCount + 1;
+
+                    row = localBuildRunRow(sceneId, algName, r, runSeed, result, NaN);
+                    if isempty(runRows)
+                        runRows = row;
+                    else
+                        runRows = [runRows; row]; %#ok<AGROW>
+                    end
+
+                    fprintf('  run %2d/%2d | resumed | best = %.6f | feas = %d | time = %.3fs\n', ...
+                        r, nRuns, result.bestFitness, logical(result.finalFeasible), result.runtime);
+                    continue;
+                end
+            end
+
             tRun = tic;
 
             try
@@ -105,7 +133,7 @@ for s = 1:nScenes
 
                 result = localNormalizeResultStruct(result, sceneId, algName, r, runSeed);
 
-                save(fullfile(runDir, sprintf('scene%d_%s_run%03d.mat', sceneId, localSafeName(algName), r)), 'result');
+                save(runFile, 'result');
 
                 if isempty(runs)
                     runs = result;
@@ -115,17 +143,7 @@ for s = 1:nScenes
                 end
                 okCount = okCount + 1;
 
-                row = table( ...
-                    sceneId, {algName}, r, runSeed, ...
-                    result.bestFitness, result.runtime, ...
-                    logical(result.finalFeasible), result.finalViolation, ...
-                    localResultScalar(result, 'nEvals'), ...
-                    localResultScalar(result, 'firstFeasibleIter'), ...
-                    localResultScalar(result, 'firstFeasibleTime'), ...
-                    localResultScalar(result, 'repairCount'), ...
-                    localResultScalar(result, 'repairSuccessCount'), ...
-                    elapsed, ...
-                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','NEvals','FirstFeasibleIter','FirstFeasibleTime','RepairCount','RepairSuccessCount','WallClock'} );
+                row = localBuildRunRow(sceneId, algName, r, runSeed, result, elapsed);
 
                 if isempty(runRows)
                     runRows = row;
@@ -414,6 +432,29 @@ for k = 1:numel(f)
     else
         params.(f{k}) = overrides.(f{k});
     end
+end
+end
+
+% ========================================================================
+function row = localBuildRunRow(sceneId, algName, runId, runSeed, result, elapsed)
+row = table( ...
+    sceneId, {algName}, runId, runSeed, ...
+    result.bestFitness, result.runtime, ...
+    logical(result.finalFeasible), result.finalViolation, ...
+    localResultScalar(result, 'nEvals'), ...
+    localResultScalar(result, 'firstFeasibleIter'), ...
+    localResultScalar(result, 'firstFeasibleTime'), ...
+    localResultScalar(result, 'repairCount'), ...
+    localResultScalar(result, 'repairSuccessCount'), ...
+    elapsed, ...
+    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','NEvals','FirstFeasibleIter','FirstFeasibleTime','RepairCount','RepairSuccessCount','WallClock'} );
+end
+
+% ========================================================================
+function tf = localGetFlag(s, name, defaultValue)
+tf = defaultValue;
+if isstruct(s) && isfield(s, name)
+    tf = logical(s.(name));
 end
 end
 

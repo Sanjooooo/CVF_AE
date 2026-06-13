@@ -345,3 +345,100 @@ State-dependent feedback-step coefficients in `applyOperator_COVE_AE.m`:
 
 - This commit freezes one COVE-AE default configuration for the current paper-stage code.
 - Do not continue into formal ablation, parameter sensitivity, main comparison, CEC, or map redesign until the next explicit work phase.
+
+## 2026-06-13 Formal Ablation Check
+
+### Purpose
+
+- Verify whether the three COVE-AE innovation points are stable under a full ablation setting.
+- Verify whether full `COVE-AE` has an overall advantage under the frozen recommended configuration.
+- Scope was limited to ablation only; no main comparison, parameter sensitivity, CEC, or map redesign was run.
+
+### Run Configuration
+
+- Result folder: `results_cove_ae_ablation_formal_direct_20260613_133818`.
+- Scenes: `[1, 2, 4]`.
+- Algorithms:
+  - `Base-AE`
+  - `COVE-AE-w/o-Init`
+  - `COVE-AE-w/o-Feedback`
+  - `COVE-AE-w/o-RepairReuse`
+  - `COVE-AE`
+- Runs: `30`.
+- `popSize = 30`.
+- `maxIter = 300`.
+- `baseSeed = 20260613`.
+- The first direct MATLAB run was interrupted after `303 / 450` run records had been written.
+- Added `resumeExisting` support to the ablation batch runner and resumed from the same `run_records` folder, avoiding recomputation of completed runs.
+- Final run record count: `450 / 450`.
+
+### Aggregate Results
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | StdBestFitness | MeanRuntime | MeanFirstFeasibleIter |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | Base-AE | 0.467 | 846.85 | 454.95 | 4.57 | NaN |
+| 1 | COVE-AE-w/o-Init | 1.000 | 319.63 | 11.08 | 7.86 | 19.40 |
+| 1 | COVE-AE-w/o-Feedback | 1.000 | 308.00 | 1.83 | 4.86 | 2.73 |
+| 1 | COVE-AE-w/o-RepairReuse | 1.000 | 308.81 | 4.84 | 20.74 | 6.90 |
+| 1 | COVE-AE | 1.000 | 307.57 | 2.52 | 26.69 | 3.27 |
+| 2 | Base-AE | 0.000 | 2243.33 | 492.46 | 12.08 | NaN |
+| 2 | COVE-AE-w/o-Init | 0.967 | 346.39 | 109.06 | 38.00 | 75.93 |
+| 2 | COVE-AE-w/o-Feedback | 1.000 | 325.26 | 9.86 | 18.53 | 30.30 |
+| 2 | COVE-AE-w/o-RepairReuse | 1.000 | 329.17 | 10.08 | 20.85 | 27.27 |
+| 2 | COVE-AE | 1.000 | 329.04 | 10.51 | 24.20 | 27.70 |
+| 4 | Base-AE | 0.000 | 1683.45 | 146.39 | 5.09 | NaN |
+| 4 | COVE-AE-w/o-Init | 0.567 | 648.60 | 416.75 | 10.51 | 157.29 |
+| 4 | COVE-AE-w/o-Feedback | 1.000 | 360.50 | 23.59 | 5.10 | 0.00 |
+| 4 | COVE-AE-w/o-RepairReuse | 1.000 | 371.48 | 13.98 | 9.75 | 0.00 |
+| 4 | COVE-AE | 1.000 | 362.84 | 22.33 | 9.90 | 0.00 |
+
+Average rank by mean best fitness:
+
+| Algorithm | AverageRank |
+|---|---:|
+| COVE-AE-w/o-Feedback | 1.33 |
+| COVE-AE | 1.67 |
+| COVE-AE-w/o-RepairReuse | 3.00 |
+| COVE-AE-w/o-Init | 4.00 |
+| Base-AE | 5.00 |
+
+### Pairwise Full-vs-Ablation Check
+
+The table below reports `COVE-AE` minus comparator mean fitness; negative values favor full `COVE-AE`.
+
+| Scene | Comparator | FullMean | ComparatorMean | FullWins | FullLosses | SignrankP |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | COVE-AE-w/o-Init | 307.57 | 319.63 | 26 | 4 | 1.64e-05 |
+| 1 | COVE-AE-w/o-Feedback | 307.57 | 308.00 | 17 | 13 | 0.544 |
+| 1 | COVE-AE-w/o-RepairReuse | 307.57 | 308.81 | 19 | 11 | 0.111 |
+| 2 | COVE-AE-w/o-Init | 329.04 | 346.39 | 9 | 21 | 0.254 |
+| 2 | COVE-AE-w/o-Feedback | 329.04 | 325.26 | 12 | 18 | 0.192 |
+| 2 | COVE-AE-w/o-RepairReuse | 329.04 | 329.17 | 16 | 14 | 0.813 |
+| 4 | COVE-AE-w/o-Init | 362.84 | 648.60 | 17 | 13 | 0.0387 |
+| 4 | COVE-AE-w/o-Feedback | 362.84 | 360.50 | 14 | 16 | 0.766 |
+| 4 | COVE-AE-w/o-RepairReuse | 362.84 | 371.48 | 20 | 10 | 0.0978 |
+
+### Interpretation
+
+- Constraint-state initialization is strongly supported:
+  - Removing initialization greatly hurts Scene 4 feasibility (`1.000` to `0.567`) and first feasible iteration (`0.00` to `157.29`).
+  - Removing initialization also worsens Scene 1 mean fitness significantly.
+  - Scene 2 remains mostly feasible without initialization, but with worse mean and much larger variance.
+- Violation feedback is not supported by the formal ablation:
+  - `COVE-AE-w/o-Feedback` has the best average rank (`1.33`) and is faster than full `COVE-AE`.
+  - Full `COVE-AE` is not significantly better than `COVE-AE-w/o-Feedback` in any scene.
+  - Full `COVE-AE` is worse than `COVE-AE-w/o-Feedback` on Scene 2 and Scene 4 by mean best fitness.
+- Sparse repair/reuse is mixed and not yet a strong standalone innovation:
+  - Full `COVE-AE` is slightly better than `COVE-AE-w/o-RepairReuse` in mean fitness across all three scenes.
+  - The paired test is not significant at `p < 0.05` in any scene, with only weak trends in Scene 1 and Scene 4.
+  - Runtime overhead remains visible.
+- Full `COVE-AE` does not currently have a defensible overall advantage:
+  - It ranks first on Scene 1, second on Scene 2, and second on Scene 4.
+  - Its average rank is worse than `COVE-AE-w/o-Feedback`.
+  - The full configuration is slower than the most competitive ablation in all scenes.
+
+### Decision
+
+- The formal ablation does not support moving directly to main comparison.
+- The current recommended full COVE-AE configuration should not be claimed as final.
+- Next work should focus on reducing or redesigning the violation-feedback operator so it improves Scene 2/4 without harming quality or runtime, and on deciding whether sparse repair/reuse should be weakened, triggered less often, or reframed as a feasibility-efficiency support mechanism rather than a primary fitness improvement mechanism.

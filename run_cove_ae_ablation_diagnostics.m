@@ -57,7 +57,9 @@ if ~isfield(cfg.paramsOverride, 'maxIter')
     cfg.paramsOverride.maxIter = 30;
 end
 
-cfg.resumeExisting = false;
+if ~isfield(cfg, 'resumeExisting')
+    cfg.resumeExisting = false;
+end
 cfg.saveFigures = false;
 cfg.showSingleRunFigure = false;
 cfg.showBatchFigure = false;
