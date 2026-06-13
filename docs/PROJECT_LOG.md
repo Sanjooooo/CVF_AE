@@ -442,3 +442,75 @@ The table below reports `COVE-AE` minus comparator mean fitness; negative values
 - The formal ablation does not support moving directly to main comparison.
 - The current recommended full COVE-AE configuration should not be claimed as final.
 - Next work should focus on reducing or redesigning the violation-feedback operator so it improves Scene 2/4 without harming quality or runtime, and on deciding whether sparse repair/reuse should be weakened, triggered less often, or reframed as a feasibility-efficiency support mechanism rather than a primary fitness improvement mechanism.
+
+## 2026-06-13 Violation-Feedback Redesign Attempt
+
+### Goal
+
+- Try to repair the failed formal-ablation finding that `COVE-AE-w/o-Feedback` outperformed full `COVE-AE`.
+- Keep constraint-state initialization intact.
+- Avoid broad parameter sensitivity, main comparison, CEC, or map redesign.
+
+### Attempt 1: Local State-Gated Feedback
+
+- Changed feedback from population-wide dominant feedback to individual-level feedback based on each candidate's own `Cobs`, `Cnfz`, `Ccurv`, and `Calt`.
+- Disabled hard-constraint feedback for already feasible individuals.
+- Added state-gated low-frequency triggering:
+  - formation only
+  - preservation/refinement mostly disabled
+  - low-probability recovery
+- Reduced feedback strength, avoidance sample budget, hit count, and step limit.
+- Reduced sparse repair overhead.
+- Diagnostic result folder: `results_cove_ae_ablation_local_feedback_gate_small_20260613_222046`.
+
+Key small diagnostic result:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanRuntime |
+|---:|---|---:|---:|---:|
+| 1 | COVE-AE-w/o-Feedback | 0.80 | 368.70 | 0.281 |
+| 1 | COVE-AE | 1.00 | 310.32 | 0.297 |
+| 2 | COVE-AE-w/o-Feedback | 0.80 | 526.33 | 0.266 |
+| 2 | COVE-AE | 0.20 | 2706.90 | 0.268 |
+| 4 | COVE-AE-w/o-Feedback | 1.00 | 398.54 | 0.247 |
+| 4 | COVE-AE | 1.00 | 403.63 | 0.268 |
+
+Interpretation:
+
+- Local gating improved Scene 1 but severely damaged Scene 2.
+- This is not acceptable because Scene 2 is the key dense-obstacle / narrow-corridor evidence case.
+
+### Attempt 2: Accepted-Only Feedback Candidate
+
+- Reworked feedback as a secondary candidate:
+  - first generate and evaluate the normal no-feedback AE offspring;
+  - generate a feedback-guided offspring only for near-feasible infeasible individuals when no feasible solution exists;
+  - accept the feedback offspring only if it is Deb-better than the no-feedback offspring;
+  - restore the RNG state after generating the feedback candidate to reduce random-stream side effects.
+- Diagnostic result folder: `results_cove_ae_ablation_feedback_candidate_small_20260613_222427`.
+
+Key small diagnostic result:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanRuntime |
+|---:|---|---:|---:|---:|
+| 1 | COVE-AE-w/o-Feedback | 0.80 | 368.70 | 0.280 |
+| 1 | COVE-AE | 1.00 | 311.84 | 0.379 |
+| 2 | COVE-AE-w/o-Feedback | 0.80 | 526.33 | 0.264 |
+| 2 | COVE-AE | 0.60 | 1211.30 | 0.278 |
+| 4 | COVE-AE-w/o-Feedback | 1.00 | 398.54 | 0.247 |
+| 4 | COVE-AE | 1.00 | 399.82 | 0.258 |
+
+Interpretation:
+
+- Accepted-only feedback reduced the damage relative to Attempt 1, but full `COVE-AE` still failed to beat `COVE-AE-w/o-Feedback` in Scene 2.
+- Because Scene 2 remains the main feedback-sensitive scene, this remains a serious mechanism problem.
+
+### Stop Decision
+
+- Do not run a full formal ablation for these attempted feedback revisions.
+- Do not claim the current attempted feedback redesign as a new default.
+- The current evidence indicates that the present sampled-avoidance feedback family is not robust enough; continuing to tune trigger probabilities and strengths is unlikely to satisfy the ablation target.
+- Next serious redesign should avoid injecting a second stochastic structural operator into AE. More promising directions:
+  - derive deterministic local control-point corrections directly from violated sampled path segments;
+  - apply the correction only to the specific violated control points, not through the full AE operator;
+  - treat feedback as a bounded feasibility projection with explicit before/after acceptance;
+  - keep the base AE offspring path unchanged when the deterministic correction cannot reduce violation.
