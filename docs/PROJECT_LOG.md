@@ -514,3 +514,100 @@ Interpretation:
   - apply the correction only to the specific violated control points, not through the full AE operator;
   - treat feedback as a bounded feasibility projection with explicit before/after acceptance;
   - keep the base AE offspring path unchanged when the deterministic correction cannot reduce violation.
+
+## 2026-06-13 Deterministic Feedback-Correction Trial
+
+### Mechanism
+
+- Implemented and tested a deterministic local violation-correction variant outside the stochastic AE operator.
+- Full `COVE-AE` first generated the normal no-feedback AE offspring.
+- If the offspring was infeasible, a deterministic local correction was built from its own violated sampled path points:
+  - obstacle / NFZ: push the nearest interior control point out of the violated obstacle or cylinder;
+  - curvature: smooth the nearest control point around the worst turning-angle violation;
+  - altitude: pull the nearest control point toward the valid height band/reference height.
+- The correction was evaluated once and accepted only if it was Deb-better than the uncorrected offspring.
+- Sparse repair/reuse was also gated more tightly so it only supported the no-feasible phase.
+- This trial was treated as experimental and was not accepted as a new default unless the ablation evidence supported it.
+
+### Stepwise Checks
+
+Scene 2 small check:
+
+- Result folder: `results_cove_ae_det_feedback_scene2_small_20260613_223533`.
+- `nRuns = 5`, `popSize = 10`, `maxIter = 30`.
+- `COVE-AE-w/o-Feedback`: feasible rate `0.80`, mean best fitness `484.74`.
+- `COVE-AE`: feasible rate `1.00`, mean best fitness `370.76`.
+- Interpretation: passed the first Scene 2 smoke-scale check.
+
+Scene 2 medium check:
+
+- Result folder: `results_cove_ae_det_feedback_scene2_medium_20260613_223558`.
+- `nRuns = 10`, `popSize = 30`, `maxIter = 100`.
+- `COVE-AE-w/o-Feedback`: feasible rate `1.00`, mean best fitness `339.96`, runtime `2.52 s`.
+- `COVE-AE`: feasible rate `1.00`, mean best fitness `323.50`, runtime `2.93 s`.
+- Interpretation: passed the Scene 2 medium check; runtime ratio was about `1.16x`.
+
+Three-scene medium check before repair gating:
+
+- Result folder: `results_cove_ae_det_feedback_mid_ablation_20260613_223728`.
+- `nRuns = 10`, `popSize = 30`, `maxIter = 150`.
+- Average rank:
+  - `COVE-AE-w/o-RepairReuse`: `1.67`
+  - `COVE-AE`: `2.00`
+  - `COVE-AE-w/o-Feedback`: `2.33`
+- Interpretation: deterministic feedback improved the position relative to `w/o Feedback`, but full `COVE-AE` still lost to `w/o RepairReuse`.
+
+Three-scene medium check after repair gating:
+
+- Result folder: `results_cove_ae_det_feedback_repair_gated_mid_20260613_224843`.
+- `nRuns = 10`, `popSize = 30`, `maxIter = 150`.
+- Average rank:
+  - `COVE-AE`: `1.67`
+  - `COVE-AE-w/o-Feedback`: `2.00`
+  - `COVE-AE-w/o-RepairReuse`: `2.33`
+- Interpretation: passed the medium-scale gate and justified one formal ablation check.
+
+### Formal Check
+
+- Result folder: `results_cove_ae_det_feedback_formal_20260613_225758`.
+- `nRuns = 30`, `popSize = 30`, `maxIter = 300`.
+- Completed `450 / 450` run records.
+
+Aggregate ranking:
+
+| Algorithm | AverageRank |
+|---|---:|
+| COVE-AE-w/o-Feedback | 1.67 |
+| COVE-AE | 2.00 |
+| COVE-AE-w/o-RepairReuse | 2.33 |
+| COVE-AE-w/o-Init | 4.00 |
+| Base-AE | 5.00 |
+
+Key scene results:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanRuntime |
+|---:|---|---:|---:|---:|
+| 1 | COVE-AE-w/o-Feedback | 1.00 | 307.01 | 6.29 |
+| 1 | COVE-AE | 1.00 | 306.18 | 6.29 |
+| 2 | COVE-AE-w/o-Feedback | 1.00 | 324.17 | 6.52 |
+| 2 | COVE-AE | 1.00 | 325.23 | 6.55 |
+| 4 | COVE-AE-w/o-Feedback | 1.00 | 363.43 | 6.59 |
+| 4 | COVE-AE | 1.00 | 366.71 | 6.55 |
+
+Pairwise full-vs-feedback:
+
+| Scene | Comparator | FullMean | ComparatorMean | FullWins | FullLosses | SignrankP |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | COVE-AE-w/o-Feedback | 306.18 | 307.01 | 16 | 14 | 0.644 |
+| 2 | COVE-AE-w/o-Feedback | 325.23 | 324.17 | 14 | 16 | 0.766 |
+| 4 | COVE-AE-w/o-Feedback | 366.71 | 363.43 | 12 | 18 | 0.478 |
+
+### Decision
+
+- The deterministic correction design improved early and medium diagnostics but failed the formal ablation gate.
+- Full `COVE-AE` did not regain overall advantage under formal settings; `COVE-AE-w/o-Feedback` still had the best average rank.
+- Do not accept this deterministic feedback-correction implementation as the default COVE-AE mechanism.
+- Do not proceed to main comparison from this configuration.
+- Current evidence suggests that adding a post-offspring correction alone is insufficient; the paper strategy should either:
+  - further redesign feedback around a clearer constraint-state transition benefit, or
+  - demote violation feedback from a primary innovation point and rebuild the contribution structure around initialization, state transition, and efficiency-oriented sparse repair.
