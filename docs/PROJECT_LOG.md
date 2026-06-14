@@ -611,3 +611,114 @@ Pairwise full-vs-feedback:
 - Current evidence suggests that adding a post-offspring correction alone is insufficient; the paper strategy should either:
   - further redesign feedback around a clearer constraint-state transition benefit, or
   - demote violation feedback from a primary innovation point and rebuild the contribution structure around initialization, state transition, and efficiency-oriented sparse repair.
+
+## 2026-06-14 Mechanism Reframing and Medium Gate Check
+
+### Planning Update
+
+- Added a timestamped plan section to `PROJECT_PLAN.md` based on the advisor discussion and algorithm-improvement outline.
+- Paper direction for the next phase is algorithm improvement first, with UAV path planning as the strong-constrained application validation.
+- The old FAEAE four-module narrative remains rejected.
+- The intended COVE-AE contribution structure is reframed around:
+  - constraint-state recognition and search-stage transition;
+  - constraint-state-guided initialization;
+  - state-adaptive feasibility preservation.
+- Violation feedback is no longer treated as a strong standalone innovation. It should either be demoted to an accepted auxiliary response or removed from the core contribution set.
+
+### Code Changes
+
+- Disabled the old sampled-avoidance feedback step by default:
+  - `params.cove.feedback.directStepStrength = 0.0`;
+  - `applyOperator_COVE_AE.m` no longer computes the expensive feedback step unless this value is explicitly positive.
+- Removed violation-mask noise shaping from the default no-direct-feedback path, so full `COVE-AE` is not continuously perturbed after feasibility is reached.
+- Added a bounded state-adaptive response candidate in `optimizer_COVE_AE_uav.m`:
+  - enabled only when `useViolationFeedback = true`;
+  - only active before a feasible best solution has been found;
+  - capped by `responseMaxPerIter`;
+  - only evaluated for infeasible near-feasible offspring;
+  - accepted only when Deb-better than the uncorrected offspring.
+- Added `feedbackResponseCount` and `feedbackResponseSuccessCount` to run records and diagnostic summaries.
+
+### Medium Gate Configuration
+
+- Scenes: `[1, 2, 4]`.
+- Algorithms:
+  - `Base-AE`
+  - `COVE-AE-w/o-Init`
+  - `COVE-AE-w/o-Feedback`
+  - `COVE-AE-w/o-RepairReuse`
+  - `COVE-AE`
+- `nRuns = 10`.
+- `popSize = 30`.
+- `maxIter = 150`.
+- `baseSeed = 20260614`.
+
+### Gate 1: Overactive Response Trial
+
+- Result folder: `results_cove_ae_restructure_gate_20260614_182048`.
+- This first implementation allowed the response to remain active beyond the no-feasible phase.
+- Average rank:
+
+| Algorithm | AverageRank |
+|---|---:|
+| COVE-AE-w/o-Feedback | 1.33 |
+| COVE-AE-w/o-RepairReuse | 2.33 |
+| COVE-AE | 2.33 |
+| COVE-AE-w/o-Init | 4.00 |
+| Base-AE | 5.00 |
+
+- Decision: failed the gate. The response triggered too often and harmed Scene 1/4 quality.
+
+### Gate 2: Formation-Only Response Trial
+
+- Result folder: `results_cove_ae_restructure_gate2_20260614_183002`.
+- This version restricts the response to the phase before a feasible best solution is found.
+- Average rank:
+
+| Algorithm | AverageRank |
+|---|---:|
+| COVE-AE-w/o-Feedback | 1.33 |
+| COVE-AE | 1.67 |
+| COVE-AE-w/o-RepairReuse | 3.00 |
+| COVE-AE-w/o-Init | 4.00 |
+| Base-AE | 5.00 |
+
+Key aggregate results:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanRuntime | MeanNEvals | MeanRepairCount | MeanFeedbackResponseCount |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | COVE-AE-w/o-Feedback | 1.00 | 306.62 | 2.60 | 4590.4 | 60.4 | 0.0 |
+| 1 | COVE-AE | 1.00 | 305.89 | 2.66 | 4629.7 | 90.6 | 9.1 |
+| 2 | COVE-AE-w/o-Feedback | 1.00 | 322.61 | 2.84 | 4646.5 | 116.5 | 0.0 |
+| 2 | COVE-AE | 1.00 | 325.19 | 2.85 | 4676.2 | 114.4 | 31.8 |
+| 4 | COVE-AE-w/o-Feedback | 1.00 | 376.80 | 2.61 | 4560.0 | 30.0 | 0.0 |
+| 4 | COVE-AE | 1.00 | 381.76 | 2.58 | 4545.2 | 15.2 | 0.0 |
+
+Pairwise full vs `COVE-AE-w/o-Feedback` by run:
+
+| Scene | FullMean | W/oFeedbackMean | FullWins | FullLosses |
+|---:|---:|---:|---:|---:|
+| 1 | 305.89 | 306.62 | 6 | 4 |
+| 2 | 325.19 | 322.61 | 4 | 6 |
+| 4 | 381.76 | 376.80 | 3 | 7 |
+
+### Interpretation
+
+- Constraint-state initialization remains the strongest supported mechanism:
+  - Scene 4 drops from full feasibility to `0.40` feasible rate without initialization in Gate 2.
+  - Scene 2 also becomes less stable without initialization (`0.70` feasible rate).
+- Formation-only response reduces the damage and runtime overhead relative to the overactive response, but it still does not establish a full-method advantage.
+- Full `COVE-AE` is better than `COVE-AE-w/o-Feedback` only on Scene 1, and loses on Scene 2 and Scene 4.
+- Sparse repair/reuse remains mixed:
+  - Full beats `COVE-AE-w/o-RepairReuse` on average rank in Gate 2.
+  - However, this does not solve the main full-vs-feedback problem.
+
+### Decision
+
+- The medium gate still does not support the current full COVE-AE as a stable algorithm-innovation package.
+- Do not proceed to formal ablation, main comparison, parameter sensitivity, CEC, or map redesign from this configuration.
+- The evidence is now sufficient to make a project-level decision:
+  - keep constraint-state initialization as a core contribution;
+  - keep state identification as the framing mechanism;
+  - treat repair/reuse as an auxiliary efficiency/feasibility support;
+  - remove or substantially replace violation feedback as a named core innovation before continuing the algorithm-innovation route.

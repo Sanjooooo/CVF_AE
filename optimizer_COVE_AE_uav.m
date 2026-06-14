@@ -28,6 +28,8 @@ tStart = tic;
 nEvals = initInfo.nEvals;
 repairCount = initInfo.repairCount;
 repairSuccessCount = initInfo.repairSuccessCount;
+feedbackResponseCount = 0;
+feedbackResponseSuccessCount = 0;
 
 [bestFit, bestX, bestDetail] = localExtractBest(pop, fit, detail);
 
@@ -59,6 +61,7 @@ for t = 1:params.maxIter
     elitePool = pop(order(1:eliteNum), :);
     repairElite = order(1:max(1, round(params.cove.repair.eliteFrac * params.popSize)));
     repairUsedThisIter = 0;
+    feedbackResponseUsedThisIter = 0;
 
     for i = 1:params.popSize
         fold = fit(i);
@@ -76,6 +79,22 @@ for t = 1:params.maxIter
         [fnew, dnew] = objFun(Xnew);
         nEvals = nEvals + 1;
         [firstFeasibleIter, firstFeasibleTime] = localUpdateFirstFeasible(dnew, t, tStart, firstFeasibleIter, firstFeasibleTime);
+
+        if localShouldConstraintResponse(dnew, state, bestDetail, feedbackResponseUsedThisIter, params, algCfg)
+            Xresp = localConstraintResponseCandidate(Xnew, bestX, refX, state, feedback, memory, params);
+            [fresp, dresp] = objFun(Xresp);
+            nEvals = nEvals + 1;
+            feedbackResponseCount = feedbackResponseCount + 1;
+            feedbackResponseUsedThisIter = feedbackResponseUsedThisIter + 1;
+            [firstFeasibleIter, firstFeasibleTime] = localUpdateFirstFeasible(dresp, t, tStart, firstFeasibleIter, firstFeasibleTime);
+
+            if debBetter(fresp, dresp, fnew, dnew)
+                Xnew = Xresp;
+                fnew = fresp;
+                dnew = dresp;
+                feedbackResponseSuccessCount = feedbackResponseSuccessCount + 1;
+            end
+        end
 
         if localShouldSparseRepair(i, repairElite, dnew, state, repairUsedThisIter, t, params, algCfg)
             xBeforeRepair = Xnew;
@@ -127,6 +146,8 @@ result.firstFeasibleIter = firstFeasibleIter;
 result.firstFeasibleTime = firstFeasibleTime;
 result.repairCount = repairCount;
 result.repairSuccessCount = repairSuccessCount;
+result.feedbackResponseCount = feedbackResponseCount;
+result.feedbackResponseSuccessCount = feedbackResponseSuccessCount;
 result.feasibleRatioHistory = feasibleRatioHistory;
 result.meanViolationHistory = meanViolationHistory;
 result.diversityHistory = diversityHistory;
@@ -173,6 +194,14 @@ params.cove.feedback.riskActivation = 0.24;
 params.cove.feedback.riskStepScale = 2.20;
 params.cove.feedback.smoothGamma = 0.32;
 params.cove.feedback.altitudeGain = 0.35;
+params.cove.feedback.directStepStrength = 0.0;
+params.cove.feedback.responseMaxPerIter = max(1, round(0.06 * params.popSize));
+params.cove.feedback.responseMaxViolation = 25;
+params.cove.feedback.responseAlphaFormation = 0.34;
+params.cove.feedback.responseAlphaPreservation = 0.24;
+params.cove.feedback.responseAlphaRecovery = 0.20;
+params.cove.feedback.responseAlphaRefinement = 0.00;
+params.cove.feedback.responseReuseScale = 0.15;
 end
 
 function params = localApplyAlgorithmConfig(params, algCfg)
@@ -264,6 +293,76 @@ if isempty(step) || any(~isfinite(step))
 end
 alpha = memory.repairAlpha;
 memory.repairStep = (1 - alpha) * memory.repairStep + alpha * step;
+end
+
+function tf = localShouldConstraintResponse(dnew, state, bestDetail, responseUsedThisIter, params, algCfg)
+tf = false;
+if ~localGetFlag(algCfg, 'useViolationFeedback', true)
+    return;
+end
+if responseUsedThisIter >= params.cove.feedback.responseMaxPerIter
+    return;
+end
+if isstruct(bestDetail) && isfield(bestDetail, 'isFeasible') && bestDetail.isFeasible
+    return;
+end
+if ~isstruct(dnew) || ~isfield(dnew, 'isFeasible') || dnew.isFeasible
+    return;
+end
+if ~isfield(dnew, 'V') || ~isfinite(dnew.V) || dnew.V > params.cove.feedback.responseMaxViolation
+    return;
+end
+tf = state.id == 1 || state.id == 2 || state.id == 4;
+end
+
+function Xresp = localConstraintResponseCandidate(Xnew, bestX, refX, state, feedback, memory, params)
+alpha = localResponseAlpha(state, params);
+if alpha <= 0
+    Xresp = Xnew;
+    return;
+end
+
+if state.hasFeasible && ~isempty(bestX)
+    anchor = bestX(:)';
+elseif ~isempty(refX)
+    anchor = refX(:)';
+else
+    anchor = Xnew;
+end
+
+reuseStep = zeros(1, params.dim);
+if isstruct(memory) && isfield(memory, 'repairStep') && numel(memory.repairStep) == params.dim
+    reuseStep = memory.repairStep(:)';
+end
+
+Xresp = (1 - alpha) * Xnew + alpha * anchor + params.cove.feedback.responseReuseScale * reuseStep;
+if isstruct(feedback) && isfield(feedback, 'dominantType') && strcmp(feedback.dominantType, 'curvature')
+    Xresp = localSmoothControlVector(Xresp, params, params.cove.feedback.smoothGamma);
+end
+Xresp = boundSolution(Xresp, params);
+end
+
+function alpha = localResponseAlpha(state, params)
+switch state.id
+    case 1
+        alpha = params.cove.feedback.responseAlphaFormation;
+    case 2
+        alpha = params.cove.feedback.responseAlphaPreservation;
+    case 4
+        alpha = params.cove.feedback.responseAlphaRecovery;
+    otherwise
+        alpha = params.cove.feedback.responseAlphaRefinement;
+end
+end
+
+function X = localSmoothControlVector(X, params, gamma)
+ctrl = decodeSolution(X, params);
+for k = 3:size(ctrl, 1)-2
+    target = 0.5 * (ctrl(k-1, :) + ctrl(k+1, :));
+    ctrl(k, :) = ctrl(k, :) + gamma * (target - ctrl(k, :));
+end
+X = encodeControlPoints(ctrl);
+X = boundSolution(X, params);
 end
 
 function [iter, tFeas] = localInitialFeasible(detail, tStart)

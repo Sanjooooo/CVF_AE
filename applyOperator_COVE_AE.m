@@ -33,11 +33,19 @@ else
     dirRef = refX(:)' - x;
 end
 
-bias = localViolationMask(feedback, params);
-noise = (2 * rand(1, D) - 1) .* span .* bias;
 reuseStep = localReuseStep(memory, D);
 fbCfg = localFeedbackParams(params);
-feedbackStep = localFeedbackStep(x, map, params, feedback, fbCfg);
+if fbCfg.directStepStrength > 0
+    bias = localViolationMask(feedback, params);
+else
+    bias = ones(1, D);
+end
+noise = (2 * rand(1, D) - 1) .* span .* bias;
+if fbCfg.directStepStrength > 0
+    feedbackStep = localFeedbackStep(x, map, params, feedback, fbCfg);
+else
+    feedbackStep = zeros(1, D);
+end
 
 switch state.id
     case 1
@@ -90,7 +98,7 @@ if state.id == 1 && ~isempty(refX)
 end
 Xnew = (1 - anchor) * Xnew + anchor * xElite;
 
-if strcmp(feedback.dominantType, 'curvature')
+if fbCfg.directStepStrength > 0 && strcmp(feedback.dominantType, 'curvature')
     Xnew = localSmoothControlVector(Xnew, params, 0.5 * fbCfg.smoothGamma);
 end
 
@@ -139,6 +147,7 @@ cfg.riskActivation = 0.24;
 cfg.riskStepScale = 2.20;
 cfg.smoothGamma = 0.32;
 cfg.altitudeGain = 0.35;
+cfg.directStepStrength = 0.0;
 
 if isfield(params, 'cove') && isfield(params.cove, 'feedback')
     s = params.cove.feedback;
@@ -170,7 +179,7 @@ if altWeight > 0
     step = step + altWeight * localAltitudeStep(X, params, cfg);
 end
 
-step = cfg.strength * step;
+step = cfg.directStepStrength * cfg.strength * step;
 limit = cfg.avoidanceLimit * (params.ub(:)' - params.lb(:)');
 step = min(max(step, -limit), limit);
 end
