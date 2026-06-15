@@ -5,7 +5,7 @@ function summary = run_uav_ablation_lite_v2_batch(cfg)
 % Ablation groups:
 %   1) Base-AE
 %   2) COVE-AE-w/o-Init
-%   3) COVE-AE-w/o-Feedback
+%   3) COVE-AE-w/o-StateTransition
 %   4) COVE-AE-w/o-RepairReuse
 %   5) COVE-AE
 %
@@ -25,7 +25,7 @@ if ~isfield(cfg, 'sceneIds') || isempty(cfg.sceneIds)
     cfg.sceneIds = [1, 2, 4];
 end
 if ~isfield(cfg, 'algorithms') || isempty(cfg.algorithms)
-    cfg.algorithms = {'Base-AE', 'COVE-AE-w/o-Init', 'COVE-AE-w/o-Feedback', 'COVE-AE-w/o-RepairReuse', 'COVE-AE'};
+    cfg.algorithms = {'Base-AE', 'COVE-AE-w/o-Init', 'COVE-AE-w/o-StateTransition', 'COVE-AE-w/o-RepairReuse', 'COVE-AE'};
 end
 if ~isfield(cfg, 'nRuns') || isempty(cfg.nRuns)
     cfg.nRuns = 30;
@@ -213,22 +213,33 @@ switch upper(strtrim(algName))
 
     case {'COVE-AE-W/O-INIT', 'COVE_AE_W/O_INIT'}
         algCfg.useConstraintStateInit = false;
-        algCfg.useViolationFeedback = true;
+        algCfg.useStateTransition = true;
+        algCfg.useViolationFeedback = false;
         algCfg.useSparseRepairReuse = true;
 
     case {'COVE-AE-W/O-FEEDBACK', 'COVE_AE_W/O_FEEDBACK'}
         algCfg.useConstraintStateInit = true;
+        algCfg.useStateTransition = true;
+        algCfg.useViolationFeedback = false;
+        algCfg.useSparseRepairReuse = true;
+
+    case {'COVE-AE-W/O-STATETRANSITION', 'COVE_AE_W/O_STATETRANSITION', ...
+          'COVE-AE-W/O-STATE-TRANSITION', 'COVE_AE_W/O_STATE_TRANSITION'}
+        algCfg.useConstraintStateInit = true;
+        algCfg.useStateTransition = false;
         algCfg.useViolationFeedback = false;
         algCfg.useSparseRepairReuse = true;
 
     case {'COVE-AE-W/O-REPAIRREUSE', 'COVE_AE_W/O_REPAIRREUSE'}
         algCfg.useConstraintStateInit = true;
-        algCfg.useViolationFeedback = true;
+        algCfg.useStateTransition = true;
+        algCfg.useViolationFeedback = false;
         algCfg.useSparseRepairReuse = false;
 
     case {'COVE-AE', 'COVE_AE', 'COVEAE'}
         algCfg.useConstraintStateInit = true;
-        algCfg.useViolationFeedback = true;
+        algCfg.useStateTransition = true;
+        algCfg.useViolationFeedback = false;
         algCfg.useSparseRepairReuse = true;
 
     case 'LEGACY-FAEAE'

@@ -66,7 +66,8 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.referenceInitRatio = 0.7;
 
             algCfg.useConstraintStateInit = true;
-            algCfg.useViolationFeedback = true;
+            algCfg.useStateTransition = true;
+            algCfg.useViolationFeedback = false;
             algCfg.useSparseRepairReuse = true;
 
         case 'FAEAE'

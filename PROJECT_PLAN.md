@@ -14,9 +14,9 @@
 
 建议采用短名：
 
-- COVE-AE: Constraint-state and Violation-feedback Evolution with an Alpha Evolution backbone
+- COVE-AE: Constraint-Oriented Viability Evolution with an Alpha Evolution backbone
 
-该名称强调两个核心机制：constraint-state guidance 和 violation feedback，同时保留 AE 作为搜索骨架。当前项目文件夹命名为 `COVE_AE_matlab`。
+该名称强调两个核心机制：constraint-state guidance 和 viability preservation，同时保留 AE 作为搜索骨架。当前项目文件夹命名为 `COVE_AE_matlab`。
 
 ## 3. 与原 FAEAE 的关系
 
@@ -84,11 +84,11 @@
 - Quality refinement：可行率稳定，重点降低路径成本；
 - Stagnation recovery：改进停滞，进行轻量结构化恢复。
 
-### 创新点 2：违反反馈驱动的轻量演化算子
+### 创新点 2：约束状态转移驱动的轻量演化算子
 
-原 UCB-AOS 不再作为独立创新点。新的算子选择应由约束状态和违反类型共同驱动。
+原 UCB-AOS 不再作为独立创新点。新的算子选择应由约束状态驱动，并服务于 feasibility formation、feasibility preservation、quality refinement 和 stagnation recovery 之间的搜索阶段转移。
 
-违反类型可包括：
+违反类型统计可作为诊断信息保留，但不再作为默认 proposed method 的强扰动核心。诊断类型可包括：
 
 - 障碍物冲突；
 - 禁飞区冲突；
@@ -97,7 +97,7 @@
 - 转角或平滑性违反；
 - 路径长度或绕行成本过高。
 
-算子不应只在决策向量层面扰动，而应尽量引入路径结构信息，例如局部绕障、风险远离、曲率释放、参考走廊收缩等。
+算子不应表现为多个独立模块的机械叠加，而应体现不同约束状态下搜索重心的变化，例如可行性形成阶段更偏向参考走廊和精英收缩，可行性保持阶段更偏向近可行域搜索，质量优化阶段减少额外修复和强扰动。
 
 ### 创新点 3：面向效率的稀疏修复与经验复用机制
 
@@ -182,7 +182,7 @@
 
 - Base-AE 或 Legacy-FAEAE；
 - Proposed-w/o constraint-state initialization；
-- Proposed-w/o violation feedback；
+- Proposed-w/o state transition；
 - Proposed-w/o sparse repair and reuse；
 - Full proposed method。
 
@@ -260,7 +260,7 @@
 - 新建约束状态识别函数；
 - 新建违反类型统计函数；
 - 重构 FAEAE optimizer 为 state-driven 主循环；
-- 设计轻量 violation-feedback operator；
+- 设计轻量 state-transition operator；
 - 重构 sparse repair，减少额外评估；
 - 增加运行时间、首次可行解、修复次数、状态历史记录。
 
@@ -364,3 +364,45 @@
 4. 根据证据给出是否继续算法创新路线的判断。
 
 本阶段不开展正式消融、主对比、参数敏感性、CEC 或新增地图设计。
+
+## 15. 2026-06-15 14:51:59 +08:00 Proposed Method Reset
+
+### 15.1 决策
+
+上一阶段两轮中等门槛实验已经提供足够证据：violation feedback 不能继续作为 COVE-AE 的命名核心创新点。当前更稳的候选主算法是原 `COVE-AE-w/o-Feedback` 逻辑，即：
+
+- 保留 constraint-state initialization；
+- 保留 constraint-state transition；
+- 保留 sparse repair/reuse；
+- 默认关闭 violation-feedback direct step 和 response candidate。
+
+因此，后续 `COVE-AE` 默认配置调整为 no-feedback proposed method。`useViolationFeedback` 仅作为历史兼容和后续研究开关保留，不再作为默认 proposed 的组成部分。
+
+### 15.2 新消融结构
+
+新的中等门槛消融不再使用 `COVE-AE-w/o-Feedback` 作为核心对照，而改为：
+
+- `Base-AE`
+- `COVE-AE-w/o-Init`
+- `COVE-AE-w/o-StateTransition`
+- `COVE-AE-w/o-RepairReuse`
+- `COVE-AE`
+
+其中 `COVE-AE-w/o-StateTransition` 使用固定的静态可行性保持状态，保留初始化和修复复用，但不允许根据种群约束状态在 formation / preservation / refinement / recovery 之间动态切换。
+
+### 15.3 判断标准
+
+新 proposed method 进入后续正式实验前必须先通过中等规模门槛实验：
+
+- scenes: `[1, 2, 4]`
+- `nRuns = 10`
+- `popSize = 30`
+- `maxIter = 150`
+
+通过标准：
+
+- `COVE-AE` 平均排名应优于三个机制删减版本；
+- `COVE-AE-w/o-Init` 应继续显著弱于 proposed，证明初始化贡献；
+- `COVE-AE-w/o-StateTransition` 不应稳定优于 proposed，否则状态转移创新不成立；
+- `COVE-AE-w/o-RepairReuse` 若与 proposed 接近，应将 repair/reuse 写成辅助效率机制，而不是主要性能创新；
+- 若 proposed 仍无法优于删减版本，则应暂停算法创新路线，转向应用/建模型论文或进一步重定义算法贡献。

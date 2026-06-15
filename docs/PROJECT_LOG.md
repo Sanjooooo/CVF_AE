@@ -722,3 +722,108 @@ Pairwise full vs `COVE-AE-w/o-Feedback` by run:
   - keep state identification as the framing mechanism;
   - treat repair/reuse as an auxiliary efficiency/feasibility support;
   - remove or substantially replace violation feedback as a named core innovation before continuing the algorithm-innovation route.
+
+## 2026-06-15 Proposed Method Reset and New Ablation Gate
+
+### Mechanism Reset
+
+- Promoted the prior no-feedback logic to the new default `COVE-AE` proposed method.
+- Updated the working algorithm meaning in `PROJECT_PLAN.md`:
+  - `COVE-AE`: Constraint-Oriented Viability Evolution with an Alpha Evolution backbone.
+- `useViolationFeedback` is retained only as a historical/experimental switch and is no longer enabled by default for `COVE-AE`.
+- Added `useStateTransition` as an explicit ablation switch.
+- Added `COVE-AE-w/o-StateTransition`:
+  - keeps constraint-state initialization;
+  - keeps sparse repair/reuse;
+  - replaces dynamic formation / preservation / refinement / recovery transitions with a fixed `StaticFeasibilityPreservation` state.
+- Updated the default ablation set to:
+  - `Base-AE`
+  - `COVE-AE-w/o-Init`
+  - `COVE-AE-w/o-StateTransition`
+  - `COVE-AE-w/o-RepairReuse`
+  - `COVE-AE`
+- Added `StateStaticFrac` to diagnostic summaries to verify static-state ablations.
+
+### Checks
+
+- MATLAB Code Analyzer passed for:
+  - `optimizer_COVE_AE_uav.m`
+  - `run_uav_ablation_lite_v2_batch.m`
+  - `run_cove_ae_ablation_diagnostics.m`
+  - `summarize_cove_ae_diagnostics.m`
+- Remaining analyzer notes are only old `datestr/now` and preallocation style hints in batch scripts.
+- Smoke check passed:
+  - Result folder: `results_cove_ae_reset_smoke_20260615_145259`
+  - Default ablation list dispatches correctly.
+  - `COVE-AE-w/o-StateTransition` reports `MeanStateStaticFrac = 1`.
+  - Default `COVE-AE` reports zero feedback-response activity.
+
+### Medium Gate Configuration
+
+- Result folder: `results_cove_ae_reset_gate_20260615_145324`.
+- Scenes: `[1, 2, 4]`.
+- `nRuns = 10`.
+- `popSize = 30`.
+- `maxIter = 150`.
+- `baseSeed = 20260615`.
+
+Average rank:
+
+| Algorithm | AverageRank |
+|---|---:|
+| COVE-AE | 1.67 |
+| COVE-AE-w/o-StateTransition | 2.33 |
+| COVE-AE-w/o-RepairReuse | 2.33 |
+| COVE-AE-w/o-Init | 3.67 |
+| Base-AE | 5.00 |
+
+Key aggregate results:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanRuntime | MeanNEvals | MeanRepairCount | MeanStateStaticFrac |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | COVE-AE-w/o-StateTransition | 1.00 | 299.03 | 4.28 | 5003.9 | 473.9 | 1.00 |
+| 1 | COVE-AE-w/o-RepairReuse | 1.00 | 307.86 | 2.84 | 4530.0 | 0.0 | 0.00 |
+| 1 | COVE-AE | 1.00 | 307.96 | 3.03 | 4597.3 | 67.3 | 0.00 |
+| 2 | COVE-AE-w/o-StateTransition | 0.80 | 536.80 | 4.03 | 4852.9 | 322.9 | 1.00 |
+| 2 | COVE-AE-w/o-RepairReuse | 1.00 | 327.16 | 2.88 | 4530.0 | 0.0 | 0.00 |
+| 2 | COVE-AE | 1.00 | 321.23 | 3.23 | 4628.4 | 98.4 | 0.00 |
+| 4 | COVE-AE-w/o-StateTransition | 1.00 | 379.98 | 3.18 | 4588.7 | 58.7 | 1.00 |
+| 4 | COVE-AE-w/o-RepairReuse | 1.00 | 393.24 | 2.90 | 4530.0 | 0.0 | 0.00 |
+| 4 | COVE-AE | 1.00 | 377.67 | 3.00 | 4547.7 | 17.7 | 0.00 |
+
+Pairwise full `COVE-AE` vs mechanism ablations:
+
+| Scene | Comparator | FullMean | ComparatorMean | FullWins | FullLosses | SignrankP |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | COVE-AE-w/o-Init | 307.96 | 344.57 | 10 | 0 | 0.00195 |
+| 1 | COVE-AE-w/o-StateTransition | 307.96 | 299.03 | 0 | 10 | 0.00195 |
+| 1 | COVE-AE-w/o-RepairReuse | 307.96 | 307.86 | 5 | 5 | 0.92188 |
+| 2 | COVE-AE-w/o-Init | 321.23 | 532.12 | 8 | 2 | 0.03711 |
+| 2 | COVE-AE-w/o-StateTransition | 321.23 | 536.80 | 7 | 3 | 0.03711 |
+| 2 | COVE-AE-w/o-RepairReuse | 321.23 | 327.16 | 7 | 3 | 0.19336 |
+| 4 | COVE-AE-w/o-Init | 377.67 | 808.87 | 5 | 5 | 0.23242 |
+| 4 | COVE-AE-w/o-StateTransition | 377.67 | 379.98 | 5 | 5 | 0.84570 |
+| 4 | COVE-AE-w/o-RepairReuse | 377.67 | 393.24 | 7 | 3 | 0.04883 |
+
+### Interpretation
+
+- The reset proposed method passes the medium gate at the average-rank level.
+- Constraint-state initialization remains strongly supported:
+  - removing it reduces Scene 2 feasible rate to `0.80` and Scene 4 feasible rate to `0.50`;
+  - full significantly beats w/o init in Scene 1 and Scene 2.
+- State transition is useful for harder feasibility formation:
+  - full beats static transition in Scene 2 and preserves full feasibility (`1.00` vs `0.80`);
+  - Scene 1 static transition is better in mean fitness but with much higher repair activity and runtime, so state transition should be framed as balancing feasibility, quality, and efficiency rather than dominating every easy scene.
+- Sparse repair/reuse remains auxiliary:
+  - full significantly beats w/o repair/reuse only in Scene 4 in this gate;
+  - Scene 1 is tied and Scene 2 trends positive but not significant.
+
+### Decision
+
+- The current `COVE-AE` reset is the best-supported algorithm version so far.
+- It is reasonable to continue the algorithm-innovation route with three contributions:
+  - constraint-state recognition and transition;
+  - constraint-state-guided initialization;
+  - lightweight sparse feasibility preservation.
+- Do not reintroduce violation feedback as a named core contribution.
+- Before formal experiments, refine the wording and maybe slightly limit repair activity in static-state ablations, because the static variant achieved strong Scene 1 quality at high repair cost.

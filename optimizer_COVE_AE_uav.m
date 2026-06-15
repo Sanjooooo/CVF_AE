@@ -46,7 +46,12 @@ diversityHistory = nan(params.maxIter, 1);
 memory = struct('repairStep', zeros(1, params.dim), 'repairAlpha', params.cove.repair.memoryAlpha);
 
 for t = 1:params.maxIter
-    state = identifyConstraintState(pop, fit, detail, bestHist, t, params);
+    observedState = identifyConstraintState(pop, fit, detail, bestHist, t, params);
+    if localGetFlag(algCfg, 'useStateTransition', true)
+        state = observedState;
+    else
+        state = localStaticState(observedState);
+    end
     feedback = analyzeViolationFeedback(detail, params);
 
     stateHistory{t} = state.name;
@@ -293,6 +298,13 @@ if isempty(step) || any(~isfinite(step))
 end
 alpha = memory.repairAlpha;
 memory.repairStep = (1 - alpha) * memory.repairStep + alpha * step;
+end
+
+function state = localStaticState(observedState)
+state = observedState;
+state.name = 'StaticFeasibilityPreservation';
+state.id = 2;
+state.isStagnant = false;
 end
 
 function tf = localShouldConstraintResponse(dnew, state, bestDetail, responseUsedThisIter, params, algCfg)
