@@ -1,11 +1,11 @@
-# 路线 B 待办清单：Constraint Viability Field 强创新路线
+# 路线 B 待办清单：CVF-AE 强创新路线
 
 创建时间：2026-06-17 15:21:25 +08:00
 
 ## 0. 当前状态
 
-- [x] 明确路线 B 总主题：低开销约束可行性场驱动进化搜索。
-- [x] 明确路线 A 作为 fallback，不推倒已有项目。
+- [x] 明确路线 B 总主题：CVF-AE 低开销约束可行性场驱动进化搜索。
+- [x] 明确算法统一命名为 `CVF-AE`。
 - [x] 明确不再以 violation feedback 作为核心创新。
 - [ ] 完成 CVF 数学机制推导。
 - [ ] 完成 CVF 最小代码实现。
@@ -98,13 +98,12 @@
 ### 2.4 配置入口
 
 - [ ] 修改或扩展 `getUAVAlgorithmConfig.m`。
-- [ ] 添加 `COVE-AE-CVF` 或 `CVF-AE`。
+- [ ] 添加 `CVF-AE`。
 - [ ] 添加 ablation configs：
-  - [ ] `COVE-AE-CVF-w/o-Init`；
-  - [ ] `COVE-AE-CVF-w/o-StateAdaptiveCVF`；
-  - [ ] `COVE-AE-CVF-w/o-SparsePreservation`；
-  - [ ] `COVE-AE-CVF-w/o-CVF`。
-- [ ] 保留 `COVE-AE-reset` 或当前 `COVE-AE` 作为 baseline。
+  - [ ] `CVF-AE-w/o-Init`；
+  - [ ] `CVF-AE-w/o-StateAdaptiveCVF`；
+  - [ ] `CVF-AE-w/o-SparsePreservation`；
+  - [ ] `CVF-AE-w/o-CVF`。
 
 ### 2.5 诊断汇总
 
@@ -125,10 +124,10 @@
 
 - [ ] scenes: `[2, 4]`
 - [ ] algorithms:
-  - [ ] `COVE-AE-reset`
-  - [ ] `COVE-AE-CVF`
-  - [ ] `COVE-AE-CVF-w/o-CVF`
-  - [ ] `COVE-AE-CVF-w/o-Init`
+  - [ ] `Base-AE`
+  - [ ] `CVF-AE`
+  - [ ] `CVF-AE-w/o-CVF`
+  - [ ] `CVF-AE-w/o-Init`
 - [ ] `nRuns = 5`
 - [ ] `popSize = 20`
 - [ ] `maxIter = 80`
@@ -148,10 +147,10 @@
 
 ### 3.3 通过条件
 
-- [ ] CVF 不明显慢于 reset。
+- [ ] `CVF-AE` 不依赖大量额外 evaluation 或 runtime 换取表面收益。
 - [ ] CVF 在 Scene 2 或 Scene 4 至少一个场景改善 feasibility / first feasible iter / mean best fitness。
 - [ ] CVF 不依赖大量额外 evaluations。
-- [ ] 若 CVF 两个场景均明显变差，停止路线 B。
+- [ ] 若 CVF 两个场景均明显变差，停止当前 CVF 机制设计。
 
 ## 4. 中等门槛实验
 
@@ -160,19 +159,19 @@
 - [ ] scenes: `[1, 2, 4]`
 - [ ] algorithms:
   - [ ] `Base-AE`
-  - [ ] `COVE-AE-reset`
-  - [ ] `COVE-AE-CVF-w/o-Init`
-  - [ ] `COVE-AE-CVF-w/o-StateAdaptiveCVF`
-  - [ ] `COVE-AE-CVF-w/o-SparsePreservation`
-  - [ ] `COVE-AE-CVF`
+  - [ ] `CVF-AE-w/o-Init`
+  - [ ] `CVF-AE-w/o-StateAdaptiveCVF`
+  - [ ] `CVF-AE-w/o-SparsePreservation`
+  - [ ] `CVF-AE-w/o-CVF`
+  - [ ] `CVF-AE`
 - [ ] `nRuns = 10`
 - [ ] `popSize = 30`
 - [ ] `maxIter = 150`
 
 ### 4.2 通过条件
 
-- [ ] `COVE-AE-CVF` 平均排名第一或接近第一。
-- [ ] `COVE-AE-CVF` 相比 `COVE-AE-reset` 在 Scene 2/4 有明确收益。
+- [ ] `CVF-AE` 平均排名第一或接近第一。
+- [ ] `CVF-AE` 相比删减版本在 Scene 2/4 有明确收益。
 - [ ] `w/o-StateAdaptiveCVF` 不稳定优于 full。
 - [ ] `w/o-CVF` 不稳定优于 full。
 - [ ] runtime 增加可控。
@@ -208,10 +207,10 @@
   - [ ] 复杂动态障碍暂未考虑；
   - [ ] 多无人机协同为未来工作。
 
-## 7. 暂停与回退
+## 7. 暂停条件
 
 - [ ] 若小规模门槛失败，记录失败原因。
 - [ ] 若中等门槛失败，停止路线 B，不进入正式实验。
 - [ ] 若 CVF 只通过 Scene 1，不作为强创新。
 - [ ] 若 CVF 明显增加 runtime，必须弱化低开销声明。
-- [ ] 若路线 B 失败，回退路线 A reset COVE-AE。
+- [ ] 若 CVF 机制连续失败，重新设计 CVF 公式或暂停项目，不将失败机制写入论文核心贡献。

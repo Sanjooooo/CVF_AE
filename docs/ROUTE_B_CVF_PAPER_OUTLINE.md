@@ -1,4 +1,4 @@
-# 路线 B 拟定论文目录：结合算法改进型论文结构
+# 路线 B 拟定论文目录：CVF-AE 强创新算法论文结构
 
 创建时间：2026-06-17 15:21:25 +08:00
 
@@ -114,7 +114,7 @@
   - 缺少可行性方向；
   - 对强约束状态变化响应不足。
 
-## 3. 所提 COVE-AE-CVF 算法
+## 3. 所提 CVF-AE 算法
 
 对应师兄目录中的“改进策略”章节，是全文核心。
 
@@ -124,7 +124,7 @@
 - 输入输出；
 - 三个核心机制；
 - 与原 AE 的区别；
-- 与旧 COVE-AE reset 的关系。
+- CVF-AE 的整体搜索流程。
 
 ### 3.2 约束状态识别
 
@@ -236,7 +236,7 @@ X_i(t+1) = X_i(t)
 可放一个完整伪代码：
 
 ```text
-Algorithm 1: COVE-AE-CVF
+Algorithm 1: CVF-AE
 Input: map, start, goal, population size, max iteration
 Output: best feasible UAV path
 1. Generate state-guided initial population
@@ -292,11 +292,11 @@ Output: best feasible UAV path
 建议版本：
 
 - `Base-AE`
-- `COVE-AE-reset`
-- `COVE-AE-CVF-w/o-Init`
-- `COVE-AE-CVF-w/o-StateAdaptiveCVF`
-- `COVE-AE-CVF-w/o-SparsePreservation`
-- `COVE-AE-CVF`
+- `CVF-AE-w/o-Init`
+- `CVF-AE-w/o-StateAdaptiveCVF`
+- `CVF-AE-w/o-SparsePreservation`
+- `CVF-AE-w/o-CVF`
+- `CVF-AE`
 
 ### 4.2 单机制贡献分析
 
@@ -455,7 +455,7 @@ Output: best feasible UAV path
 
 ### 6.8 运行时间和评价次数对比
 
-路线 B 必须重点写。
+CVF-AE 必须重点写。
 
 展示：
 
@@ -542,7 +542,7 @@ Output: best feasible UAV path
 
 ### B. CEC 或通用约束优化补充
 
-如果路线 B 机制可以抽象到一般约束优化，可做小规模补充。
+如果 CVF-AE 机制可以抽象到一般约束优化，可做小规模补充。
 
 但不建议作为主线，除非 CVF 被重新定义成通用约束场。
 
@@ -559,7 +559,7 @@ Output: best feasible UAV path
 | 师兄推荐目录 | 本论文对应章节 |
 |---|---|
 | 1. 引言 | 第 1 章 |
-| 2. DBO 改进策略 | 第 3 章 COVE-AE-CVF 算法 |
+| 2. DBO 改进策略 | 第 3 章 CVF-AE 算法 |
 | 2.1 DBO 简介 | 第 2.5 节 AE 基础算法 |
 | 2.2 改进策略 | 第 3.2-3.5 节 |
 | 2.3 策略有效性分析 | 第 4 章消融实验 |

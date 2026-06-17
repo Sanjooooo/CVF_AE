@@ -1,19 +1,12 @@
-# 路线 B 项目开展计划：低开销约束可行性场驱动进化搜索
+# 路线 B 项目开展计划：CVF-AE 低开销约束可行性场驱动进化搜索
 
 创建时间：2026-06-17 15:21:25 +08:00
 
 ## 1. 项目背景
 
-当前 COVE-AE 路线 A 已经完成一轮机制重构，并形成一个较稳的候选版本：
+本项目当前聚焦路线 B：围绕约束可行性场构建新的核心算法机制，并以 `CVF-AE` 作为统一算法名。后续文档、代码配置和实验命名均应服务于 `CVF-AE`。
 
-- 约束状态识别与状态转移；
-- 约束状态引导初始化；
-- 稀疏修复与路径复用；
-- 默认关闭 violation feedback。
-
-路线 A 的优点是实验基础较稳，适合作为 UAV 路径规划应用型算法改进论文。但它的问题也明显：创新强度偏中等，更像面向强约束 UAV 场景的结构化改进框架，而不是具有新数学机制的强算法创新。
-
-因此，路线 B 的目标不是推倒已有工程，而是在现有 UAV 建模、路径编码、场景、评价函数和实验框架基础上，重新设计一个更强的核心算法机制。
+路线 B 的目标是在现有 UAV 建模、路径编码、场景、评价函数和实验框架基础上，设计一个具有明确数学表达和可验证机制贡献的强算法创新。
 
 ## 2. 总主题
 
@@ -45,19 +38,16 @@
 
 ## 4. 拟定算法短名
 
-可继续使用 COVE-AE，但建议在路线 B 中重新解释为：
-
-> COVE-AE: Constraint-Oriented Viability Evolution with an Alpha Evolution backbone.
-
-如果后续觉得“AE backbone”约束太强，也可以在论文中使用更通用的名称：
+统一使用：
 
 > CVF-AE: Constraint Viability Field guided Alpha Evolution.
 
-当前建议：
+含义：
 
-- 项目代码继续沿用 `COVE_AE_matlab`；
-- 论文方法名优先使用 `COVE-AE`；
-- 在方法章节中突出 `constraint viability field`，避免再出现 `violation feedback` 作为核心概念。
+- `CVF` 强调 constraint viability field，即约束可行性场；
+- `AE` 表示保留 Alpha Evolution 作为基础进化搜索骨架；
+- 项目代码目录可暂时沿用 `COVE_AE_matlab`，但论文、规划文档和后续实验命名统一使用 `CVF-AE`；
+- 算法名、实验名和论文方法名统一使用 `CVF-AE` 及其消融变体。
 
 ## 5. 核心创新点设计
 
@@ -169,22 +159,17 @@ X_i(t+1) = X_i(t)
 
 ## 6. 技术路线
 
-### 阶段 0：冻结路线 A 作为 fallback
+### 阶段 0：确立 CVF-AE 主线与工程隔离
 
 目标：
 
-保留当前 reset COVE-AE 作为可回退版本，不在路线 B 初期破坏已有可用结果。
+在不破坏现有工程文件的前提下，建立 `CVF-AE` 的独立实现入口，使后续实验和论文叙事全部围绕 `CVF-AE` 展开。
 
 动作：
 
-- 不删除当前 `COVE-AE` reset 逻辑；
-- 新建或通过配置隔离路线 B 算法；
-- 路线 B 小规模失败时，可回退路线 A。
-
-建议命名：
-
-- 路线 A：`COVE-AE-reset`
-- 路线 B：`COVE-AE-CVF` 或 `CVF-AE`
+- 新增或隔离 `CVF-AE` 算法入口；
+- 后续消融、门槛实验和论文目录均使用 `CVF-AE` 命名；
+- 历史算法和历史实验只作为项目背景，不进入路线 B 的正式对比设计。
 
 ### 阶段 1：数学机制设计
 
@@ -221,7 +206,7 @@ X_i(t+1) = X_i(t)
 
 实现原则：
 
-- 不直接覆盖路线 A 文件；
+- 不直接覆盖已有稳定文件，优先通过新文件或新配置隔离 CVF-AE；
 - 先复用 `fitnessFAEAE.m`、`repairPath.m`、`identifyConstraintState.m`；
 - CVF 候选每次最多增加 1 次 evaluation；
 - 所有新增指标进入 result struct。
@@ -236,17 +221,17 @@ X_i(t+1) = X_i(t)
 
 - scenes: `[2, 4]`
 - algorithms:
-  - `COVE-AE-reset`
-  - `COVE-AE-CVF`
-  - `COVE-AE-CVF-w/o-CVF`
-  - `COVE-AE-CVF-w/o-Init`
+  - `Base-AE`
+  - `CVF-AE`
+  - `CVF-AE-w/o-CVF`
+  - `CVF-AE-w/o-Init`
 - `nRuns = 5`
 - `popSize = 20`
 - `maxIter = 80`
 
 通过标准：
 
-- CVF 版本不能明显慢于 reset 版本；
+- `CVF-AE` 不能依赖大量额外评价次数或运行时间换取表面收益；
 - CVF 版本在 Scene 2 或 Scene 4 至少一个场景表现出可行率、首次可行迭代或 mean best fitness 改善；
 - 若 CVF 在两个场景都变差，立即停止，不进行参数大调。
 
@@ -262,16 +247,16 @@ X_i(t+1) = X_i(t)
 算法：
 
 - `Base-AE`
-- `COVE-AE-reset`
-- `COVE-AE-CVF-w/o-Init`
-- `COVE-AE-CVF-w/o-StateAdaptiveCVF`
-- `COVE-AE-CVF-w/o-SparsePreservation`
-- `COVE-AE-CVF`
+- `CVF-AE-w/o-Init`
+- `CVF-AE-w/o-StateAdaptiveCVF`
+- `CVF-AE-w/o-SparsePreservation`
+- `CVF-AE-w/o-CVF`
+- `CVF-AE`
 
 通过标准：
 
-- `COVE-AE-CVF` 平均排名第一或与第一非常接近；
-- 相比 `COVE-AE-reset` 至少在 Scene 2/4 有明确提升；
+- `CVF-AE` 平均排名第一或与第一非常接近；
+- `CVF-AE` 至少在 Scene 2/4 展示出相对删减版本的明确收益；
 - CVF 机制不能只靠大量 repair 或大量额外 `nEvals` 取胜；
 - `w/o-StateAdaptiveCVF` 不能稳定优于 full。
 
@@ -296,9 +281,9 @@ X_i(t+1) = X_i(t)
 
 主对比采用完整规划器配置比较：
 
-- COVE-AE-CVF 使用自己的约束状态初始化和 CVF 机制；
+- CVF-AE 使用自己的约束状态初始化和 CVF 机制；
 - 其他算法使用各自合理默认初始化；
-- 不强制所有算法使用 COVE-AE 初始化，否则会剥离 proposed method 的组成部分。
+- 不强制所有算法使用 CVF-AE 初始化，否则会剥离 proposed method 的组成部分。
 
 但需要补充：
 
@@ -343,7 +328,7 @@ X_i(t+1) = X_i(t)
 
 满足任一条件应暂停路线 B：
 
-- 小规模门槛中 CVF 在 Scene 2 和 Scene 4 都明显差于 reset；
+- 小规模门槛中 CVF 在 Scene 2 和 Scene 4 都明显差于无 CVF 删减版本；
 - 需要大量增加 evaluation 才能带来收益；
 - full CVF 反复输给 `w/o-CVF`；
 - 机制解释无法和公式、代码、实验结果对应；
@@ -370,15 +355,14 @@ X_i(t+1) = X_i(t)
 - 工程优化；
 - 复杂约束规划。
 
-## 10. 与路线 A 的关系
+## 10. 与现有工程的关系
 
-路线 A 不是废弃，而是作为：
+现有工程的价值在于提供：
 
-- fallback 方法；
-- baseline；
-- 机制演进依据；
-- 论文中可作为 preliminary design 或 ablation baseline。
+- UAV 建模；
+- B-spline 路径编码；
+- 场景与评价函数；
+- 实验批处理框架；
+- 日志和结果汇总工具。
 
-路线 B 若通过中等门槛，则替代路线 A 成为正式 proposed method。
-
-路线 B 若失败，则回退路线 A，继续按应用型算法改进论文推进。
+后续论文和正式实验均围绕 `CVF-AE` 展开。历史算法只作为开发过程记录，不进入核心贡献和默认消融结构。
