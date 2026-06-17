@@ -827,3 +827,16 @@ Pairwise full `COVE-AE` vs mechanism ablations:
   - lightweight sparse feasibility preservation.
 - Do not reintroduce violation feedback as a named core contribution.
 - Before formal experiments, refine the wording and maybe slightly limit repair activity in static-state ablations, because the static variant achieved strong Scene 1 quality at high repair cost.
+
+## 2026-06-17 Route Folder Organization
+
+- Created route-specific folders:
+  - `routes/route_a_cove_ae/`
+  - `routes/route_b_cvf_ae/`
+- Moved historical Route A result folders from the project root into:
+  - `routes/route_a_cove_ae/results/`
+- Moved CVF-AE Route B planning documents into:
+  - `routes/route_b_cvf_ae/docs/`
+- Added route README files and a root `FILE_ORGANIZATION.md`.
+- Kept shared MATLAB `.m` files in the project root for now, because moving them into route-specific folders would require path setup changes and could break existing batch scripts.
+- Current active research direction remains Route B / `CVF-AE`.
