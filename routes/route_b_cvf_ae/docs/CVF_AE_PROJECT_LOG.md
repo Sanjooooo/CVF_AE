@@ -461,3 +461,51 @@ Runner notes:
 - The existing summary CSV/MAT outputs remain the primary analysis artifacts.
 
 Formal ablation must report runtime, `nEvals`, repair count, and CVF count in addition to fitness and feasibility.
+
+## 2026-06-18 Formal Ablation Completed
+
+Result folder:
+
+- `routes/route_b_cvf_ae/results/cvf_ae_formal_ablation_20260618_102649`
+
+Configuration:
+
+- scenes: `[1, 2, 4]`
+- algorithms: `Base-AE`, `CVF-AE-w/o-Init`, `CVF-AE-w/o-StateAdaptiveCVF`, `CVF-AE-w/o-SparsePreservation`, `CVF-AE-w/o-CVF`, `CVF-AE`
+- runs: `30` per algorithm per scene
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260623`
+
+Completion:
+
+- completed runs: `540 / 540`
+- saved summary CSV, run CSV, average-rank CSV, decision markdown, and formal interpretation markdown
+- preserved per-run `.mat` records under the ignored `run_records/` directory
+- left the large `cvf_ae_gate_summary_workspace.mat` as a local generated artifact rather than a versioned text result
+
+Average rank:
+
+| Algorithm | Average rank |
+|---|---:|
+| `CVF-AE` | 1.67 |
+| `CVF-AE-w/o-CVF` | 2.00 |
+| `CVF-AE-w/o-StateAdaptiveCVF` | 3.00 |
+| `CVF-AE-w/o-SparsePreservation` | 3.67 |
+| `CVF-AE-w/o-Init` | 4.67 |
+| `Base-AE` | 6.00 |
+
+Interpretation:
+
+- Full `CVF-AE` has the best aggregate rank and reaches `100%` feasible rate on Scenes 1, 2, and 4.
+- `Base-AE` remains inadequate under stronger constraints, with `0%` feasible rate on Scenes 2 and 4.
+- CVF-guided sparse preservation is supported: full `CVF-AE` is better than `CVF-AE-w/o-SparsePreservation` on all three scenes.
+- Initialization remains important, especially on Scene 4 where `CVF-AE-w/o-Init` falls to `66.67%` feasible rate.
+- The direct CVF field contribution is scene-dependent: full `CVF-AE` beats `w/o-CVF` on Scenes 1 and 4, while `w/o-CVF` has better mean fitness on Scene 2.
+
+Decision:
+
+- Proceed beyond formal ablation to main comparison planning.
+- Keep Sparse 2.0 defaults frozen for the next stage.
+- Do not change Scene 4, restore Scene 3, or introduce Route A comparisons.
+- The manuscript claim should be conservative: CVF-AE improves aggregate feasibility/search quality with strongest evidence in harder constrained scenes, but CVF guidance should not be described as a monotonic win on every scene.
