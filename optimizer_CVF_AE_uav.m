@@ -88,7 +88,7 @@ for t = 1:params.maxIter
             typeCounts = localAddType(typeCounts, fieldInfo.dominantType);
             [firstFeasibleIter, firstFeasibleTime] = localUpdateFirstFeasible(dcvf, t, tStart, firstFeasibleIter, firstFeasibleTime);
 
-            if debBetter(fcvf, dcvf, fnew, dnew)
+            if localAcceptCVFCandidate(fcvf, dcvf, fnew, dnew)
                 fnew = fcvf;
                 dnew = dcvf;
                 Xae = Xcvf;
@@ -173,10 +173,11 @@ if ~isfield(params, 'useHeightTerm'), params.useHeightTerm = true; end
 if ~isfield(params, 'useBoundaryTerm'), params.useBoundaryTerm = true; end
 
 params.cvfAe.nOps = 4;
-params.cvfAe.maxPerIter = max(1, round(0.25 * params.popSize));
-params.cvfAe.eliteFrac = 0.35;
-params.cvfAe.maxViolation = 35;
-params.cvfAe.nearFeasibleRankFrac = 0.70;
+params.cvfAe.maxPerIter = max(1, round(0.12 * params.popSize));
+params.cvfAe.eliteFrac = 0.25;
+params.cvfAe.maxViolation = 15;
+params.cvfAe.nearFeasibleRankFrac = 0.45;
+params.cvfAe.refinementEliteFrac = 0.08;
 params.cvfAe.repairEliteFrac = 0.30;
 params.cvfAe.repairMaxPerIter = max(1, round(0.08 * params.popSize));
 params.cvfAe.repairMaxViolation = 25;
@@ -242,10 +243,21 @@ end
 isEliteSide = rank <= max(1, round(params.cvfAe.eliteFrac * params.popSize));
 isNearFeasible = isstruct(d) && isfield(d, 'V') && isfinite(d.V) && d.V <= params.cvfAe.maxViolation;
 isRankEligible = rank <= max(1, round(params.cvfAe.nearFeasibleRankFrac * params.popSize));
-if state.id == 3 && ~(isEliteSide && isNearFeasible)
+isFeasible = isstruct(d) && isfield(d, 'isFeasible') && d.isFeasible;
+isRefinementElite = rank <= max(1, round(params.cvfAe.refinementEliteFrac * params.popSize));
+
+if state.id == 3
+    tf = isRefinementElite;
     return;
 end
-tf = (isEliteSide || isNearFeasible || isRankEligible);
+if state.id == 1
+    tf = isNearFeasible && (isEliteSide || isRankEligible);
+    return;
+end
+if isFeasible && state.hasFeasible && ~isEliteSide
+    return;
+end
+tf = isNearFeasible && (isEliteSide || isRankEligible || state.id == 4);
 end
 
 function tf = localShouldSparseRepair(i, repairElite, dnew, state, repairUsedThisIter, iter, params, algCfg)
@@ -270,6 +282,17 @@ if ~isfield(dnew, 'V') || dnew.V > params.cvfAe.repairMaxViolation
 end
 phase = iter / max(1, params.maxIter);
 tf = phase >= params.cvfAe.repairStartFrac;
+end
+
+function tf = localAcceptCVFCandidate(fcvf, dcvf, fae, dae)
+tf = false;
+if ~debBetter(fcvf, dcvf, fae, dae)
+    return;
+end
+if ~isfinite(fcvf) || ~isfinite(fae)
+    return;
+end
+tf = fcvf <= fae;
 end
 
 function tf = localGetFlag(s, name, defaultValue)

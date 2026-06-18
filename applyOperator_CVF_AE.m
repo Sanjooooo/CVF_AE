@@ -90,20 +90,20 @@ end
 function [alphaS, betaS, gammaS] = localStateWeights(state)
 switch state.id
     case 1
-        alphaS = 0.75;
-        betaS = 1.00;
+        alphaS = 0.80;
+        betaS = 0.55;
         gammaS = 0.05;
     case 2
-        alphaS = 0.85;
-        betaS = 0.70;
+        alphaS = 0.90;
+        betaS = 0.45;
         gammaS = 0.08;
     case 3
         alphaS = 1.00;
-        betaS = 0.25;
+        betaS = 0.12;
         gammaS = 0.14;
     otherwise
         alphaS = 0.90;
-        betaS = 0.55;
+        betaS = 0.35;
         gammaS = 0.04;
 end
 end

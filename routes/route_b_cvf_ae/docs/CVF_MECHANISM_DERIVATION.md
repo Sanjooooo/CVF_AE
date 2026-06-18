@@ -170,10 +170,10 @@ weights are:
 
 | State | `alpha_s` | `beta_s` | `gamma_s` | Intent |
 |---|---:|---:|---:|---|
-| Feasibility formation | 0.75 | 1.00 | 0.05 | form a feasible route early |
-| Feasibility preservation | 0.85 | 0.70 | 0.08 | keep feasibility while searching |
-| Quality refinement | 1.00 | 0.25 | 0.14 | reduce unnecessary CVF pressure |
-| Stagnation recovery | 0.90 | 0.55 | 0.04 | recover without field over-collapse |
+| Feasibility formation | 0.80 | 0.55 | 0.05 | form a feasible route without overpowering AE |
+| Feasibility preservation | 0.90 | 0.45 | 0.08 | keep feasibility while searching |
+| Quality refinement | 1.00 | 0.12 | 0.14 | reduce unnecessary CVF pressure |
+| Stagnation recovery | 0.90 | 0.35 | 0.04 | recover without field over-collapse |
 
 The CVF candidate adds at most one extra fitness evaluation for each triggered
 individual. The ordinary AE offspring is retained when the CVF candidate is not
@@ -191,7 +191,7 @@ The prototype uses the existing Deb rule:
 The local acceptance is:
 
 ```text
-X_trial = X_CVF, if DebBetter(X_CVF, X_AE)
+X_trial = X_CVF, if DebBetter(X_CVF, X_AE) and J(X_CVF) <= J(X_AE)
         = X_AE,  otherwise.
 ```
 
@@ -202,8 +202,10 @@ X_i(t+1) = X_trial, if DebBetter(X_trial, X_i(t))
          = X_i(t),  otherwise.
 ```
 
-`viabilityFieldSuccessCount` is incremented only when `X_CVF` is Deb-better than
-the ordinary AE offspring.
+`viabilityFieldSuccessCount` is incremented only when `X_CVF` satisfies this
+strict acceptance rule. The additional `J(X_CVF) <= J(X_AE)` check prevents
+infeasible CVF candidates from being accepted solely because they reduce
+violation while damaging the total path cost.
 
 ## 6. Low-Overhead Bound
 

@@ -116,9 +116,9 @@ end
 
 function cfg = localDefaultCVFParams(params)
 cfg.samples = 64;
-cfg.strength = 0.85;
-cfg.maxStepRatio = 0.055;
-cfg.maxNormRatio = 0.12;
+cfg.strength = 0.65;
+cfg.maxStepRatio = 0.040;
+cfg.maxNormRatio = 0.085;
 cfg.obstacleInfluence = 7.0;
 cfg.nfzInfluence = 7.0;
 cfg.boundaryMargin = 6.0;
