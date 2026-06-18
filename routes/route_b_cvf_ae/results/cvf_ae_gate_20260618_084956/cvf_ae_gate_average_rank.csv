@@ -1,0 +1,5 @@
+Algorithm,AverageRank
+CVF-AE,1.5
+CVF-AE-w/o-CVF,1.5
+CVF-AE-w/o-Init,3
+Base-AE,4

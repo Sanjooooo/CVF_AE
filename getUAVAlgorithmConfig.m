@@ -70,6 +70,15 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.useViolationFeedback = false;
             algCfg.useSparseRepairReuse = true;
 
+        case {'CVF-AE', 'CVF_AE', 'CVFAE'}
+            algCfg.name = 'CVF-AE';
+            algCfg.useReferenceInit = true;
+            algCfg.referenceInitRatio = 0.7;
+
+            algCfg.useConstraintStateInit = true;
+            algCfg.useCVF = true;
+            algCfg.useSparseRepairReuse = true;
+
         case 'FAEAE'
             algCfg.useReferenceInit = true;
             algCfg.referenceInitRatio = 0.7;
