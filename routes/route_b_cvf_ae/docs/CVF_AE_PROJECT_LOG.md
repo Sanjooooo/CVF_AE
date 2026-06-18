@@ -423,3 +423,41 @@ Recommended next action:
 - It is now reasonable to proceed to formal ablation planning.
 - Do not change the map or restore Scene 3.
 - Before running formal ablation, freeze the Sparse 2.0 CVF defaults and document that the CVF contribution is expected to matter most in Scene 2/4-style constrained environments.
+
+## 2026-06-18 Sparse 2.0 Freeze And Formal Ablation Runner
+
+Goal:
+
+- Freeze Sparse 2.0 defaults before formal ablation.
+- Add a stable formal ablation runner with resume support.
+- Do not change the algorithm parameters during formal ablation.
+
+Added:
+
+- `routes/route_b_cvf_ae/docs/CVF_AE_SPARSE2_DEFAULTS.md`
+- `run_cvf_ae_formal_ablation.m`
+
+Frozen formal ablation configuration:
+
+- scenes: `[1, 2, 4]`
+- algorithms:
+  - `Base-AE`
+  - `CVF-AE-w/o-Init`
+  - `CVF-AE-w/o-StateAdaptiveCVF`
+  - `CVF-AE-w/o-SparsePreservation`
+  - `CVF-AE-w/o-CVF`
+  - `CVF-AE`
+- default `nRuns = 30`
+- default `popSize = 30`
+- default `maxIter = 300`
+- default `baseSeed = 20260623`
+
+Runner notes:
+
+- `run_cvf_ae_formal_ablation.m` delegates to `run_cvf_ae_gate_diagnostics.m`.
+- It preserves per-run `run_records`.
+- It supports `resumeExisting = true`.
+- It writes an additional `CVF_AE_FORMAL_ABLATION_README.md` into the result folder.
+- The existing summary CSV/MAT outputs remain the primary analysis artifacts.
+
+Formal ablation must report runtime, `nEvals`, repair count, and CVF count in addition to fitness and feasibility.
