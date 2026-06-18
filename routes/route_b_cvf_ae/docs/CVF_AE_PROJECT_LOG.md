@@ -209,3 +209,110 @@ Recommended next action:
 
 - Run the medium gate exactly once with the planned medium configuration.
 - Treat the medium gate as a risk check, not as a guaranteed pass: if `w/o-CVF` dominates full `CVF-AE` across Scene 2 and Scene 4, stop and redesign the field again rather than proceeding to formal ablation.
+
+## 2026-06-18 Medium Gate Validation
+
+Goal:
+
+- Run one medium-gate validation after the strict-accept small gate.
+- Stop after deciding whether the current `CVF-AE` prototype is ready for formal experiments.
+- Do not run formal ablation, main comparison, parameter sensitivity, or CEC.
+
+Implementation updates before running:
+
+- Added `CVF-AE-w/o-StateAdaptiveCVF` to the Route B gate runner.
+  - This variant keeps initialization, CVF, and sparse preservation.
+  - It replaces the state-adaptive CVF state with a static preservation state.
+- Added `CVF-AE-w/o-SparsePreservation`.
+  - This variant keeps initialization and CVF.
+  - It disables sparse repair / preservation.
+- Added medium-gate decision mode to `run_cvf_ae_gate_diagnostics.m`.
+
+Verification:
+
+- MATLAB Code Analyzer passed for `optimizer_CVF_AE_uav.m`.
+- MATLAB Code Analyzer passed for `run_cvf_ae_gate_diagnostics.m` except existing-style informational `datestr/now` notes.
+- A short medium-gate smoke run passed for all six algorithm names. The smoke result directory was removed.
+
+Execution note:
+
+- The first MATLAB MCP call timed out after writing partial run records.
+- The same result directory was resumed with `resumeExisting = true` through `matlab -batch`, completing all run records.
+
+Result directory:
+
+- `routes/route_b_cvf_ae/results/cvf_ae_medium_gate_20260618_090607`
+
+Configuration:
+
+- scenes: `[1, 2, 4]`
+- algorithms:
+  - `Base-AE`
+  - `CVF-AE-w/o-Init`
+  - `CVF-AE-w/o-StateAdaptiveCVF`
+  - `CVF-AE-w/o-SparsePreservation`
+  - `CVF-AE-w/o-CVF`
+  - `CVF-AE`
+- `nRuns = 10`
+- `popSize = 30`
+- `maxIter = 150`
+- `baseSeed = 20260621`
+
+Average rank:
+
+| Algorithm | AverageRank |
+|---|---:|
+| CVF-AE | 1.67 |
+| CVF-AE-w/o-StateAdaptiveCVF | 2.33 |
+| CVF-AE-w/o-CVF | 2.33 |
+| CVF-AE-w/o-SparsePreservation | 3.67 |
+| CVF-AE-w/o-Init | 5.00 |
+| Base-AE | 6.00 |
+
+Key aggregate results:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanFinalViolation | MeanRuntime | MeanNEvals | MeanFirstFeasibleIter | MeanRepairCount | MeanCVFCount | MeanCVFSuccess |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | Base-AE | 0.30 | 1068.50 | 3.00 | 2.345 | 4530.0 | NaN | NaN | 0.0 | 0.0 |
+| 1 | CVF-AE-w/o-Init | 1.00 | 322.47 | 0.00 | 3.939 | 5323.7 | 18.7 | 213.5 | 580.2 | 416.2 |
+| 1 | CVF-AE-w/o-StateAdaptiveCVF | 1.00 | 301.78 | 0.00 | 4.073 | 5390.0 | 1.7 | 260.0 | 600.0 | 572.9 |
+| 1 | CVF-AE-w/o-SparsePreservation | 1.00 | 307.71 | 0.00 | 3.333 | 5119.4 | 6.4 | 0.0 | 589.4 | 497.5 |
+| 1 | CVF-AE-w/o-CVF | 1.00 | 306.07 | 0.00 | 3.122 | 4758.4 | 6.6 | 228.4 | 0.0 | 0.0 |
+| 1 | CVF-AE | 1.00 | 306.62 | 0.00 | 6.214 | 5360.0 | 0.9 | 230.4 | 599.6 | 505.3 |
+| 2 | Base-AE | 0.00 | 2481.90 | 12.40 | 4.238 | 4530.0 | NaN | NaN | 0.0 | 0.0 |
+| 2 | CVF-AE-w/o-Init | 0.90 | 489.35 | 1.00 | 7.816 | 5076.3 | 46.0 | 133.8 | 412.5 | 291.0 |
+| 2 | CVF-AE-w/o-StateAdaptiveCVF | 0.90 | 470.08 | 0.80 | 8.806 | 5197.9 | 34.67 | 204.6 | 463.3 | 347.9 |
+| 2 | CVF-AE-w/o-SparsePreservation | 1.00 | 332.87 | 0.00 | 7.485 | 5083.9 | 26.2 | 0.0 | 553.9 | 422.3 |
+| 2 | CVF-AE-w/o-CVF | 1.00 | 328.93 | 0.00 | 6.068 | 4698.7 | 35.1 | 168.7 | 0.0 | 0.0 |
+| 2 | CVF-AE | 1.00 | 321.17 | 0.00 | 9.056 | 5261.5 | 28.0 | 201.0 | 530.5 | 398.2 |
+| 4 | Base-AE | 0.00 | 1789.60 | 8.10 | 3.087 | 4530.0 | NaN | NaN | 0.0 | 0.0 |
+| 4 | CVF-AE-w/o-Init | 0.50 | 771.68 | 2.40 | 6.391 | 5217.8 | 95.6 | 186.3 | 501.5 | 412.7 |
+| 4 | CVF-AE-w/o-StateAdaptiveCVF | 1.00 | 384.36 | 0.00 | 6.786 | 5197.7 | 0.0 | 67.7 | 600.0 | 259.6 |
+| 4 | CVF-AE-w/o-SparsePreservation | 1.00 | 392.61 | 0.00 | 6.369 | 5130.0 | 0.0 | 0.0 | 600.0 | 303.0 |
+| 4 | CVF-AE-w/o-CVF | 1.00 | 388.39 | 0.00 | 3.580 | 4615.5 | 0.0 | 85.5 | 0.0 | 0.0 |
+| 4 | CVF-AE | 1.00 | 367.28 | 0.00 | 6.018 | 5224.6 | 0.0 | 94.6 | 600.0 | 296.0 |
+
+### Medium-Gate Decision
+
+Do not enter formal experiments yet.
+
+Rationale:
+
+- Positive evidence:
+  - Full `CVF-AE` has the best average rank (`1.67`).
+  - Full `CVF-AE` beats `CVF-AE-w/o-CVF` on Scene 2 and Scene 4 mean best fitness.
+  - Full `CVF-AE` beats `CVF-AE-w/o-StateAdaptiveCVF` on Scene 2 and Scene 4 mean best fitness.
+  - Full `CVF-AE` reaches full feasibility on all scenes.
+- Remaining risks:
+  - Scene 1 is not supportive: `w/o-StateAdaptiveCVF`, `w/o-CVF`, and `w/o-SparsePreservation` all have better mean fitness than full `CVF-AE`.
+  - Runtime overhead is still too high for a low-overhead claim:
+    - Scene 1 full vs `w/o-CVF` runtime ratio is about `1.99`.
+    - Scene 2 full vs `w/o-CVF` runtime ratio is about `1.49`.
+    - Scene 4 full vs `w/o-CVF` runtime ratio is about `1.68`.
+  - CVF triggers are near the per-run cap (`~600`) in many medium runs, so the sparse-field design is not yet sparse enough at medium scale.
+
+Recommended next action:
+
+- Do not proceed to formal ablation/main comparison from this medium-gate result.
+- Keep the full `CVF-AE` mechanism direction, because Scene 2/4 support exists.
+- Before any formal experiment, reduce medium-scale CVF trigger frequency and runtime overhead, especially after feasibility is already established and in Scene 1-like easier states.

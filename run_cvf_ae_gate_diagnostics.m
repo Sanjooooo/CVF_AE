@@ -15,7 +15,7 @@ if ~exist(runDir, 'dir')
 end
 
 fprintf('\n============================================================\n');
-fprintf('Route B CVF-AE Small Gate Diagnostics\n');
+fprintf('Route B CVF-AE %s Diagnostics\n', cfg.gateLabel);
 fprintf('Result folder : %s\n', cfg.resultDir);
 fprintf('Scenes        : %s\n', mat2str(cfg.sceneIds));
 fprintf('Algorithms    : %s\n', strjoin(cfg.algorithms, ', '));
@@ -85,7 +85,7 @@ end
 
 summaryTable = localBuildSummary(runRows, cfg.sceneIds, cfg.algorithms);
 avgRankTable = localAverageRank(summaryTable, cfg.algorithms);
-decision = localGateDecision(summaryTable, cfg.algorithms);
+decision = localGateDecision(summaryTable, cfg.algorithms, cfg);
 
 writetable(runRows, fullfile(cfg.resultDir, 'cvf_ae_gate_runs.csv'));
 writetable(summaryTable, fullfile(cfg.resultDir, 'cvf_ae_gate_summary.csv'));
@@ -142,6 +142,12 @@ end
 if ~isfield(cfg, 'resumeExisting')
     cfg.resumeExisting = false;
 end
+if ~isfield(cfg, 'gateLabel') || isempty(cfg.gateLabel)
+    cfg.gateLabel = 'Small Gate';
+end
+if ~isfield(cfg, 'decisionMode') || isempty(cfg.decisionMode)
+    cfg.decisionMode = 'small';
+end
 end
 
 function algCfg = localGateAlgorithmConfig(algName, params)
@@ -158,6 +164,7 @@ algCfg.referenceNoiseScale = 0.05;
 algCfg.usePublicProjection = true;
 algCfg.useConstraintStateInit = true;
 algCfg.useCVF = true;
+algCfg.useStateAdaptiveCVF = true;
 algCfg.useSparseRepairReuse = true;
 algCfg.runner = 'CVF_AE';
 
@@ -175,6 +182,14 @@ switch upper(strtrim(algName))
     case {'CVF-AE-W/O-INIT', 'CVF_AE_W/O_INIT'}
         algCfg.runner = 'CVF_AE';
         algCfg.useConstraintStateInit = false;
+    case {'CVF-AE-W/O-STATEADAPTIVECVF', 'CVF_AE_W/O_STATEADAPTIVECVF', ...
+          'CVF-AE-W/O-STATE-ADAPTIVE-CVF', 'CVF_AE_W/O_STATE_ADAPTIVE_CVF'}
+        algCfg.runner = 'CVF_AE';
+        algCfg.useStateAdaptiveCVF = false;
+    case {'CVF-AE-W/O-SPARSEPRESERVATION', 'CVF_AE_W/O_SPARSEPRESERVATION', ...
+          'CVF-AE-W/O-SPARSE-PRESERVATION', 'CVF_AE_W/O_SPARSE_PRESERVATION'}
+        algCfg.runner = 'CVF_AE';
+        algCfg.useSparseRepairReuse = false;
     otherwise
         error('Unknown CVF-AE gate algorithm: %s', algName);
 end
@@ -342,7 +357,12 @@ Tavg = table(algorithms(:), avgRanks, 'VariableNames', {'Algorithm','AverageRank
 Tavg = sortrows(Tavg, 'AverageRank', 'ascend');
 end
 
-function decision = localGateDecision(T, algorithms)
+function decision = localGateDecision(T, algorithms, cfg)
+if nargin >= 3 && isfield(cfg, 'decisionMode') && strcmpi(cfg.decisionMode, 'medium')
+    decision = localMediumGateDecision(T, algorithms);
+    return;
+end
+
 decision = struct();
 decision.enterMediumGate = false;
 decision.label = 'Do not enter medium gate';
@@ -360,8 +380,8 @@ overheadOK = true;
 fullWorseBoth = true;
 notes = {};
 
-for s = 1:numel(sceneIds)
-    sid = sceneIds(s);
+for sceneIdx = 1:numel(sceneIds)
+    sid = sceneIds(sceneIdx);
     full = T(T.Scene == sid & strcmpi(T.Algorithm, 'CVF-AE'), :);
     noCvf = T(T.Scene == sid & strcmpi(T.Algorithm, 'CVF-AE-w/o-CVF'), :);
     if isempty(full) || isempty(noCvf)
@@ -396,6 +416,82 @@ end
 decision.notes = notes;
 end
 
+function decision = localMediumGateDecision(T, algorithms)
+decision = struct();
+decision.enterMediumGate = false;
+decision.enterFormal = false;
+decision.label = 'Do not enter formal experiments';
+
+required = {'CVF-AE', 'CVF-AE-w/o-CVF', 'CVF-AE-w/o-StateAdaptiveCVF'};
+for i = 1:numel(required)
+    if ~any(strcmpi(algorithms, required{i}))
+        decision.reason = sprintf('Required medium gate algorithm is missing: %s', required{i});
+        decision.notes = {};
+        return;
+    end
+end
+
+avgRanks = nan(numel(algorithms), 1);
+for a = 1:numel(algorithms)
+    avgRanks(a) = mean(T.Rank(strcmpi(T.Algorithm, algorithms{a})), 'omitnan');
+end
+fullRank = avgRanks(strcmpi(algorithms, 'CVF-AE'));
+bestRank = min(avgRanks);
+
+sceneIds = unique(T.Scene(:).');
+fullBetterNoCVF = 0;
+noCVFBetterFull = 0;
+fullBetterStatic = 0;
+staticBetterFull = 0;
+runtimeOK = true;
+notes = {};
+
+for sceneIdx = 1:numel(sceneIds)
+    sid = sceneIds(sceneIdx);
+    full = T(T.Scene == sid & strcmpi(T.Algorithm, 'CVF-AE'), :);
+    noCvf = T(T.Scene == sid & strcmpi(T.Algorithm, 'CVF-AE-w/o-CVF'), :);
+    static = T(T.Scene == sid & strcmpi(T.Algorithm, 'CVF-AE-w/o-StateAdaptiveCVF'), :);
+    if isempty(full) || isempty(noCvf) || isempty(static)
+        continue;
+    end
+    if full.MeanBestFitness < noCvf.MeanBestFitness
+        fullBetterNoCVF = fullBetterNoCVF + 1;
+    elseif noCvf.MeanBestFitness < full.MeanBestFitness
+        noCVFBetterFull = noCVFBetterFull + 1;
+    end
+    if full.MeanBestFitness < static.MeanBestFitness
+        fullBetterStatic = fullBetterStatic + 1;
+    elseif static.MeanBestFitness < full.MeanBestFitness
+        staticBetterFull = staticBetterFull + 1;
+    end
+
+    evalRatio = full.MeanNEvals / max(1, noCvf.MeanNEvals);
+    runtimeRatio = full.MeanRuntime / max(1e-9, noCvf.MeanRuntime);
+    if evalRatio > 1.35 || runtimeRatio > 1.70
+        runtimeOK = false;
+    end
+    notes{end+1} = sprintf(['Scene %d: full-vs-noCVF fitness %.3f vs %.3f, ', ...
+        'full-vs-static %.3f vs %.3f, evalRatio %.3f, runtimeRatio %.3f'], ...
+        sid, full.MeanBestFitness, noCvf.MeanBestFitness, ...
+        full.MeanBestFitness, static.MeanBestFitness, evalRatio, runtimeRatio); %#ok<AGROW>
+end
+
+rankOK = fullRank <= bestRank + 0.50;
+cvfOK = fullBetterNoCVF >= 1 && noCVFBetterFull <= 1;
+stateOK = staticBetterFull <= 1 && fullBetterStatic >= 1;
+
+if rankOK && cvfOK && stateOK && runtimeOK
+    decision.enterFormal = true;
+    decision.label = 'Enter formal experiments';
+    decision.reason = ['Medium gate passed: full CVF-AE is close to the best average rank, ', ...
+        'CVF and state-adaptive mechanisms have at least one scene of support, and overhead is controlled.'];
+else
+    decision.reason = ['Medium gate did not pass strongly enough for formal experiments. ', ...
+        'Inspect whether w/o-CVF or w/o-StateAdaptiveCVF dominates Scene 2/4 or whether overhead is too high.'];
+end
+decision.notes = notes;
+end
+
 function tf = localNanBetter(a, b)
 if isnan(a) && isnan(b)
     tf = false;
@@ -415,7 +511,7 @@ if fid < 0
     return;
 end
 c = onCleanup(@() fclose(fid));
-fprintf(fid, '# CVF-AE Small Gate Decision\n\n');
+fprintf(fid, '# CVF-AE %s Decision\n\n', cfg.gateLabel);
 fprintf(fid, '- Scenes: `%s`\n', mat2str(cfg.sceneIds));
 fprintf(fid, '- Algorithms: `%s`\n', strjoin(cfg.algorithms, ', '));
 fprintf(fid, '- nRuns: `%d`\n', cfg.nRuns);

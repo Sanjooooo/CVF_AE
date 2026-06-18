@@ -47,6 +47,9 @@ diversityHistory = nan(params.maxIter, 1);
 
 for t = 1:params.maxIter
     state = identifyConstraintState(pop, fit, detail, bestHist, t, params);
+    if ~localGetFlag(algCfg, 'useStateAdaptiveCVF', true)
+        state = localStaticCVFState(state);
+    end
     stateHistory{t} = state.name;
     feasibleRatioHistory(t) = state.feasibleRatio;
     meanViolationHistory(t) = state.meanViolation;
@@ -300,6 +303,13 @@ tf = defaultValue;
 if isstruct(s) && isfield(s, name)
     tf = logical(s.(name));
 end
+end
+
+function state = localStaticCVFState(observedState)
+state = observedState;
+state.name = 'StaticCVFPreservation';
+state.id = 2;
+state.isStagnant = false;
 end
 
 function [bestFit, bestX, bestDetail] = localExtractBest(pop, fit, detail, bestFit, bestX, bestDetail)
