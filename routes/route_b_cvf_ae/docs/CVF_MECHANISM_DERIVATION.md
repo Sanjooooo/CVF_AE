@@ -235,6 +235,21 @@ The additional evaluation count is bounded by
 Delta evals <= T N_cvf.
 ```
 
+The current Sparse 2.0 trigger policy sets `N_cvf` by search state instead of a
+single fixed budget:
+
+| State | Per-generation cap | Extra throttle |
+|---|---:|---|
+| Feasibility formation | `ceil(0.10 N)` | near-feasible candidates only |
+| Feasibility preservation | `ceil(0.06 N)` | reduced after first feasible best |
+| Quality refinement | `ceil(0.02 N)` | every 5 iterations only |
+| Stagnation recovery | `ceil(0.08 N)` | near-feasible recovery candidates |
+
+After the first feasible best solution is found, the active cap is additionally
+limited to `ceil(0.03 N)` and CVF can trigger only every 3 iterations. Feasible
+individuals in already stable feasible populations do not receive CVF. This
+keeps the field active mainly when constraint pressure remains useful.
+
 The gate experiment reports `nEvals`, runtime, repair counts, CVF counts, and
 CVF success counts, so the field cannot be claimed as useful if it only wins by
 unreported extra computation.

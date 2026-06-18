@@ -70,7 +70,7 @@ for t = 1:params.maxIter
 
         fieldStep = zeros(1, params.dim);
         fieldInfo = localEmptyFieldInfo();
-        useCVF = localShouldUseCVF(i, order, detail(i), state, cvfUsedThisIter, params, algCfg);
+        useCVF = localShouldUseCVF(i, order, detail(i), state, bestDetail, cvfUsedThisIter, t, params, algCfg);
         if useCVF
             [fieldStep, fieldInfo] = buildConstraintViabilityField(pop(i, :), map, params, detail(i), state);
         end
@@ -177,6 +177,16 @@ if ~isfield(params, 'useBoundaryTerm'), params.useBoundaryTerm = true; end
 
 params.cvfAe.nOps = 4;
 params.cvfAe.maxPerIter = max(1, round(0.12 * params.popSize));
+params.cvfAe.maxPerIterFormation = max(1, round(0.10 * params.popSize));
+params.cvfAe.maxPerIterPreservation = max(1, round(0.06 * params.popSize));
+params.cvfAe.maxPerIterRefinement = max(1, round(0.02 * params.popSize));
+params.cvfAe.maxPerIterRecovery = max(1, round(0.08 * params.popSize));
+params.cvfAe.postFeasibleMaxPerIter = max(1, round(0.03 * params.popSize));
+params.cvfAe.postFeasibleInterval = 3;
+params.cvfAe.refinementInterval = 5;
+params.cvfAe.lowFeasibleRatio = 0.35;
+params.cvfAe.highFeasibleRatio = 0.75;
+params.cvfAe.highMeanViolation = 8;
 params.cvfAe.eliteFrac = 0.25;
 params.cvfAe.maxViolation = 15;
 params.cvfAe.nearFeasibleRankFrac = 0.45;
@@ -231,12 +241,13 @@ for k = 1:numel(f)
 end
 end
 
-function tf = localShouldUseCVF(i, order, d, state, usedThisIter, params, algCfg)
+function tf = localShouldUseCVF(i, order, d, state, bestDetail, usedThisIter, iter, params, algCfg)
 tf = false;
 if ~localGetFlag(algCfg, 'useCVF', true)
     return;
 end
-if usedThisIter >= params.cvfAe.maxPerIter
+quota = localCVFQuota(state, bestDetail, params);
+if usedThisIter >= quota
     return;
 end
 rank = find(order == i, 1, 'first');
@@ -248,19 +259,75 @@ isNearFeasible = isstruct(d) && isfield(d, 'V') && isfinite(d.V) && d.V <= param
 isRankEligible = rank <= max(1, round(params.cvfAe.nearFeasibleRankFrac * params.popSize));
 isFeasible = isstruct(d) && isfield(d, 'isFeasible') && d.isFeasible;
 isRefinementElite = rank <= max(1, round(params.cvfAe.refinementEliteFrac * params.popSize));
+bestIsFeasible = isstruct(bestDetail) && isfield(bestDetail, 'isFeasible') && bestDetail.isFeasible;
+constraintPressure = localNeedsCVF(d, state, bestDetail, params);
+
+if ~constraintPressure
+    return;
+end
 
 if state.id == 3
-    tf = isRefinementElite;
+    if mod(iter, params.cvfAe.refinementInterval) ~= 0
+        return;
+    end
+    tf = isRefinementElite && (~isFeasible || ~bestIsFeasible);
     return;
 end
 if state.id == 1
     tf = isNearFeasible && (isEliteSide || isRankEligible);
     return;
 end
+if bestIsFeasible
+    if mod(iter, params.cvfAe.postFeasibleInterval) ~= 0
+        return;
+    end
+    if isFeasible && (state.feasibleRatio >= params.cvfAe.highFeasibleRatio || ~isEliteSide)
+        return;
+    end
+end
 if isFeasible && state.hasFeasible && ~isEliteSide
     return;
 end
 tf = isNearFeasible && (isEliteSide || isRankEligible || state.id == 4);
+end
+
+function quota = localCVFQuota(state, bestDetail, params)
+switch state.id
+    case 1
+        quota = params.cvfAe.maxPerIterFormation;
+    case 2
+        quota = params.cvfAe.maxPerIterPreservation;
+    case 3
+        quota = params.cvfAe.maxPerIterRefinement;
+    otherwise
+        quota = params.cvfAe.maxPerIterRecovery;
+end
+if isstruct(bestDetail) && isfield(bestDetail, 'isFeasible') && bestDetail.isFeasible
+    quota = min(quota, params.cvfAe.postFeasibleMaxPerIter);
+end
+quota = min(quota, params.cvfAe.maxPerIter);
+end
+
+function tf = localNeedsCVF(d, state, bestDetail, params)
+tf = false;
+isFeasible = isstruct(d) && isfield(d, 'isFeasible') && d.isFeasible;
+v = inf;
+if isstruct(d) && isfield(d, 'V') && ~isempty(d.V) && isfinite(d.V)
+    v = d.V;
+end
+bestIsFeasible = isstruct(bestDetail) && isfield(bestDetail, 'isFeasible') && bestDetail.isFeasible;
+
+if ~isFeasible && v <= params.cvfAe.maxViolation
+    tf = true;
+    return;
+end
+if ~bestIsFeasible && state.meanViolation >= params.cvfAe.highMeanViolation
+    tf = true;
+    return;
+end
+if bestIsFeasible && state.feasibleRatio < params.cvfAe.lowFeasibleRatio && ~isFeasible
+    tf = true;
+end
 end
 
 function tf = localShouldSparseRepair(i, repairElite, dnew, state, repairUsedThisIter, iter, params, algCfg)

@@ -316,3 +316,110 @@ Recommended next action:
 - Do not proceed to formal ablation/main comparison from this medium-gate result.
 - Keep the full `CVF-AE` mechanism direction, because Scene 2/4 support exists.
 - Before any formal experiment, reduce medium-scale CVF trigger frequency and runtime overhead, especially after feasibility is already established and in Scene 1-like easier states.
+
+## 2026-06-18 CVF Sparse Trigger 2.0
+
+Goal:
+
+- Keep the Scene 2/4 benefit of CVF.
+- Reduce medium-scale CVF trigger count and runtime overhead.
+- Avoid unnecessary CVF intervention after feasible solutions have already formed.
+
+Mechanism changes:
+
+- Replaced the single CVF per-iteration trigger budget with state-specific budgets:
+  - formation: `10%` of population;
+  - preservation: `6%` of population;
+  - refinement: `2%` of population;
+  - recovery: `8%` of population.
+- Added a post-feasible budget cap:
+  - once the best solution is feasible, CVF is capped at `3%` of population per iteration.
+- Added post-feasible throttling:
+  - after feasibility is established, CVF can trigger only every `3` iterations.
+- Added refinement throttling:
+  - quality-refinement CVF can trigger only every `5` iterations.
+- Added constraint-pressure gating:
+  - CVF is used only for near-feasible infeasible candidates, high mean violation before feasibility, or low population feasibility after the first feasible solution.
+- Feasible individuals in already stable populations no longer receive CVF.
+
+Verification:
+
+- MATLAB Code Analyzer passed for `optimizer_CVF_AE_uav.m`.
+- `run_cvf_ae_gate_diagnostics.m` retained only existing-style informational `datestr/now` notes.
+- A short six-algorithm smoke run passed and was removed.
+
+Result directory:
+
+- `routes/route_b_cvf_ae/results/cvf_ae_medium_gate_sparse2_20260618_095112`
+
+Configuration:
+
+- scenes: `[1, 2, 4]`
+- algorithms:
+  - `Base-AE`
+  - `CVF-AE-w/o-Init`
+  - `CVF-AE-w/o-StateAdaptiveCVF`
+  - `CVF-AE-w/o-SparsePreservation`
+  - `CVF-AE-w/o-CVF`
+  - `CVF-AE`
+- `nRuns = 10`
+- `popSize = 30`
+- `maxIter = 150`
+- `baseSeed = 20260622`
+
+Average rank:
+
+| Algorithm | AverageRank |
+|---|---:|
+| CVF-AE | 1.67 |
+| CVF-AE-w/o-SparsePreservation | 2.67 |
+| CVF-AE-w/o-CVF | 2.67 |
+| CVF-AE-w/o-StateAdaptiveCVF | 3.00 |
+| CVF-AE-w/o-Init | 5.00 |
+| Base-AE | 6.00 |
+
+Key aggregate results:
+
+| Scene | Algorithm | FeasibleRate | MeanBestFitness | MeanRuntime | MeanNEvals | MeanFirstFeasibleIter | MeanRepairCount | MeanCVFCount | MeanCVFSuccess |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | CVF-AE-w/o-StateAdaptiveCVF | 1.00 | 302.51 | 4.696 | 4809.3 | 1.7 | 259.1 | 20.2 | 19.1 |
+| 1 | CVF-AE-w/o-SparsePreservation | 1.00 | 308.59 | 3.878 | 4590.6 | 4.0 | 0.0 | 60.6 | 52.3 |
+| 1 | CVF-AE-w/o-CVF | 1.00 | 306.89 | 3.806 | 4763.2 | 4.0 | 233.2 | 0.0 | 0.0 |
+| 1 | CVF-AE | 1.00 | 306.92 | 3.575 | 4811.5 | 0.9 | 229.1 | 52.4 | 43.2 |
+| 2 | CVF-AE-w/o-SparsePreservation | 1.00 | 329.03 | 2.985 | 4616.3 | 28.1 | 0.0 | 86.3 | 70.6 |
+| 2 | CVF-AE-w/o-CVF | 1.00 | 329.68 | 3.397 | 4697.1 | 36.8 | 167.1 | 0.0 | 0.0 |
+| 2 | CVF-AE | 1.00 | 322.14 | 3.774 | 4817.7 | 30.1 | 197.1 | 90.6 | 71.0 |
+| 4 | CVF-AE-w/o-StateAdaptiveCVF | 1.00 | 387.45 | 3.232 | 4628.3 | 0.0 | 64.1 | 34.2 | 21.9 |
+| 4 | CVF-AE-w/o-SparsePreservation | 1.00 | 379.96 | 2.879 | 4568.0 | 0.0 | 0.0 | 38.0 | 25.5 |
+| 4 | CVF-AE-w/o-CVF | 1.00 | 382.54 | 3.180 | 4616.6 | 0.0 | 86.6 | 0.0 | 0.0 |
+| 4 | CVF-AE | 1.00 | 365.31 | 3.338 | 4665.5 | 0.0 | 91.7 | 43.8 | 29.4 |
+
+### Sparse 2.0 Decision
+
+The sparse trigger adjustment passed the medium gate.
+
+Rationale:
+
+- CVF trigger count dropped sharply:
+  - Scene 1 full `CVF-AE`: `52.4`
+  - Scene 2 full `CVF-AE`: `90.6`
+  - Scene 4 full `CVF-AE`: `43.8`
+  - Previous medium gate had full `CVF-AE` near `600` in all scenes.
+- Runtime overhead is now controlled:
+  - Scene 1 full runtime is slightly lower than `w/o-CVF` in this run (`3.575` vs `3.806`).
+  - Scene 2 full vs `w/o-CVF` runtime ratio is about `1.11`.
+  - Scene 4 full vs `w/o-CVF` runtime ratio is about `1.05`.
+- Scene 2 and Scene 4 still support the CVF mechanism:
+  - Scene 2 mean fitness: full `322.14` vs `w/o-CVF` `329.68`.
+  - Scene 4 mean fitness: full `365.31` vs `w/o-CVF` `382.54`.
+- Full `CVF-AE` keeps the best average rank (`1.67`).
+
+Remaining caveat:
+
+- Scene 1 still favors `w/o-StateAdaptiveCVF` by mean best fitness (`302.51` vs full `306.92`), so formal experiments should track whether the state-adaptive CVF schedule is mainly beneficial in harder constrained scenes rather than easy scenes.
+
+Recommended next action:
+
+- It is now reasonable to proceed to formal ablation planning.
+- Do not change the map or restore Scene 3.
+- Before running formal ablation, freeze the Sparse 2.0 CVF defaults and document that the CVF contribution is expected to matter most in Scene 2/4-style constrained environments.
