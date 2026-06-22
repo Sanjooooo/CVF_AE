@@ -120,8 +120,10 @@ for s = 1:nScenes
                     localResultScalar(result, 'firstFeasibleTime'), ...
                     localResultScalar(result, 'repairCount'), ...
                     localResultScalar(result, 'repairSuccessCount'), ...
+                    localResultScalar(result, 'viabilityFieldCount'), ...
+                    localResultScalar(result, 'viabilityFieldSuccessCount'), ...
                     elapsed, ...
-                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','NEvals','FirstFeasibleIter','FirstFeasibleTime','RepairCount','RepairSuccessCount','WallClock'} );
+                    'VariableNames', {'Scene','Algorithm','Run','Seed','BestFitness','Runtime','Feasible','Violation','NEvals','FirstFeasibleIter','FirstFeasibleTime','RepairCount','RepairSuccessCount','ViabilityFieldCount','ViabilityFieldSuccessCount','WallClock'} );
 
                 if isempty(runRows)
                     runRows = row;
@@ -190,6 +192,12 @@ switch upper(algName)
         result = optimizer_HHO_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'WOA'
         result = optimizer_WOA_uav(objFun, params, map, refX, algCfg, runSeed);
+    case 'DBO'
+        result = optimizer_DBO_uav(objFun, params, map, refX, algCfg, runSeed);
+    case 'CPO'
+        result = optimizer_CPO_uav(objFun, params, map, refX, algCfg, runSeed);
+    case {'CVF-AE', 'CVF_AE', 'CVFAE'}
+        result = optimizer_CVF_AE_uav(objFun, params, map, refX, algCfg, runSeed);
     case {'COVE-AE', 'COVE_AE', 'COVEAE'}
         result = optimizer_COVE_AE_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'FAEAE'
@@ -259,6 +267,27 @@ if ~isfield(result, 'seed')
 end
 if ~isfield(result, 'algName')
     result.algName = algName;
+end
+if ~isfield(result, 'nEvals')
+    result.nEvals = NaN;
+end
+if ~isfield(result, 'firstFeasibleIter')
+    result.firstFeasibleIter = NaN;
+end
+if ~isfield(result, 'firstFeasibleTime')
+    result.firstFeasibleTime = NaN;
+end
+if ~isfield(result, 'repairCount')
+    result.repairCount = NaN;
+end
+if ~isfield(result, 'repairSuccessCount')
+    result.repairSuccessCount = NaN;
+end
+if ~isfield(result, 'viabilityFieldCount')
+    result.viabilityFieldCount = 0;
+end
+if ~isfield(result, 'viabilityFieldSuccessCount')
+    result.viabilityFieldSuccessCount = 0;
 end
 end
 
@@ -345,7 +374,13 @@ for s = 1:numel(sceneIds)
             means(a), stds(a), rankVals(a), ...
             mean(double(runRows.Feasible(mask)), 'omitnan'), ...
             mean(runRows.Runtime(mask), 'omitnan'), ...
-            'VariableNames', {'Scene','Algorithm','Mean','Std','Rank','Feasibility','AvgRuntime'} );
+            mean(runRows.NEvals(mask), 'omitnan'), ...
+            mean(runRows.FirstFeasibleIter(mask), 'omitnan'), ...
+            mean(runRows.RepairCount(mask), 'omitnan'), ...
+            mean(runRows.RepairSuccessCount(mask), 'omitnan'), ...
+            mean(runRows.ViabilityFieldCount(mask), 'omitnan'), ...
+            mean(runRows.ViabilityFieldSuccessCount(mask), 'omitnan'), ...
+            'VariableNames', {'Scene','Algorithm','Mean','Std','Rank','Feasibility','AvgRuntime','AvgNEvals','AvgFirstFeasibleIter','AvgRepairCount','AvgRepairSuccessCount','AvgViabilityFieldCount','AvgViabilityFieldSuccessCount'} );
 
         if isempty(rows)
             rows = row;

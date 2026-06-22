@@ -60,6 +60,18 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.useReferenceInit = false;
             algCfg.referenceInitRatio = 0.0;
 
+        case 'DBO'
+            algCfg.k = 0.10;
+            algCfg.b = 0.30;
+            algCfg.s = 0.50;
+            algCfg.useReferenceInit = false;
+            algCfg.referenceInitRatio = 0.0;
+
+        case 'CPO'
+            algCfg.defenseCycle = 4;
+            algCfg.useReferenceInit = false;
+            algCfg.referenceInitRatio = 0.0;
+
         case {'COVE-AE', 'COVE_AE', 'COVEAE'}
             algCfg.name = 'COVE-AE';
             algCfg.useReferenceInit = true;

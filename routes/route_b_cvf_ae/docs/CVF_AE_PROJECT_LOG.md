@@ -509,3 +509,75 @@ Decision:
 - Keep Sparse 2.0 defaults frozen for the next stage.
 - Do not change Scene 4, restore Scene 3, or introduce Route A comparisons.
 - The manuscript claim should be conservative: CVF-AE improves aggregate feasibility/search quality with strongest evidence in harder constrained scenes, but CVF guidance should not be described as a monotonic win on every scene.
+
+## 2026-06-22 主对比方案与 baseline 接入
+
+目标：
+
+- 冻结当前 `CVF-AE` 配置后进入主对比准备；
+- 主对比适当包含经典算法、高被引算法、近年来算法和变体算法；
+- 保证复现算法不是占位实现，而是具有完整更新机制、统一评价接口和统一统计输出。
+
+新增方案文档：
+
+- `routes/route_b_cvf_ae/docs/CVF_AE_MAIN_COMPARISON_PROTOCOL.md`
+
+主排名组：
+
+- `CVF-AE`
+- `AE`
+- `PSO`
+- `GWO`
+- `WOA`
+- `HHO`
+- `DBO`
+- `CPO`
+
+工程参考组暂不混入主排名：
+
+- `A*`
+- `RRT*`
+
+实现动作：
+
+- 新增 `optimizer_DBO_uav.m`
+- 新增 `optimizer_CPO_uav.m`
+- 扩展 `getUAVAlgorithmConfig.m`
+- 扩展 `run_single_uav_algorithm_case.m`
+- 扩展 `run_uav_comparison_lite_v2_batch.m`
+- 新增 Route B 专用入口 `run_cvf_ae_main_comparison.m`
+
+执行原则：
+
+- 主对比不继续调整 `CVF-AE` 参数；
+- 不恢复 code Scene 3；
+- 不修改 Scene 4；
+- CEC 暂作为后续可选补充，不进入当前主线。
+
+预检执行：
+
+- smoke: `run_cvf_ae_main_comparison('smoke')`，接口通过；
+- precheck: `run_cvf_ae_main_comparison('precheck')`；
+- result folder: `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_precheck_20260622_101130`；
+- completed runs: `72 / 72`。
+
+预检平均排名：
+
+| Algorithm | Average rank |
+|---|---:|
+| `CVF-AE` | 1.33 |
+| `CPO` | 2.00 |
+| `DBO` | 3.00 |
+| `GWO` | 5.00 |
+| `WOA` | 5.00 |
+| `HHO` | 6.00 |
+| `PSO` | 6.33 |
+| `AE` | 7.33 |
+
+预检判断：
+
+- 主对比预检通过，可以进入正式主对比；
+- `CPO` 在 Scene 2 表现很强，正式实验需要重点观察；
+- `DBO` 在 Scene 4 是强竞争 baseline；
+- 当前结果只用于链路验证，不作为论文正式结论；
+- 不因预检继续调整 `CVF-AE` 参数。
