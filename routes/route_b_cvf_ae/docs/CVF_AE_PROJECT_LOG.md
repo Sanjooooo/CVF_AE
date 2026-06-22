@@ -758,3 +758,76 @@ run_cvf_ae_main_comparison('resume-formal')
 - 保留 Scene 2-v2 作为新的中等难度场景；
 - 不建议继续为了让 `CVF-AE` 在 Scene 2 数值 fitness 上超过 `CPO` 而调参；
 - 下一步应冻结 Scene 2-v2，使用断点续跑机制重新执行正式主对比，并在论文叙事中同时报告 fitness、feasible rate 和轨迹合理性指标。
+## 2026-06-22 Scene 2-v2 正式主对比与合并结果
+
+执行策略：
+- 冻结 Scene 2-v2；
+- 只对 Scene 2-v2 重新运行正式主对比；
+- Scene 1 和 Scene 4 沿用旧正式主对比结果；
+- 原因是本轮只修改了 Scene 2，其他两个场景的地图与参数未变。
+
+Scene 2-v2 正式结果目录：
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_scene2_v2_formal_20260622_152052`
+
+Scene 2-v2 配置：
+- algorithms: `CVF-AE`, `AE`, `PSO`, `GWO`, `WOA`, `HHO`, `DBO`, `CPO`
+- runs: `30`
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260624`
+- resume: enabled
+
+完成情况：
+- run records: `240 / 240`
+- 已生成 `uav_comparison_runs.csv`
+- 已生成 `uav_comparison_summary_long.csv`
+- 已生成 `uav_comparison_average_rank.csv`
+- 已生成 `trajectory_sanity_runs.csv`
+- 已生成 `trajectory_sanity_summary.csv`
+- 已生成 `trajectory_sanity_flags.csv`
+- 已生成最佳轨迹图到本地 `best_path_figures_exact/`
+
+Scene 2-v2 raw fitness 排名：
+- `CPO`: rank 1, mean fitness `278.94`, feasible rate `1.00`
+- `CVF-AE`: rank 2, mean fitness `302.75`, feasible rate `1.00`
+- `DBO`: rank 3, mean fitness `337.29`, feasible rate `1.00`
+- `GWO`: rank 4, mean fitness `342.91`, feasible rate `1.00`
+
+Scene 2-v2 轨迹 sanity 关键指标：
+- `CVF-AE`
+  - MeanZ: `15.99`
+  - MeanHighAltitudeFrac: `0.00`
+  - VisualReviewFlagRate: `0.00`
+- `CPO`
+  - MeanZ: `28.22`
+  - MeanHighAltitudeFrac: `0.88`
+  - VisualReviewFlagRate: `1.00`
+
+解释：
+- `CPO` 是强 baseline，应该保留在主表；
+- 但 `CPO` 在 Scene 2-v2 的数值优势伴随明显 high-altitude bypass risk；
+- `CVF-AE` 的优势应表述为更符合 low-altitude mission-consistent trajectory quality，而不是单纯宣称 raw fitness 全面最优。
+
+合并结果目录：
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_scene2_v2_merged_20260622_155500`
+
+合并规则：
+- Scene 1: 沿用 `cvf_ae_main_comparison_formal_20260622_103121`
+- Scene 2: 使用 `cvf_ae_main_comparison_scene2_v2_formal_20260622_152052`
+- Scene 4: 沿用 `cvf_ae_main_comparison_formal_20260622_103121`
+
+合并后的平均排名：
+- `CPO`: `1.67`
+- `CVF-AE`: `1.67`
+- `DBO`: `3.00`
+- `GWO`: `3.67`
+- `HHO`: `5.33`
+- `PSO`: `5.67`
+- `WOA`: `7.00`
+- `AE`: `8.00`
+
+阶段判断：
+- Scene 2-v2 正式主对比完成；
+- 合并后的主结果仍支持 `CVF-AE` 与 `CPO` 并列第一；
+- 后续论文结果部分应采用合并结果目录作为主结果源；
+- 不建议继续调整 Scene 2 或继续为了压过 `CPO` 做针对性调参。
