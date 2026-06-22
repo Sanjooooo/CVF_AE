@@ -945,3 +945,67 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 旧版激进状态自适应不再作为论文主方法；
 - 后续正式主对比和正式消融需要基于新的默认 `CVF-AE` 重新生成，不能直接沿用旧版完整 `CVF-AE` 的最终表格；
 - 下一阶段建议先重跑正式消融，再视结果决定是否重跑正式主对比的全部场景或只重跑 `CVF-AE` 行。
+
+## 2026-06-22 保守状态自适应 CVF 正式消融重跑
+
+目标：
+
+- 使用新的默认 `CVF-AE` 重新跑正式消融；
+- 验证保守状态自适应 CVF、CVF 本体、约束感知初始化和稀疏保留是否均有正贡献；
+- 同步生成 trajectory sanity，避免只看 scalar fitness。
+
+结果目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_formal_ablation_conservative_20260622_194947`
+
+配置：
+
+- scenes: `[1, 2, 4]`
+- algorithms:
+  - `Base-AE`
+  - `CVF-AE-w/o-Init`
+  - `CVF-AE-w/o-StateAdaptiveCVF`
+  - `CVF-AE-w/o-SparsePreservation`
+  - `CVF-AE-w/o-CVF`
+  - `CVF-AE`
+- runs: `30`
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260629`
+- resume: enabled
+
+执行情况：
+
+- run records: `540 / 540`
+- 已生成正式消融 summary、average rank、decision 和 trajectory sanity；
+- 第一次前台 batch 因工具 2 小时超时中断在 Scene 4 附近，随后使用同一结果目录和 `resumeExisting=true` 续跑完成；
+- 中断前已保存的 run records 被成功复用，最终结果完整。
+
+平均排名：
+
+- `CVF-AE`: `1.00`
+- `CVF-AE-w/o-StateAdaptiveCVF`: `2.33`
+- `CVF-AE-w/o-CVF`: `3.00`
+- `CVF-AE-w/o-SparsePreservation`: `3.67`
+- `CVF-AE-w/o-Init`: `5.00`
+- `Base-AE`: `6.00`
+
+关键结论：
+
+- 新默认 `CVF-AE` 在 Scene 1、Scene 2-v2、Scene 4 均优于 `CVF-AE-w/o-StateAdaptiveCVF`，说明保守状态自适应 CVF 已经从诊断阶段的负/不稳定贡献调整为稳定正贡献；
+- 新默认 `CVF-AE` 在三个场景中均优于 `CVF-AE-w/o-CVF`，说明 CVF 本体保留为核心机制是合理的；
+- `w/o-Init` 在 Scene 4 feasible rate 降至 `0.70`，说明约束感知初始化仍是强约束场景必要模块；
+- `w/o-SparsePreservation` 在三个场景中均弱于完整方法，Scene 4 的 trajectory risk 也更高，说明稀疏保留应继续保留。
+
+轨迹 sanity：
+
+- 完整 `CVF-AE` 三个场景 feasible rate 均为 `1.00`；
+- 完整 `CVF-AE` 三个场景 mean high-altitude fraction 均为 `0`；
+- Scene 1 和 Scene 2-v2 的 `VisualReviewFlagRate = 0`；
+- Scene 4 的 `VisualReviewFlagRate = 0.20`，低于 `w/o-CVF = 0.30`、`w/o-StateAdaptiveCVF = 0.533`、`w/o-SparsePreservation = 0.60`。
+
+阶段判断：
+
+- 保守状态自适应正式消融通过；
+- 本目录应作为论文正式消融结果来源；
+- 下一步应基于新的默认 `CVF-AE` 处理正式主对比结果，优先级高于继续调参。
