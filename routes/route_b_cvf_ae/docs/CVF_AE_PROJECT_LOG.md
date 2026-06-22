@@ -662,3 +662,43 @@ run_cvf_ae_main_comparison('resume-formal')
 - 不能声称 `CVF-AE` 全面击败所有近年算法；
 - 后续应进入统计检验、表格生成、收敛曲线、箱线图和路径可视化阶段；
 - 不建议为了超过 `CPO` 继续调参。
+
+## 2026-06-22 轨迹合理性审查
+
+动机：
+
+- 主对比不能只看 `fitness`、`feasible rate` 和平均排名；
+- 对低空 UAV 路径规划而言，高空绕行和贴边绕行即使数值可行，也可能不符合任务语义；
+- 用户明确提出需要检查轨迹图，避免“完全从高空或者边上绕行”的结果被误判为有效优势。
+
+新增脚本：
+
+- `analyze_cvf_ae_trajectory_sanity.m`
+
+输出文件：
+
+- `trajectory_sanity_runs.csv`
+- `trajectory_sanity_summary.csv`
+- `trajectory_sanity_flags.csv`
+- `CVF_AE_TRAJECTORY_SANITY_INTERPRETATION.md`
+
+关键发现：
+
+- `CVF-AE` 没有明显高空绕行：
+  - Scene 1 `MeanZ = 14.95`
+  - Scene 2 `MeanZ = 15.96`
+  - Scene 4 `MeanZ = 15.40`
+- `CPO` 在 Scene 1/2 存在明显高空绕行风险：
+  - Scene 1 `MeanZ = 26.12`
+  - Scene 2 `MeanZ = 33.41`
+  - Scene 2 `VeryHighAltitudeFrac = 0.76`
+- `DBO/GWO` 在 Scene 4 存在明显贴边绕行倾向；
+- 图像抽查显示 Scene 2 的 `CPO` 最佳轨迹抬高越障，Scene 4 的 `CPO` 最佳轨迹沿地图边界绕行。
+
+结论修正：
+
+- `CVF-AE` 与 `CPO` 数值平均排名并列第一；
+- 但 `CPO` 的优势伴随高空绕行语义风险；
+- `CVF-AE` 更符合低空巡航轨迹叙事；
+- 后续论文应增加轨迹合理性表和代表性轨迹图；
+- 不建议为了压过 `CPO` 继续调参。
