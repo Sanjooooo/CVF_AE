@@ -609,3 +609,56 @@ run_cvf_ae_main_comparison('formal')
 ```matlab
 run_cvf_ae_main_comparison('resume-formal')
 ```
+
+## 2026-06-22 正式主对比完成
+
+结果目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_20260622_103121`
+
+配置：
+
+- scenes: `[1, 2, 4]`
+- algorithms: `CVF-AE`, `AE`, `PSO`, `GWO`, `WOA`, `HHO`, `DBO`, `CPO`
+- runs: `30` per algorithm per scene
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260624`
+
+完成情况：
+
+- completed runs: `720 / 720`
+- 每个 run 已保存到 `run_records/`
+- 已保存 `uav_comparison_runs.csv`
+- 已保存 `uav_comparison_summary_long.csv`
+- 已保存 `uav_comparison_average_rank.csv`
+- 已新增中文解释文档 `CVF_AE_MAIN_COMPARISON_INTERPRETATION.md`
+
+平均排名：
+
+| Algorithm | Average rank |
+|---|---:|
+| `CVF-AE` | 1.67 |
+| `CPO` | 1.67 |
+| `DBO` | 3.00 |
+| `GWO` | 3.67 |
+| `HHO` | 5.33 |
+| `PSO` | 5.67 |
+| `WOA` | 7.00 |
+| `AE` | 8.00 |
+
+分场景判断：
+
+- Scene 1: `CPO` rank 1，`CVF-AE` rank 2；
+- Scene 2: `CPO` rank 1，`CVF-AE` rank 2；
+- Scene 4: `CVF-AE` rank 1，`DBO` rank 2，`CPO` rank 3；
+- `CVF-AE` 在三场景均达到 `100%` feasible rate；
+- `CPO` 是当前最强外部 baseline，必须在论文中正面讨论。
+
+阶段判断：
+
+- 正式主对比完成；
+- `CVF-AE` 与 `CPO` 并列平均排名第一，主方法仍成立；
+- 不能声称 `CVF-AE` 全面击败所有近年算法；
+- 后续应进入统计检验、表格生成、收敛曲线、箱线图和路径可视化阶段；
+- 不建议为了超过 `CPO` 继续调参。
