@@ -20,7 +20,19 @@ switch params.sceneId
         params.lb = repmat(params.lbSingle, 1, params.nCtrl);
         params.ub = repmat(params.ubSingle, 1, params.nCtrl);
 
-    case {1, 2}
+    case 2
+        params.altMin = 8;
+        params.altMax = 32;
+        params.heightRef = 16;
+        params.refCruiseZ = 16;
+        params.weights.H = 1.05;
+
+        params.lbSingle(3) = params.altMin;
+        params.ubSingle(3) = params.altMax;
+        params.lb = repmat(params.lbSingle, 1, params.nCtrl);
+        params.ub = repmat(params.ubSingle, 1, params.nCtrl);
+
+    case 1
         params.lbSingle(3) = params.altMin;
         params.ubSingle(3) = params.altMax;
         params.lb = repmat(params.lbSingle, 1, params.nCtrl);

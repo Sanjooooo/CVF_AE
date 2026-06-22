@@ -3,7 +3,7 @@ function map = createMap(params)
 %
 % sceneId:
 %   1 - baseline urban corridor scene
-%   2 - dense obstacle scene
+%   2 - medium constrained corridor scene
 %   4 - urban delivery corridor scene
 
 if ~isfield(params, 'sceneId')
@@ -46,40 +46,42 @@ switch sceneId
 
     case 2
         % ================================================================
-        % Scene 2: Dense obstacle / narrow corridor
+        % Scene 2: Medium constrained corridor
+        % This scene is intentionally between Scene 1 and Scene 4 in
+        % difficulty: denser than the baseline urban scene, but not so tight
+        % that reasonable algorithms are forced into high-altitude or
+        % map-boundary bypasses.
         % ================================================================
         map.obstacles = [
-            10 22 12 28  0 28;
-            26 38 16 32  0 30;
-            42 54 20 38  0 34;
-            58 70 24 42  0 32;
-            74 88 18 36  0 29;
+            % lower block row: 4 buildings with wider gaps
+            12 24 12 28  0 26;
+            34 46 16 32  0 28;
+            56 68 18 34  0 29;
+            78 90 14 30  0 27;
 
-            16 30 42 58  0 26;
-            36 48 46 62  0 30;
-            54 66 50 68  0 33;
-            70 84 46 62  0 31;
+            % middle row: keep pressure but leave a central corridor
+            16 30 44 58  0 25;
+            40 52 46 62  0 28;
+            66 80 44 60  0 29;
 
-            12 24 72 88  0 28;
-            30 44 70 86  0 32;
-            50 64 72 88  0 35;
-            70 84 70 86  0 30
+            % upper row: avoid closing the goal-side passage
+            14 28 72 86  0 26;
+            42 56 70 86  0 29;
+            72 86 72 88  0 27
         ];
 
         map.nfz = [
-            30 40  7  0 40;
-            62 58  8  0 40;
-            46 74  6  0 40
+            31 40  5.5  0 34;
+            63 58  6.0  0 34
         ];
 
         map.windHotspots = [
-            28 34 20 10 1.0;
-            52 54 20  9 1.2;
-            72 72 18 11 0.9;
-            42 80 22 10 1.1
+            30 36 18  9 1.0;
+            52 55 18  8 1.1;
+            74 74 16 10 0.9
         ];
 
-        map.baseWind = [2.8, 1.4, 0.0];
+        map.baseWind = [2.7, 1.3, 0.0];
 
     case 4
         % ================================================================

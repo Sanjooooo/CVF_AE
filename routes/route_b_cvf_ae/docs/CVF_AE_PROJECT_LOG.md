@@ -702,3 +702,59 @@ run_cvf_ae_main_comparison('resume-formal')
 - `CVF-AE` 更符合低空巡航轨迹叙事；
 - 后续论文应增加轨迹合理性表和代表性轨迹图；
 - 不建议为了压过 `CPO` 继续调参。
+## 2026-06-22 Scene 2-v2 中等难度场景调整与小规模验证
+
+动机：
+- 原 Scene 2 的轨迹图显示，多种算法容易靠近边缘、高空越障或绕开主通道；
+- 这会让 Scene 2 更像“过紧约束场景”，不适合作为 Scene 1 和 Scene 4 之间的中等难度场景；
+- 因此本轮不优先修改 Scene 4，而是先把 Scene 2 调整为中等约束走廊。
+
+代码调整：
+- `createMap.m`
+  - Scene 2 从 dense obstacle scene 调整为 medium constrained corridor scene；
+  - 建筑数量从 13 个降为 10 个；
+  - 第一排建筑由 5 个改为 4 个，并扩大间距；
+  - NFZ 从 3 个降为 2 个；
+  - wind hotspots 从 4 个降为 3 个。
+- `applyUAVSceneOverrides.m`
+  - 单独为 Scene 2 设置高度范围 `[8, 32]`；
+  - `heightRef` 和 `refCruiseZ` 设置为 `16`；
+  - `params.weights.H` 设置为 `1.05`。
+
+验证配置：
+- scene: `2`
+- algorithms: `CVF-AE`, `AE`, `PSO`, `GWO`, `WOA`, `HHO`, `DBO`, `CPO`
+- runs: `5`
+- population size: `20`
+- max iterations: `80`
+- base seed: `20260625`
+
+结果目录：
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_scene2_v2_sanity_20260622_130924`
+
+关键结果：
+- `CVF-AE`
+  - feasible rate: `1.00`
+  - mean best fitness: `303.26`
+  - mean Z: `16.09`
+  - mean high-altitude fraction: `0.00`
+  - visual review flag rate: `0.00`
+- `CPO`
+  - feasible rate: `1.00`
+  - mean best fitness: `296.27`
+  - mean Z: `26.86`
+  - mean high-altitude fraction: `0.74`
+  - visual review flag rate: `0.80`
+- `GWO` 和 `DBO` 在该场景仍有较明显贴边倾向；
+- `WOA`, `PSO`, `HHO`, `AE` 的可行率或轨迹合理性仍不稳定。
+
+轨迹判断：
+- 新版 Scene 2 不再系统性迫使所有算法采用高空或边界绕行；
+- `CVF-AE` 的最佳轨迹更接近低空通道搜索；
+- `CPO` 的数值优势仍然存在，但主要伴随高空越障倾向；
+- `GWO/DBO` 的贴边倾向能被轨迹 sanity 指标识别。
+
+阶段判断：
+- 保留 Scene 2-v2 作为新的中等难度场景；
+- 不建议继续为了让 `CVF-AE` 在 Scene 2 数值 fitness 上超过 `CPO` 而调参；
+- 下一步应冻结 Scene 2-v2，使用断点续跑机制重新执行正式主对比，并在论文叙事中同时报告 fitness、feasible rate 和轨迹合理性指标。
