@@ -831,3 +831,74 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 合并后的主结果仍支持 `CVF-AE` 与 `CPO` 并列第一；
 - 后续论文结果部分应采用合并结果目录作为主结果源；
 - 不建议继续调整 Scene 2 或继续为了压过 `CPO` 做针对性调参。
+## 2026-06-22 CVF-AE 正式消融实验
+
+实验目的：
+- 验证 CVF-AE 各机制对 fitness、feasibility、CVF 使用情况和轨迹合理性的贡献；
+- 重点检查 `CVF`、constraint-aware initialization、state-adaptive CVF weighting 和 sparse preservation 是否都有稳定正贡献。
+
+结果目录：
+- `routes/route_b_cvf_ae/results/cvf_ae_formal_ablation_scene2_v2_20260622_163919`
+
+配置：
+- scenes: `[1, 2, 4]`
+- algorithms:
+  - `Base-AE`
+  - `CVF-AE-w/o-Init`
+  - `CVF-AE-w/o-StateAdaptiveCVF`
+  - `CVF-AE-w/o-SparsePreservation`
+  - `CVF-AE-w/o-CVF`
+  - `CVF-AE`
+- runs: `30`
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260626`
+- resume: enabled
+
+完成情况：
+- run records: `540 / 540`
+- 已生成 `cvf_ae_gate_runs.csv`
+- 已生成 `cvf_ae_gate_summary.csv`
+- 已生成 `cvf_ae_gate_average_rank.csv`
+- 已生成 `trajectory_sanity_runs.csv`
+- 已生成 `trajectory_sanity_summary.csv`
+- 已生成 `trajectory_sanity_flags.csv`
+- 已新增中文解释文件 `CVF_AE_FORMAL_ABLATION_INTERPRETATION.md`
+
+执行备注：
+- 第一次长 batch 在写入 `cvf_ae_gate_summary_workspace.mat` 时出现技术错误：`Unable to write file ... because it appears to be corrupt`；
+- 该错误发生在 540 个 run records 和 CSV 汇总已写出之后；
+- 删除 0 字节损坏 MAT 文件并用 `resumeExisting=true` 重新构建汇总后，runner 正常完成；
+- 该错误不影响 run records、CSV 和本次结果判断。
+
+平均排名：
+- `CVF-AE-w/o-StateAdaptiveCVF`: `1.67`
+- `CVF-AE`: `2.00`
+- `CVF-AE-w/o-CVF`: `3.00`
+- `CVF-AE-w/o-SparsePreservation`: `3.33`
+- `CVF-AE-w/o-Init`: `5.00`
+- `Base-AE`: `6.00`
+
+关键发现：
+- Constraint-aware initialization 是必要机制：
+  - `w/o-Init` 在 Scene 4 可行率降至 `0.67`，mean fitness 从 full `CVF-AE` 的 `349.34` 恶化到 `587.23`。
+- CVF 在强约束 Scene 4 中有正贡献：
+  - full `CVF-AE`: `349.34`
+  - `w/o-CVF`: `355.41`
+- Sparse preservation 有必要保留：
+  - `w/o-SparsePreservation` 在 Scene 4 为 `369.71`，且 trajectory visual risk 更高。
+- `StateAdaptiveCVF` 当前不是稳定正贡献：
+  - `w/o-StateAdaptiveCVF` 在 Scene 1 和 Scene 2-v2 的 scalar fitness 均优于 full；
+  - 平均排名 `w/o-StateAdaptiveCVF = 1.67`，full `CVF-AE = 2.00`；
+  - 论文中不应把 state-adaptive weighting 作为核心创新强讲。
+
+轨迹 sanity：
+- full `CVF-AE` 三个场景均无 high-altitude bypass；
+- Scene 4 中 full `CVF-AE` 的 `VisualReviewFlagRate = 0.27`，低于 `w/o-StateAdaptiveCVF = 0.50` 和 `w/o-SparsePreservation = 0.53`；
+- 这支持“完整版本在强约束场景中更稳定”的叙事。
+
+阶段判断：
+- 正式消融实验完成；
+- 结果支持 initialization、CVF、sparse preservation 的必要性；
+- 结果不支持把 state-adaptive weighting 写成全场景稳定增益；
+- 下一步建议做统计检验，并考虑对 `StateAdaptiveCVF` 做小规模机制修正或在论文中弱化该模块。

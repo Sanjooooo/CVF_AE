@@ -1,0 +1,7 @@
+Algorithm,AverageRank
+CVF-AE-w/o-StateAdaptiveCVF,1.66666666666667
+CVF-AE,2
+CVF-AE-w/o-CVF,3
+CVF-AE-w/o-SparsePreservation,3.33333333333333
+CVF-AE-w/o-Init,5
+Base-AE,6
