@@ -88,6 +88,7 @@ opInfo.fieldNorm = norm(fieldStep);
 end
 
 function [alphaS, betaS, gammaS] = localStateWeights(state)
+isConservative = isfield(state, 'name') && contains(state.name, 'Conservative');
 switch state.id
     case 1
         alphaS = 0.80;
@@ -105,6 +106,19 @@ switch state.id
         alphaS = 0.90;
         betaS = 0.35;
         gammaS = 0.04;
+end
+if isConservative
+    switch state.id
+        case 1
+            betaS = 0.40;
+            gammaS = 0.04;
+        case 4
+            betaS = 0.28;
+            gammaS = 0.04;
+        otherwise
+            betaS = 0.38;
+            gammaS = 0.06;
+    end
 end
 end
 

@@ -89,7 +89,30 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
 
             algCfg.useConstraintStateInit = true;
             algCfg.useCVF = true;
+            algCfg.useStateAdaptiveCVF = true;
+            algCfg.useConservativeStateAdaptiveCVF = true;
             algCfg.useSparseRepairReuse = true;
+            algCfg.cvfAe.conservativeStateAdaptive = true;
+            algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
+            algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
+            algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
+            algCfg.cvfAe.refinementInterval = 8;
+
+        case {'CVF-AE-SA-LITE', 'CVF_AE_SA_LITE', 'CVFAESALITE'}
+            algCfg.name = 'CVF-AE-SA-lite';
+            algCfg.useReferenceInit = true;
+            algCfg.referenceInitRatio = 0.7;
+
+            algCfg.useConstraintStateInit = true;
+            algCfg.useCVF = true;
+            algCfg.useStateAdaptiveCVF = true;
+            algCfg.useConservativeStateAdaptiveCVF = true;
+            algCfg.useSparseRepairReuse = true;
+            algCfg.cvfAe.conservativeStateAdaptive = true;
+            algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
+            algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
+            algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
+            algCfg.cvfAe.refinementInterval = 8;
 
         case 'FAEAE'
             algCfg.useReferenceInit = true;

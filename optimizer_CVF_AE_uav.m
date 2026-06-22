@@ -44,11 +44,16 @@ meanViolationHistory = nan(params.maxIter, 1);
 diversityHistory = nan(params.maxIter, 1);
 
 [firstFeasibleIter, firstFeasibleTime] = localInitialFeasible(detail, tStart);
+stateMemory = localInitAdaptiveStateMemory();
 
 for t = 1:params.maxIter
-    state = identifyConstraintState(pop, fit, detail, bestHist, t, params);
+    observedState = identifyConstraintState(pop, fit, detail, bestHist, t, params);
     if ~localGetFlag(algCfg, 'useStateAdaptiveCVF', true)
-        state = localStaticCVFState(state);
+        state = localStaticCVFState(observedState);
+    elseif localGetFlag(algCfg, 'useConservativeStateAdaptiveCVF', params.cvfAe.conservativeStateAdaptive)
+        [state, stateMemory] = localConservativeAdaptiveCVFState(observedState, bestDetail, stateMemory, params);
+    else
+        state = observedState;
     end
     stateHistory{t} = state.name;
     feasibleRatioHistory(t) = state.feasibleRatio;
@@ -196,6 +201,12 @@ params.cvfAe.repairMaxPerIter = max(1, round(0.08 * params.popSize));
 params.cvfAe.repairMaxViolation = 25;
 params.cvfAe.repairIters = 1;
 params.cvfAe.repairStartFrac = 0.15;
+params.cvfAe.conservativeStateAdaptive = false;
+params.cvfAe.adaptiveFormationFeasibleRatio = 0.10;
+params.cvfAe.adaptiveFormationViolation = 18;
+params.cvfAe.adaptiveRecoveryFeasibleRatio = 0.55;
+params.cvfAe.adaptiveRecoveryViolation = 6;
+params.cvfAe.adaptiveSwitchConfirm = 2;
 
 params.cove.nOps = 4;
 params.cove.init.guidedRatio = 0.70;
@@ -377,6 +388,58 @@ state = observedState;
 state.name = 'StaticCVFPreservation';
 state.id = 2;
 state.isStagnant = false;
+end
+
+function memory = localInitAdaptiveStateMemory()
+memory = struct('candidateId', 2, 'candidateCount', 0, 'activeId', 2);
+end
+
+function [state, memory] = localConservativeAdaptiveCVFState(observedState, bestDetail, memory, params)
+bestIsFeasible = isstruct(bestDetail) && isfield(bestDetail, 'isFeasible') && bestDetail.isFeasible;
+requestedId = 2;
+requestedName = 'ConservativePreservation';
+
+if ~bestIsFeasible && ...
+        (~observedState.hasFeasible || ...
+        observedState.feasibleRatio <= params.cvfAe.adaptiveFormationFeasibleRatio || ...
+        observedState.meanViolation >= params.cvfAe.adaptiveFormationViolation)
+    requestedId = 1;
+    requestedName = 'ConservativeFormation';
+elseif observedState.isStagnant && ...
+        observedState.feasibleRatio < params.cvfAe.adaptiveRecoveryFeasibleRatio && ...
+        observedState.meanViolation >= params.cvfAe.adaptiveRecoveryViolation
+    requestedId = 4;
+    requestedName = 'ConservativeRecovery';
+end
+
+if requestedId == 2
+    memory.candidateId = 2;
+    memory.candidateCount = 0;
+    memory.activeId = 2;
+else
+    if memory.candidateId == requestedId
+        memory.candidateCount = memory.candidateCount + 1;
+    else
+        memory.candidateId = requestedId;
+        memory.candidateCount = 1;
+    end
+    if memory.candidateCount >= params.cvfAe.adaptiveSwitchConfirm
+        memory.activeId = requestedId;
+    end
+end
+
+state = observedState;
+switch memory.activeId
+    case 1
+        state.id = 1;
+        state.name = 'ConservativeFormation';
+    case 4
+        state.id = 4;
+        state.name = 'ConservativeRecovery';
+    otherwise
+        state.id = 2;
+        state.name = requestedName;
+end
 end
 
 function [bestFit, bestX, bestDetail] = localExtractBest(pop, fit, detail, bestFit, bestX, bestDetail)

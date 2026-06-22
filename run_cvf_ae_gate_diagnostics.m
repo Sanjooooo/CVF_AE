@@ -176,6 +176,22 @@ switch upper(strtrim(algName))
         algCfg.useSparseRepairReuse = false;
     case {'CVF-AE', 'CVF_AE'}
         algCfg.runner = 'CVF_AE';
+        algCfg.useConservativeStateAdaptiveCVF = true;
+        algCfg.cvfAe.conservativeStateAdaptive = true;
+        algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
+        algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
+        algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
+        algCfg.cvfAe.refinementInterval = 8;
+    case {'CVF-AE-SA-LITE', 'CVF_AE_SA_LITE', ...
+          'CVF-AE-CONSERVATIVESTATEADAPTIVE', 'CVF_AE_CONSERVATIVE_STATE_ADAPTIVE'}
+        algCfg.name = 'CVF-AE-SA-lite';
+        algCfg.runner = 'CVF_AE';
+        algCfg.useConservativeStateAdaptiveCVF = true;
+        algCfg.cvfAe.conservativeStateAdaptive = true;
+        algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
+        algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
+        algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
+        algCfg.cvfAe.refinementInterval = 8;
     case {'CVF-AE-W/O-CVF', 'CVF_AE_W/O_CVF'}
         algCfg.runner = 'CVF_AE';
         algCfg.useCVF = false;

@@ -902,3 +902,46 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 结果支持 initialization、CVF、sparse preservation 的必要性；
 - 结果不支持把 state-adaptive weighting 写成全场景稳定增益；
 - 下一步建议做统计检验，并考虑对 `StateAdaptiveCVF` 做小规模机制修正或在论文中弱化该模块。
+
+## 2026-06-22 保守状态自适应 CVF 机制修正
+
+目标：
+
+- 针对正式消融中 `CVF-AE-w/o-StateAdaptiveCVF` 反超完整 `CVF-AE` 的问题，检查 `StateAdaptiveCVF` 是否可以通过保守化调整获得稳定正贡献；
+- 不继续扩大正式实验规模，先做小规模机制验证；
+- 技术性报错和命令仍保留英文，工作记录使用中文。
+
+代码调整：
+
+- 在 `optimizer_CVF_AE_uav.m` 中新增保守状态自适应记忆与状态判定；
+- 在 `applyOperator_CVF_AE.m` 中降低 conservative state 下的 CVF 权重；
+- 在 `run_cvf_ae_gate_diagnostics.m` 和 `getUAVAlgorithmConfig.m` 中新增 `CVF-AE-SA-lite`；
+- 小规模验证通过后，已将保守状态自适应策略提升为默认 `CVF-AE` 配置；
+- `CVF-AE-w/o-StateAdaptiveCVF` 保持为静态 CVF 消融入口。
+
+小规模验证：
+
+- 结果目录：`routes/route_b_cvf_ae/results/cvf_ae_sa_lite_validation_20260622_193237`
+- scenes: `[1, 2, 4]`
+- algorithms: `CVF-AE-SA-lite`, `CVF-AE-w/o-StateAdaptiveCVF`, old `CVF-AE`
+- runs: `10`
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260627`
+
+结果：
+
+- 平均排名：
+  - `CVF-AE-SA-lite`: `1.00`
+  - `CVF-AE-w/o-StateAdaptiveCVF`: `2.33`
+  - old `CVF-AE`: `2.67`
+- 三个场景中 `CVF-AE-SA-lite` feasible rate 均为 `1.00`；
+- `CVF-AE-SA-lite` 未出现 high-altitude bypass；
+- Scene 4 中 `CVF-AE-SA-lite` 的 trajectory sanity 风险低于静态 CVF，但略高于旧 full CVF-AE，因此后续正式结果仍需保留轨迹图人工 sanity check。
+
+判断：
+
+- 保守状态自适应策略可以作为新的默认 `CVF-AE` 实现；
+- 旧版激进状态自适应不再作为论文主方法；
+- 后续正式主对比和正式消融需要基于新的默认 `CVF-AE` 重新生成，不能直接沿用旧版完整 `CVF-AE` 的最终表格；
+- 下一阶段建议先重跑正式消融，再视结果决定是否重跑正式主对比的全部场景或只重跑 `CVF-AE` 行。
