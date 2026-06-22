@@ -6,6 +6,7 @@ function summary = run_cvf_ae_main_comparison(modeOrCfg)
 %   run_cvf_ae_main_comparison('smoke')
 %   run_cvf_ae_main_comparison('precheck')
 %   run_cvf_ae_main_comparison('formal')
+%   run_cvf_ae_main_comparison('resume-formal')
 %   run_cvf_ae_main_comparison(cfg)
 
 if nargin < 1 || isempty(modeOrCfg)
@@ -63,6 +64,12 @@ switch mode
         cfg.paramsOverride.popSize = 30;
         cfg.paramsOverride.maxIter = 300;
 
+    case {'resume-formal', 'resume_formal'}
+        cfg = localBuildConfig('formal');
+        cfg.mode = 'formal';
+        cfg.resultDir = localFindLatestResultDir('cvf_ae_main_comparison_formal_');
+        return;
+
     otherwise
         error('Unknown CVF-AE main comparison mode: %s', mode);
 end
@@ -113,6 +120,18 @@ if ~isfield(cfg, 'showSingleRunFigure'), cfg.showSingleRunFigure = false; end
 if ~isfield(cfg, 'showBatchFigure'), cfg.showBatchFigure = false; end
 if ~isfield(cfg, 'saveBestPathFigure'), cfg.saveBestPathFigure = false; end
 if ~isfield(cfg, 'saveBestTopViewFigure'), cfg.saveBestTopViewFigure = false; end
+end
+
+function resultDir = localFindLatestResultDir(prefix)
+resultRoot = fullfile(pwd, 'routes', 'route_b_cvf_ae', 'results');
+listing = dir(fullfile(resultRoot, [prefix '*']));
+listing = listing([listing.isdir]);
+if isempty(listing)
+    error('No existing formal result directory found for prefix: %s', prefix);
+end
+[~, idx] = max([listing.datenum]);
+resultDir = fullfile(listing(idx).folder, listing(idx).name);
+fprintf('Resume formal result folder: %s\n', resultDir);
 end
 
 function localWriteReadme(cfg, summary)

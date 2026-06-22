@@ -89,17 +89,34 @@ for s = 1:nScenes
 
         for r = 1:nRuns
             runSeed = cfg.baseSeed + 10000 * sceneId + 100 * a + r;
+            runFile = fullfile(runDir, sprintf('scene%d_%s_run%03d.mat', ...
+                sceneId, upper(algName), r));
             tRun = tic;
 
             try
-                result = localRunSingle(algName, objFun, params, map, refX, algCfg, runSeed, cfg.useLiteFAEAE);
+                loadedExisting = false;
+                if localGetFlag(cfg, 'resumeExisting', false) && exist(runFile, 'file') == 2
+                    S = load(runFile);
+                    if isfield(S, 'result')
+                        result = S.result;
+                        loadedExisting = true;
+                    else
+                        warning('Existing run file has no result field and will be recomputed: %s', runFile);
+                    end
+                end
+
+                if ~loadedExisting
+                    result = localRunSingle(algName, objFun, params, map, refX, algCfg, runSeed, cfg.useLiteFAEAE);
+                end
                 elapsed = toc(tRun);
 
                 % -------- normalize result fields for downstream compatibility --------
                 result = localNormalizeResultStruct(result, sceneId, algName, r, runSeed);
 
                 % -------- save run_records --------
-                save(fullfile(runDir, sprintf('scene%d_%s_run%03d.mat', sceneId, upper(algName), r)), 'result');
+                if ~loadedExisting
+                    save(runFile, 'result');
+                end
 
                 % -------- collect allResults --------
                 if isempty(runs)
@@ -131,8 +148,13 @@ for s = 1:nScenes
                     runRows = [runRows; row]; %#ok<AGROW>
                 end
 
-                fprintf('  run %2d/%2d | best = %.6f | feas = %d | time = %.3fs\n', ...
-                    r, nRuns, result.bestFitness, logical(result.finalFeasible), result.runtime);
+                if loadedExisting
+                    fprintf('  run %2d/%2d | loaded | best = %.6f | feas = %d | time = %.3fs\n', ...
+                        r, nRuns, result.bestFitness, logical(result.finalFeasible), result.runtime);
+                else
+                    fprintf('  run %2d/%2d | best = %.6f | feas = %d | time = %.3fs\n', ...
+                        r, nRuns, result.bestFitness, logical(result.finalFeasible), result.runtime);
+                end
 
             catch ME
                 warning('Scene %d | %s | run %d failed: %s', sceneId, algName, r, ME.message);
@@ -412,6 +434,15 @@ for k = 1:numel(f)
     else
         params.(f{k}) = overrides.(f{k});
     end
+end
+end
+
+% ========================================================================
+function tf = localGetFlag(s, name, defaultVal)
+if isfield(s, name)
+    tf = logical(s.(name));
+else
+    tf = logical(defaultVal);
 end
 end
 

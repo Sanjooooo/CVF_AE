@@ -107,7 +107,27 @@
 4. 若预检通过，再显式运行 `run_cvf_ae_main_comparison('formal')`；
 5. 正式结果完成后再决定是否增加工程参考组或 CEC 补充实验。
 
-## 7. 当前边界
+## 7. 断点续跑
+
+主对比 runner 会为每个 `(scene, algorithm, run)` 保存独立记录：
+
+- `run_records/scene{sceneId}_{ALG}_run{runId}.mat`
+
+当 `cfg.resumeExisting = true` 时，runner 会先检查对应 `.mat` 文件：
+
+- 已存在且包含 `result` 字段：直接加载并进入汇总；
+- 不存在：正常运行并保存；
+- 文件存在但缺少 `result` 字段：重新计算该 run。
+
+正式主对比如果中断，可运行：
+
+```matlab
+run_cvf_ae_main_comparison('resume-formal')
+```
+
+该模式会自动寻找最新的 `cvf_ae_main_comparison_formal_*` 结果目录，并只补跑缺失的 run。
+
+## 8. 当前边界
 
 - 不做 CEC 主线实验；
 - 不把 `A*`、`RRT*` 和群智能算法混排为同一平均排名；

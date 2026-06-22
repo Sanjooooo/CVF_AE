@@ -581,3 +581,31 @@ Decision:
 - `DBO` 在 Scene 4 是强竞争 baseline；
 - 当前结果只用于链路验证，不作为论文正式结论；
 - 不因预检继续调整 `CVF-AE` 参数。
+
+## 2026-06-22 正式主对比断点续跑机制
+
+目标：
+
+- 正式主对比运行时间较长，必须避免中断后从头开始；
+- 每个 `(scene, algorithm, run)` 都应有独立断点记录；
+- 重新运行时自动加载已完成 run，只补算缺失 run。
+
+实现：
+
+- `run_uav_comparison_lite_v2_batch.m` 在每个 run 前检查 `run_records/*.mat`；
+- 当 `cfg.resumeExisting = true` 且记录存在时，直接加载 `result` 并参与汇总；
+- 当记录不存在时，才调用对应 optimizer；
+- `run_cvf_ae_main_comparison.m` 新增 `resume-formal` 模式；
+- `resume-formal` 会自动寻找最新的 `cvf_ae_main_comparison_formal_*` 目录继续运行。
+
+正式主对比命令：
+
+```matlab
+run_cvf_ae_main_comparison('formal')
+```
+
+中断续跑命令：
+
+```matlab
+run_cvf_ae_main_comparison('resume-formal')
+```
