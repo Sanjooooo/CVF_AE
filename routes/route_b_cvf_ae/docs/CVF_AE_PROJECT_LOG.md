@@ -1146,3 +1146,68 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 可以写“低额外评价次数”和“受控运行时间开销”；
 - 不应写“无开销”；
 - 不应把 Scene 4 中 runtime ratio 小于 1 的结果解释成稳定加速，因为运行时间受 repair 次数、可行解形成速度和 MATLAB 运行波动影响。
+
+## 2026-06-23 参数敏感性实验
+
+阶段目标：
+
+- 验证当前冻结的保守状态自适应 `CVF-AE` 对关键 CVF 参数是否鲁棒；
+- 只做小范围参数敏感性，不进入反复调参；
+- 判断是否存在全面、稳定、显著优于默认参数的替代设置。
+
+新增脚本：
+
+- `run_cvf_ae_param_sensitivity.m`
+- `analyze_cvf_ae_param_sensitivity_sanity.m`
+
+结果目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_param_sensitivity_conservative_20260623_131249`
+
+配置：
+
+- scenes: `[2, 4]`
+- nRuns: `10`
+- popSize: `30`
+- maxIter: `300`
+- baseSeed: `20260631`
+- resumeExisting: `true`
+- run records: `180 / 180`
+
+参数组：
+
+- `quota_scale`: `low / default / high`
+- `step_strength`: `weak / default / strong`
+- `state_switch_threshold`: `strict / default / loose`
+
+关键结果：
+
+- `quota_scale`
+  - `high` 在 Scene 2-v2 和 Scene 4 的 mean best fitness 均略优于 `default`；
+  - 但平均 `nEvals` 从 `9444.7` 增至 `9464.1`，平均 CVF 触发从 `47.5` 增至 `53.1`；
+  - `low` 在两个场景均弱于 `default`，说明过低 CVF quota 会削弱强约束场景贡献。
+- `step_strength`
+  - 三档平均排名均为 `2.00`；
+  - Scene 2-v2 中 `default` 最好，Scene 4 中 `weak` 最好；
+  - 未形成稳定优于默认的方向。
+- `state_switch_threshold`
+  - `default` 平均排名 `1.50`，优于 `loose = 2.00` 和 `strict = 2.50`；
+  - Scene 4 中 `default` 明显优于 `loose` 和 `strict`。
+
+轨迹 sanity：
+
+- 已生成：
+  - `param_sensitivity_trajectory_sanity_runs.csv`
+  - `param_sensitivity_trajectory_sanity_summary.csv`
+  - `param_sensitivity_trajectory_sanity_flags.csv`
+- Scene 2-v2 所有参数组和档位 `VisualReviewFlagRate = 0`；
+- Scene 4 的 flagged runs 主要来自 boundary-hugging，不是 high-altitude bypass；
+- `quota_scale = high` 在 Scene 4 的 `VisualReviewFlagRate = 0`，但其额外 CVF 触发和 `nEvals` 更高；
+- `state_switch_threshold = default` 在 Scene 4 的 `VisualReviewFlagRate = 0.4`，后续代表轨迹图阶段需要继续人工筛选 median / best run。
+
+阶段判断：
+
+- 不修改当前主方法默认参数；
+- 没有任何非默认参数同时在 fitness、`nEvals`、CVF 触发次数和 trajectory sanity 上全面、稳定、显著优于默认；
+- 参数敏感性结论应写为“默认参数处于稳定前列，CVF-AE 对关键 CVF 参数具有鲁棒性”；
+- 当前“保守状态自适应 CVF 调度版本的 CVF-AE”继续保持冻结。
