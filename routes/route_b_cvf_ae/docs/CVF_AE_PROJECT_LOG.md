@@ -1211,3 +1211,55 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 没有任何非默认参数同时在 fitness、`nEvals`、CVF 触发次数和 trajectory sanity 上全面、稳定、显著优于默认；
 - 参数敏感性结论应写为“默认参数处于稳定前列，CVF-AE 对关键 CVF 参数具有鲁棒性”；
 - 当前“保守状态自适应 CVF 调度版本的 CVF-AE”继续保持冻结。
+
+## 2026-06-23 收敛曲线生成
+
+阶段目标：
+
+- 基于正式主对比结果生成论文用收敛曲线；
+- 只复用已有 `run_records`，不重跑优化实验；
+- 输出均值曲线和标准差阴影，用于支撑主对比收敛行为分析。
+
+新增脚本：
+
+- `make_cvf_ae_convergence_curves.m`
+
+数据来源：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_conservative_20260623_091132`
+
+输出目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_convergence_curves_20260623_from_main_comparison`
+
+配置：
+
+- scenes: `[1, 2, 4]`
+- algorithms: `CVF-AE`, `CPO`, `DBO`, `GWO`, `AE`, `PSO`, `HHO`
+- primary algorithms with std shading: `CVF-AE`, `CPO`, `DBO`, `GWO`, `AE`
+- source runs per scene / algorithm: `30`
+
+输出文件：
+
+- `cvf_ae_convergence_summary.csv`
+- `cvf_ae_convergence_curves.csv`
+- `CVF_AE_CONVERGENCE_INTERPRETATION.md`
+- `scene1_convergence_mean_std.png`
+- `scene2_convergence_mean_std.png`
+- `scene4_convergence_mean_std.png`
+
+关键结果：
+
+- summary rows: `21`
+- curve rows: `6300`
+- Scene 1 最终均值：`CVF-AE = 298.1379`，`CPO = 298.3594`，`DBO = 344.8827`；
+- Scene 2-v2 最终均值：`CPO = 278.1196`，`CVF-AE = 301.2018`，`DBO = 337.7867`；
+- Scene 4 最终均值：`CVF-AE = 349.2270`，`DBO = 376.3041`，`CPO = 519.8797`；
+- CVF-AE 在三个场景的 feasible rate 均为 `1.00`。
+
+解释边界：
+
+- 收敛曲线使用各 run 中由 Deb 可行性优先规则维护的 best-so-far fitness，可写为 feasible-aware best fitness；
+- Scene 2-v2 中 `CPO` scalar fitness 最低，但必须结合正式主对比中的 trajectory sanity 一起解释，不能单独写成低空任务一致性更优；
+- Scene 1 和 Scene 4 的曲线支持 `CVF-AE` 在强约束场景中具备稳定收敛和较低最终 fitness；
+- 本阶段产物可作为论文主对比收敛曲线来源。
