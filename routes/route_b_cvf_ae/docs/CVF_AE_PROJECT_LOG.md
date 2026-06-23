@@ -1263,3 +1263,59 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - Scene 2-v2 中 `CPO` scalar fitness 最低，但必须结合正式主对比中的 trajectory sanity 一起解释，不能单独写成低空任务一致性更优；
 - Scene 1 和 Scene 4 的曲线支持 `CVF-AE` 在强约束场景中具备稳定收敛和较低最终 fitness；
 - 本阶段产物可作为论文主对比收敛曲线来源。
+
+## 2026-06-23 近年非 AE 改进算法接入
+
+阶段目标：
+
+- 为扩展主对比补充近年非 AE 改进算法，而不是 AE-family 内部变体；
+- 新增算法只使用统一 UAV 编码、统一 objective、统一边界投影和 Deb 可行性优先规则；
+- 不使用 `CVF-AE` 的 CVF、repair、参考初始化或 sparse preservation 等主方法专属机制。
+
+新增算法：
+
+- `GDESAO`：paper-based reimplementation of Global Dynamic Evolution Snow Ablation Optimizer；
+- `ERIME`：paper-based reimplementation of enhanced RIME；
+- `MSCSO`：paper-based reimplementation of Modified Sand Cat Swarm Optimization。
+
+新增脚本：
+
+- `optimizer_GDESAO_uav.m`
+- `optimizer_ERIME_uav.m`
+- `optimizer_MSCSO_uav.m`
+
+修改入口：
+
+- `getUAVAlgorithmConfig.m`
+- `run_single_uav_algorithm_case.m`
+- `run_uav_comparison_lite_v2_batch.m`
+- `run_cvf_ae_main_comparison.m`
+
+新增 runner 模式：
+
+- `recent-precheck`
+- `recent-formal`
+- `resume-recent-formal`
+
+precheck：
+
+- command: `run_cvf_ae_main_comparison('recent-precheck')`
+- scenes: `[1, 2, 4]`
+- algorithms: `GDESAO`, `ERIME`, `MSCSO`
+- runs: `2`
+- popSize: `12`
+- maxIter: `20`
+- run records: `18 / 18`
+
+precheck 平均排名：
+
+- `MSCSO`: `1.6667`
+- `GDESAO`: `2.0000`
+- `ERIME`: `2.3333`
+
+阶段判断：
+
+- 三个新增算法已通过接口和小规模运行验证；
+- precheck 不作为论文性能结果，只说明算法能进入统一实验框架；
+- 下一步应运行 `recent-formal`，再将新增算法结果与已冻结的正式主对比目录合并为扩展主表；
+- Scene 4 中新增算法在小规模 precheck 已出现不可行 run，正式结果必须继续配套 trajectory sanity 和 feasible rate 解读。

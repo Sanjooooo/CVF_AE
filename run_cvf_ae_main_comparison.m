@@ -7,6 +7,8 @@ function summary = run_cvf_ae_main_comparison(modeOrCfg)
 %   run_cvf_ae_main_comparison('precheck')
 %   run_cvf_ae_main_comparison('formal')
 %   run_cvf_ae_main_comparison('resume-formal')
+%   run_cvf_ae_main_comparison('recent-precheck')
+%   run_cvf_ae_main_comparison('recent-formal')
 %   run_cvf_ae_main_comparison(cfg)
 
 if nargin < 1 || isempty(modeOrCfg)
@@ -63,6 +65,27 @@ switch mode
         cfg.nRuns = 30;
         cfg.paramsOverride.popSize = 30;
         cfg.paramsOverride.maxIter = 300;
+
+    case {'recent-precheck', 'recent_precheck'}
+        cfg.mode = 'recent_improved_precheck';
+        cfg.algorithms = {'GDESAO', 'ERIME', 'MSCSO'};
+        cfg.nRuns = 2;
+        cfg.paramsOverride.popSize = 12;
+        cfg.paramsOverride.maxIter = 20;
+        cfg.baseSeed = 20260701;
+
+    case {'recent-formal', 'recent_formal'}
+        cfg.mode = 'recent_improved_formal';
+        cfg.algorithms = {'GDESAO', 'ERIME', 'MSCSO'};
+        cfg.nRuns = 30;
+        cfg.paramsOverride.popSize = 30;
+        cfg.paramsOverride.maxIter = 300;
+        cfg.baseSeed = 20260701;
+
+    case {'resume-recent-formal', 'resume_recent_formal'}
+        cfg = localBuildConfig('recent-formal');
+        cfg.resultDir = localFindLatestResultDir('cvf_ae_main_comparison_recent_improved_formal_');
+        return;
 
     case {'resume-formal', 'resume_formal'}
         cfg = localBuildConfig('formal');

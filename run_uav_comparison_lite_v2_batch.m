@@ -218,6 +218,12 @@ switch upper(algName)
         result = optimizer_DBO_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'CPO'
         result = optimizer_CPO_uav(objFun, params, map, refX, algCfg, runSeed);
+    case {'GDESAO', 'GDSAO'}
+        result = optimizer_GDESAO_uav(objFun, params, map, refX, algCfg, runSeed);
+    case {'ERIME', 'ELRIME'}
+        result = optimizer_ERIME_uav(objFun, params, map, refX, algCfg, runSeed);
+    case 'MSCSO'
+        result = optimizer_MSCSO_uav(objFun, params, map, refX, algCfg, runSeed);
     case {'CVF-AE', 'CVF_AE', 'CVFAE'}
         result = optimizer_CVF_AE_uav(objFun, params, map, refX, algCfg, runSeed);
     case {'COVE-AE', 'COVE_AE', 'COVEAE'}

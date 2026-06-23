@@ -72,6 +72,36 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.useReferenceInit = false;
             algCfg.referenceInitRatio = 0.0;
 
+        case {'GDESAO', 'GDSAO'}
+            algCfg.name = 'GDESAO';
+            algCfg.useReferenceInit = false;
+            algCfg.referenceInitRatio = 0.0;
+            algCfg.gdesao.kMin = 0.5;
+            algCfg.gdesao.kMax = 2.0;
+            algCfg.gdesao.ddfMin = 0.35;
+            algCfg.gdesao.ddfMax = 0.60;
+            algCfg.gdesao.damping = 1.0;
+
+        case {'ERIME', 'ELRIME'}
+            algCfg.name = 'ERIME';
+            algCfg.useReferenceInit = false;
+            algCfg.referenceInitRatio = 0.0;
+            algCfg.erime.reverseProb = 0.5;
+            algCfg.erime.softScale = 5.0;
+
+        case 'MSCSO'
+            algCfg.useReferenceInit = false;
+            algCfg.referenceInitRatio = 0.0;
+            algCfg.mscso.temp0 = 1.0;
+            algCfg.mscso.cooling = 0.98;
+            algCfg.mscso.eliteRate = 0.20;
+            algCfg.mscso.mutRate = 0.15;
+            algCfg.mscso.levyProb = 0.35;
+            algCfg.mscso.wMax = 0.9;
+            algCfg.mscso.wMin = 0.4;
+            algCfg.mscso.c1 = 1.5;
+            algCfg.mscso.c2 = 1.5;
+
         case {'COVE-AE', 'COVE_AE', 'COVEAE'}
             algCfg.name = 'COVE-AE';
             algCfg.useReferenceInit = true;

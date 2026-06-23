@@ -2,7 +2,7 @@
 %RUN_SINGLE_UAV_ALGORITHM_CASE Run one UAV planning case for one algorithm.
 %
 % Inputs:
-%   algName - 'AE','PSO','GWO','HHO','WOA','DBO','CPO','COVE-AE','CVF-AE','FAEAE'
+%   algName - 'AE','PSO','GWO','HHO','WOA','DBO','CPO','GDESAO','ERIME','MSCSO','COVE-AE','CVF-AE','FAEAE'
 %   sceneId - scene id, e.g. 1/2/4
 %   cfg     - comparison config from getUAVComparisonConfig()
 %   runId   - run index
@@ -104,6 +104,15 @@
 
         case 'CPO'
             result = optimizer_CPO_uav(objFun, params, map, refX, algCfg, runSeed);
+
+        case {'GDESAO', 'GDSAO'}
+            result = optimizer_GDESAO_uav(objFun, params, map, refX, algCfg, runSeed);
+
+        case {'ERIME', 'ELRIME'}
+            result = optimizer_ERIME_uav(objFun, params, map, refX, algCfg, runSeed);
+
+        case 'MSCSO'
+            result = optimizer_MSCSO_uav(objFun, params, map, refX, algCfg, runSeed);
 
         case {'COVE-AE', 'COVE_AE', 'COVEAE'}
             result = optimizer_COVE_AE_uav(objFun, params, map, refX, algCfg, runSeed);
