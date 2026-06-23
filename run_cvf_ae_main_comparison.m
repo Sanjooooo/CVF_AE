@@ -68,7 +68,7 @@ switch mode
 
     case {'recent-precheck', 'recent_precheck'}
         cfg.mode = 'recent_improved_precheck';
-        cfg.algorithms = {'GDESAO', 'ERIME', 'MSCSO'};
+        cfg.algorithms = {'GDSAO', 'ERIME', 'MSCSO'};
         cfg.nRuns = 2;
         cfg.paramsOverride.popSize = 12;
         cfg.paramsOverride.maxIter = 20;
@@ -76,7 +76,7 @@ switch mode
 
     case {'recent-formal', 'recent_formal'}
         cfg.mode = 'recent_improved_formal';
-        cfg.algorithms = {'GDESAO', 'ERIME', 'MSCSO'};
+        cfg.algorithms = {'GDSAO', 'ERIME', 'MSCSO'};
         cfg.nRuns = 30;
         cfg.paramsOverride.popSize = 30;
         cfg.paramsOverride.maxIter = 300;

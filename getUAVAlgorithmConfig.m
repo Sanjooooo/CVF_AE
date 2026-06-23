@@ -73,14 +73,12 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.referenceInitRatio = 0.0;
 
         case {'GDESAO', 'GDSAO'}
-            algCfg.name = 'GDESAO';
+            algCfg.name = 'GDSAO';
             algCfg.useReferenceInit = false;
             algCfg.referenceInitRatio = 0.0;
-            algCfg.gdesao.kMin = 0.5;
-            algCfg.gdesao.kMax = 2.0;
-            algCfg.gdesao.ddfMin = 0.35;
-            algCfg.gdesao.ddfMax = 0.60;
-            algCfg.gdesao.damping = 1.0;
+            algCfg.gdesao.ddfBase = 0.35;
+            algCfg.gdesao.ddfRange = 0.25;
+            algCfg.gdesao.ddfSlope = 0.6;
 
         case {'ERIME', 'ELRIME'}
             algCfg.name = 'ERIME';

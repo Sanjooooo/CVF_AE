@@ -1,9 +1,10 @@
 function result = optimizer_GDESAO_uav(objFun, params, ~, refX, algCfg, runSeed)
-%OPTIMIZER_GDESAO_UAV Paper-based GDSAO optimizer for UAV path planning.
+%OPTIMIZER_GDESAO_UAV Source-aligned GDSAO optimizer for UAV path planning.
 %
-% Reimplemented from the GDSAO paper mechanisms: good-point-set
-% initialization, adaptive dynamic snowmelt ratio, SAO exploration/
-% exploitation, and neighborhood dimensional search.
+% Adapted from the authors' GDSAO.m and initialization_GPSAO.m source code
+% to this repository's UAV encoding, objective adapter, bounds, and Deb
+% feasibility ordering. The implementation keeps the official GPSAO
+% initialization, elite pool, dynamic DDF, SAO update, and NDS update.
 
 if nargin >= 6 && ~isempty(runSeed)
     rng(runSeed, 'twister');
@@ -20,11 +21,9 @@ referenceInitRatio = localGetCfg(algCfg, 'referenceInitRatio', 0.0);
 referenceNoiseScale = localGetCfg(algCfg, 'referenceNoiseScale', 0.05);
 usePublicProjection = localGetCfg(algCfg, 'usePublicProjection', true);
 
-kMin = localGetNestedCfg(algCfg, 'gdesao', 'kMin', 0.5);
-kMax = localGetNestedCfg(algCfg, 'gdesao', 'kMax', 2.0);
-ddfMin = localGetNestedCfg(algCfg, 'gdesao', 'ddfMin', 0.35);
-ddfMax = localGetNestedCfg(algCfg, 'gdesao', 'ddfMax', 0.60);
-damping = localGetNestedCfg(algCfg, 'gdesao', 'damping', 1.0);
+ddfBase = localGetNestedCfg(algCfg, 'gdesao', 'ddfBase', 0.35);
+ddfRange = localGetNestedCfg(algCfg, 'gdesao', 'ddfRange', 0.25);
+ddfSlope = localGetNestedCfg(algCfg, 'gdesao', 'ddfSlope', 0.6);
 
 X = localGoodPointInit(popSize, dim, lb, ub);
 if useReferenceInit && ~isempty(refX)
@@ -32,77 +31,95 @@ if useReferenceInit && ~isempty(refX)
 end
 
 [fit, detail, nEvals] = localEvaluatePopulation(X, objFun, usePublicProjection, lb, ub);
-[bestX, bestFit, bestDetail, ~] = localBestByDeb(X, fit, detail);
+[bestX, bestFit, bestDetail, order] = localBestByDeb(X, fit, detail);
+elitePool = localElitePool(X, order);
 
 bestHist = inf(maxIter, 1);
-prevStd = std(fit(isfinite(fit)));
-if isempty(prevStd) || prevStd <= 0
-    prevStd = 1;
-end
+bestHist(1) = bestFit;
+
+prevStd = localSafeStd(fit);
+ddf = ddfBase;
+na = floor(popSize * 0.5);
+nb = popSize - na;
 
 tStart = tic;
 
-for t = 1:maxIter
-    [~, ~, ~, order] = localBestByDeb(X, fit, detail);
-    elite = X(order(1:min(3, popSize)), :);
-    leaders = X(order(1:max(1, floor(popSize / 2))), :);
-    centroid = mean(leaders, 1);
-    Xmean = mean(X, 1);
+for t = 2:maxIter
+    rb = randn(popSize, dim);
+    temp = exp(-t / maxIter);
+    melt = ddf * temp;
+    centroid = mean(X, 1);
 
-    currStd = std(fit(isfinite(fit)));
-    if isempty(currStd) || currStd <= 0
-        currStd = prevStd;
+    index = 1:popSize;
+    index1 = randperm(popSize, na);
+    index2 = setdiff(index, index1);
+
+    XSao = X;
+    fitSao = fit;
+    detailSao = detail;
+
+    for k = 1:numel(index1)
+        idx = index1(k);
+        r1 = rand;
+        eliteIdx = randi(size(elitePool, 1));
+        xnew = elitePool(eliteIdx, :) + rb(idx, :) .* ...
+            (r1 .* (bestX - X(idx, :)) + (1 - r1) .* (centroid - X(idx, :)));
+        xnew = localProjectSolution(xnew, lb, ub);
+        [fitSao(idx), detailSao(idx)] = objFun(xnew);
+        nEvals = nEvals + 1;
+        XSao(idx, :) = xnew;
     end
-    kTmp = currStd / max(prevStd, eps);
-    kDisp = min(max(kTmp, kMin), kMax);
-    ddf = ddfMax + (ddfMin - ddfMax) ./ ...
-        (1 + exp(-10 * damping * ((2 * t) / (kDisp * maxIter) - 1)));
-    melt = ddf * exp(-t / maxIter);
-    prevStd = currStd;
 
-    nExplore = max(1, round(popSize * (1 - t / maxIter)));
-    Xold = X;
+    if na < popSize
+        na = na + 1;
+        nb = max(0, nb - 1);
+    end
+
+    for k = 1:min(nb, numel(index2))
+        idx = index2(k);
+        r2 = 2 * rand - 1;
+        xnew = melt .* bestX + rb(idx, :) .* ...
+            (r2 .* (bestX - X(idx, :)) + (1 - r2) .* (centroid - X(idx, :)));
+        xnew = localProjectSolution(xnew, lb, ub);
+        [fitSao(idx), detailSao(idx)] = objFun(xnew);
+        nEvals = nEvals + 1;
+        XSao(idx, :) = xnew;
+    end
+
+    Xnds = XSao;
+    fitNds = fitSao;
+    detailNds = detailSao;
+    distX = localPairwiseDistance(XSao);
+    r1perm = randperm(popSize, popSize);
+
+    for row = 1:popSize
+        radius = norm(XSao(row, :) - Xnds(row, :));
+        neighbors = find(distX(row, :) <= radius + eps);
+        if isempty(neighbors)
+            neighbors = row;
+        end
+
+        xnew = XSao(row, :);
+        randNeighbor = neighbors(randi(numel(neighbors), 1, dim));
+        for d = 1:dim
+            xnew(d) = XSao(row, d) + rand .* ...
+                (XSao(randNeighbor(d), d) - XSao(r1perm(row), d));
+        end
+        xnew = localProjectSolution(xnew, lb, ub);
+        [fitNds(row), detailNds(row)] = objFun(xnew);
+        nEvals = nEvals + 1;
+        Xnds(row, :) = xnew;
+    end
 
     for i = 1:popSize
-        xi = Xold(i, :);
-        elitePool = [elite; centroid];
-        xElite = elitePool(randi(size(elitePool, 1)), :);
-
-        if i <= nExplore
-            r1 = rand;
-            brown = randn(1, dim);
-            xSao = xElite + brown .* (r1 .* (bestX - xi) + (1 - r1) .* (Xmean - xi));
+        if debBetter(fitNds(i), detailNds(i), fitSao(i), detailSao(i))
+            X(i, :) = Xnds(i, :);
+            fit(i) = fitNds(i);
+            detail(i) = detailNds(i);
         else
-            r2 = rand;
-            brown = randn(1, dim);
-            xSao = melt .* bestX + brown .* (r2 .* (bestX - xi) + (1 - r2) .* (Xmean - xi));
-        end
-
-        xSao = localProjectSolution(xSao, lb, ub);
-        [fSao, dSao] = objFun(xSao);
-        nEvals = nEvals + 1;
-
-        xCand = xSao;
-        fCand = fSao;
-        dCand = dSao;
-
-        if ~ismember(i, order(1:min(3, popSize)))
-            xNds = localNeighborhoodDimensionalSearch(i, xi, xSao, Xold);
-            xNds = localProjectSolution(xNds, lb, ub);
-            [fNds, dNds] = objFun(xNds);
-            nEvals = nEvals + 1;
-
-            if debBetter(fNds, dNds, fSao, dSao)
-                xCand = xNds;
-                fCand = fNds;
-                dCand = dNds;
-            end
-        end
-
-        if debBetter(fCand, dCand, fit(i), detail(i))
-            X(i, :) = xCand;
-            fit(i) = fCand;
-            detail(i) = dCand;
+            X(i, :) = XSao(i, :);
+            fit(i) = fitSao(i);
+            detail(i) = detailSao(i);
         end
 
         if debBetter(fit(i), detail(i), bestFit, bestDetail)
@@ -112,50 +129,63 @@ for t = 1:maxIter
         end
     end
 
+    [~, ~, ~, order] = localBestByDeb(X, fit, detail);
+    elitePool = localElitePool(X, order);
     bestHist(t) = bestFit;
+
+    currStd = localSafeStd(fit);
+    sigma = currStd / max(prevStd, eps);
+    sigma = min(max(sigma, 0.5), 2.0);
+    ddf = ddfBase + ddfRange / ...
+        (1 + exp(-10 * ddfSlope * ((2 * t) / (maxIter * sigma) - 1)));
+    prevStd = currStd;
 end
 
 runTime = toc(tStart);
 result = localBuildResult(bestX, bestFit, bestDetail, bestHist, runTime, nEvals, params);
 end
 
-function xNds = localNeighborhoodDimensionalSearch(i, xi, xSao, X)
-radius = norm(xSao - xi);
-dist = sqrt(sum((X - xi).^2, 2));
-near = find(dist <= radius);
-far = find(dist > radius);
-near(near == i) = [];
-far(far == i) = [];
-
-if isempty(near)
-    near = setdiff(1:size(X, 1), i);
+function pool = localElitePool(X, order)
+topCount = min(3, numel(order));
+pool = X(order(1:topCount), :);
+if topCount < 3
+    pool(end+1:3, :) = repmat(pool(end, :), 3 - topCount, 1);
 end
-if isempty(far)
-    far = setdiff(1:size(X, 1), i);
+nHalf = max(1, floor(size(X, 1) * 0.5));
+halfBestMean = mean(X(order(1:nHalf), :), 1);
+pool(4, :) = halfBestMean;
 end
 
-nIdx = near(randi(numel(near)));
-rIdx = far(randi(numel(far)));
-mask = rand(1, size(X, 2)) < 0.5;
-if ~any(mask)
-    mask(randi(size(X, 2))) = true;
+function s = localSafeStd(fit)
+finiteFit = fit(isfinite(fit));
+if isempty(finiteFit)
+    s = 1;
+else
+    s = std(finiteFit(:));
+    if s <= 0 || ~isfinite(s)
+        s = 1;
+    end
+end
 end
 
-xNds = xSao;
-xNds(mask) = xi(mask) + rand(1, sum(mask)) .* (X(nIdx, mask) - X(rIdx, mask));
+function D = localPairwiseDistance(X)
+n = size(X, 1);
+D = zeros(n, n);
+for i = 1:n
+    diffs = X - X(i, :);
+    D(i, :) = sqrt(sum(diffs .^ 2, 2))';
+end
 end
 
 function X = localGoodPointInit(popSize, dim, lb, ub)
 p = localSmallestPrime(2 * dim + 3);
-r = zeros(1, dim);
-for j = 1:dim
-    r(j) = mod(2 * cos(2 * pi * j / p), 1);
-end
-P = zeros(popSize, dim);
+X = zeros(popSize, dim);
 for i = 1:popSize
-    P(i, :) = mod(r * i, 1);
+    for j = 1:dim
+        r = mod(2 * cos(2 * pi * j / p) * i, 1);
+        X(i, j) = lb(j) + r * (ub(j) - lb(j));
+    end
 end
-X = repmat(lb, popSize, 1) + P .* repmat(ub - lb, popSize, 1);
 end
 
 function p = localSmallestPrime(n)

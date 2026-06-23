@@ -1274,7 +1274,7 @@ Scene 2-v2 轨迹 sanity 关键指标：
 
 新增算法：
 
-- `GDESAO`：paper-based reimplementation of Global Dynamic Evolution Snow Ablation Optimizer；
+- `GDSAO`：source-aligned adaptation of Global Dynamic Evolution Snow Ablation Optimizer；
 - `ERIME`：paper-based reimplementation of enhanced RIME；
 - `MSCSO`：paper-based reimplementation of Modified Sand Cat Swarm Optimization。
 
@@ -1301,7 +1301,7 @@ precheck：
 
 - command: `run_cvf_ae_main_comparison('recent-precheck')`
 - scenes: `[1, 2, 4]`
-- algorithms: `GDESAO`, `ERIME`, `MSCSO`
+- algorithms: `GDSAO`, `ERIME`, `MSCSO`
 - runs: `2`
 - popSize: `12`
 - maxIter: `20`
@@ -1309,8 +1309,8 @@ precheck：
 
 precheck 平均排名：
 
-- `MSCSO`: `1.6667`
-- `GDESAO`: `2.0000`
+- `GDSAO`: `1.6667`
+- `MSCSO`: `2.0000`
 - `ERIME`: `2.3333`
 
 阶段判断：
