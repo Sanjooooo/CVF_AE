@@ -142,6 +142,9 @@ if fid < 0
     return;
 end
 c = onCleanup(@() fclose(fid));
+if localUseUtf8Readme()
+    localWriteReadmeUtf8(fid, cfg, summary);
+else
 
 fprintf(fid, '# CVF-AE 主对比实验记录\n\n');
 fprintf(fid, '- 模式: `%s`\n', cfg.mode);
@@ -156,6 +159,39 @@ fprintf(fid, '主要输出:\n\n');
 fprintf(fid, '- `uav_comparison_runs.csv`\n');
 fprintf(fid, '- `uav_comparison_summary_long.csv`\n');
 fprintf(fid, '- `uav_comparison_average_rank.csv`\n');
+fprintf(fid, '- `run_records/`\n\n');
+
+if isfield(summary, 'avgRankTable')
+    fprintf(fid, '## 平均排名\n\n');
+    for i = 1:height(summary.avgRankTable)
+        fprintf(fid, '- `%s`: %.4f\n', summary.avgRankTable.Algorithm{i}, summary.avgRankTable.AverageRank(i));
+    end
+end
+end
+
+end
+
+function tf = localUseUtf8Readme()
+tf = true;
+end
+
+function localWriteReadmeUtf8(fid, cfg, summary)
+fprintf(fid, '# CVF-AE 主对比实验记录\n\n');
+fprintf(fid, '- 模式: `%s`\n', cfg.mode);
+fprintf(fid, '- 场景: `%s`\n', mat2str(cfg.sceneIds));
+fprintf(fid, '- 算法: `%s`\n', strjoin(cfg.algorithms, ', '));
+fprintf(fid, '- nRuns: `%d`\n', cfg.nRuns);
+fprintf(fid, '- popSize: `%d`\n', cfg.paramsOverride.popSize);
+fprintf(fid, '- maxIter: `%d`\n', cfg.paramsOverride.maxIter);
+fprintf(fid, '- baseSeed: `%d`\n\n', cfg.baseSeed);
+fprintf(fid, '本 runner 使用统一 UAV B-spline 编码、统一 `fitnessFAEAE` 评价函数、统一边界投影和 Deb 可行性优先准则。\n\n');
+fprintf(fid, '主要输出:\n\n');
+fprintf(fid, '- `uav_comparison_runs.csv`\n');
+fprintf(fid, '- `uav_comparison_summary_long.csv`\n');
+fprintf(fid, '- `uav_comparison_average_rank.csv`\n');
+fprintf(fid, '- `trajectory_sanity_runs.csv`\n');
+fprintf(fid, '- `trajectory_sanity_summary.csv`\n');
+fprintf(fid, '- `trajectory_sanity_flags.csv`\n');
 fprintf(fid, '- `run_records/`\n\n');
 
 if isfield(summary, 'avgRankTable')

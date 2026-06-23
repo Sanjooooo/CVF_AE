@@ -1009,3 +1009,65 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 保守状态自适应正式消融通过；
 - 本目录应作为论文正式消融结果来源；
 - 下一步应基于新的默认 `CVF-AE` 处理正式主对比结果，优先级高于继续调参。
+
+## 2026-06-23 保守状态自适应 CVF 正式主对比重跑
+
+目标：
+
+- 基于新的默认 `CVF-AE` 重新跑正式主对比；
+- 全量重跑 baseline 和 `CVF-AE`，避免不同 seed 或不同实现版本混合造成解释成本；
+- 同步生成 trajectory sanity，用于识别 high-altitude bypass 和 boundary-hugging 风险。
+
+结果目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_conservative_20260623_091132`
+
+配置：
+
+- scenes: `[1, 2, 4]`
+- algorithms: `CVF-AE`, `AE`, `PSO`, `GWO`, `WOA`, `HHO`, `DBO`, `CPO`
+- runs: `30`
+- population size: `30`
+- max iterations: `300`
+- base seed: `20260630`
+- resume: enabled
+
+执行情况：
+
+- run records: `720 / 720`
+- 已生成主对比 summary、average rank 和 trajectory sanity；
+- 执行中个别 baseline run 出现长时间无新 run record 且 MATLAB CPU 基本不增长的停滞；
+- 已通过同一结果目录和 `resumeExisting=true` 断点续跑完成；
+- 已完成的 run records 均被成功复用。
+
+平均排名：
+
+- `CVF-AE`: `1.33`
+- `CPO`: `2.00`
+- `DBO`: `2.67`
+- `GWO`: `4.00`
+- `HHO`: `5.33`
+- `PSO`: `5.67`
+- `WOA`: `7.00`
+- `AE`: `8.00`
+
+分场景判断：
+
+- Scene 1：`CVF-AE` raw fitness rank 1，`CPO` rank 2；
+- Scene 2-v2：`CPO` raw fitness rank 1，`CVF-AE` rank 2；
+- Scene 4：`CVF-AE` raw fitness rank 1，`DBO` rank 2，`CPO` rank 3。
+
+轨迹 sanity：
+
+- `CVF-AE` 在 Scene 1 和 Scene 2-v2 的 `VisualReviewFlagRate = 0`；
+- `CVF-AE` 在 Scene 4 的 `VisualReviewFlagRate = 0.20`；
+- `CVF-AE` 三个场景 feasible rate 均为 `1.00`；
+- `CPO` 在 Scene 2-v2 的 raw fitness 最优，但 mean high-altitude fraction 为 `0.882`，`VisualReviewFlagRate = 1.00`；
+- `CPO` 在 Scene 1 也存在明显 high-altitude bypass 风险，mean high-altitude fraction 为 `0.663`，`VisualReviewFlagRate = 0.80`；
+- 因此主表中可以保留 `CPO`，但论文解释必须配套 trajectory sanity，不能把 `CPO` 的低 scalar fitness 解释为低空任务一致性更优。
+
+阶段判断：
+
+- 保守状态自适应默认 `CVF-AE` 的正式主对比通过；
+- 本目录应作为论文正式主对比结果来源；
+- 下一步建议生成论文主表、主对比轨迹图和 trajectory sanity 辅助表。
