@@ -1405,3 +1405,58 @@ trajectory sanity：
 - `GDSAO` 在 Scene 4 scalar fitness 略优于 `CVF-AE`，但 trajectory sanity 显示其边界贴靠风险极高，不能只按 scalar fitness 下结论；
 - `MSCSO` 在 Scene 1 和 Scene 2-v2 scalar fitness 很强，但 Scene 4 feasible rate 降至 `0.9333` 且方差较大；
 - 扩展主表应与 trajectory sanity 联合呈现，论文中不应写成“近年改进算法全面弱于 CVF-AE”，而应写成“CVF-AE 在扩展对比中保持最佳综合平均排名，并在强约束场景中具有更均衡的可行性与轨迹合理性”。
+
+## 2026-06-23 代表轨迹图筛选与绘制
+
+阶段目标：
+
+- 固定代表 run 筛选规则，避免人工挑选轨迹；
+- 同时生成主对比、扩展对比和消融实验的代表轨迹图；
+- 输出 3D 和 top-view 两种视角，并保留代表 run 选择表。
+
+新增脚本：
+
+- `make_cvf_ae_representative_path_figures.m`
+
+输出目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_representative_paths_20260623_from_formal_results`
+
+数据来源：
+
+- 正式主对比：`routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_conservative_20260623_091132`
+- 近年改进算法补充：`routes/route_b_cvf_ae/results/cvf_ae_main_comparison_recent_improved_formal_20260623_161229`
+- 正式消融：`routes/route_b_cvf_ae/results/cvf_ae_formal_ablation_conservative_20260622_194947`
+
+筛选规则：
+
+- 优先选择 feasible 且 `VisualReviewFlag = false` 的 run，并取 fitness 最接近 feasible 中位数者；
+- 若无无复核风险 run，则选择 feasible run 中 fitness 最接近 feasible 中位数者；
+- 若无 feasible run，则选择 violation 最小且 fitness 接近中位数者；
+- 所有选择写入 `representative_run_selection_all.csv`。
+
+图集：
+
+- `main`: `CVF-AE`, `CPO`, `DBO`, `GWO`, `AE`
+- `extended`: `CVF-AE`, `CPO`, `DBO`, `GDSAO`, `MSCSO`, `ERIME`
+- `ablation`: `CVF-AE`, `w/o CVF`, `w/o StateCVF`, `w/o Sparse`, `w/o Init`, `Base-AE`
+
+输出规模：
+
+- 代表选择行数：`51`
+- `feasible_clean_median`: `38`
+- `feasible_flagged_median`: `9`
+- `infeasible_min_violation_median`: `4`
+- 每个图集每个场景输出 3D 和 top-view PNG，共 `18` 张 PNG。
+
+人工检查：
+
+- 已检查 `extended` Scene 4 的 3D / top-view 图，`GDSAO`、`CPO`、`DBO` 的 boundary-hugging 风险在图中可见；
+- 已检查 `ablation` Scene 4 top-view 图，`Base-AE` 的不可行代表轨迹和消融变体差异可见；
+- 这些图支持论文中“只看 scalar fitness 不足以判断路径合理性”的解释。
+
+阶段判断：
+
+- Stage 5 初版代表轨迹图已生成；
+- 带有 `feasible_flagged_median` 或 `infeasible_min_violation_median` 的代表轨迹必须在论文图注或正文中明确说明其复核风险；
+- 后续若要进入最终论文排版，可在当前 PNG 基础上进一步调整图例位置、线宽和是否拆分拥挤图。
