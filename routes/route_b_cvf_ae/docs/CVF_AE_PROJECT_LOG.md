@@ -1319,3 +1319,89 @@ precheck 平均排名：
 - precheck 不作为论文性能结果，只说明算法能进入统一实验框架；
 - 下一步应运行 `recent-formal`，再将新增算法结果与已冻结的正式主对比目录合并为扩展主表；
 - Scene 4 中新增算法在小规模 precheck 已出现不可行 run，正式结果必须继续配套 trajectory sanity 和 feasible rate 解读。
+
+## 2026-06-23 近年改进算法正式补充实验
+
+阶段目标：
+
+- 只补跑近年非 AE 改进算法 `GDSAO`、`ERIME`、`MSCSO`；
+- 不重跑已冻结的 8 个正式主对比算法；
+- 与正式主对比保持相同 scenes、runs、popSize、maxIter 和 UAV objective 口径；
+- 运行后生成 trajectory sanity，并与原正式主对比合并为扩展主表。
+
+新增辅助脚本：
+
+- `run_cvf_ae_recent_improved_formal_chunk.m`
+- `merge_cvf_ae_extended_main_comparison.m`
+
+正式结果目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_main_comparison_recent_improved_formal_20260623_161229`
+
+配置：
+
+- scenes: `[1, 2, 4]`
+- algorithms: `GDSAO`, `ERIME`, `MSCSO`
+- runs: `30`
+- popSize: `30`
+- maxIter: `300`
+- baseSeed: `20260701`
+- run records: `270 / 270`
+
+新增算法内部平均排名：
+
+- `GDSAO`: `1.6667`
+- `MSCSO`: `1.6667`
+- `ERIME`: `2.6667`
+
+新增算法分场景结果：
+
+- Scene 1:
+  - `MSCSO`: mean `314.3453`, feasible rate `1.00`
+  - `GDSAO`: mean `315.7542`, feasible rate `1.00`
+  - `ERIME`: mean `322.9893`, feasible rate `1.00`
+- Scene 2-v2:
+  - `MSCSO`: mean `291.1680`, feasible rate `1.00`
+  - `GDSAO`: mean `307.0675`, feasible rate `1.00`
+  - `ERIME`: mean `316.1932`, feasible rate `1.00`
+- Scene 4:
+  - `GDSAO`: mean `346.8474`, feasible rate `1.00`
+  - `ERIME`: mean `360.2347`, feasible rate `1.00`
+  - `MSCSO`: mean `402.2712`, feasible rate `0.9333`
+
+trajectory sanity：
+
+- 已生成：
+  - `trajectory_sanity_runs.csv`
+  - `trajectory_sanity_summary.csv`
+  - `trajectory_sanity_flags.csv`
+- flagged runs: `193 / 270`
+- Scene 4:
+  - `GDSAO` visual review flag rate `1.00`，主要来自 boundary-hugging；
+  - `ERIME` visual review flag rate `0.9667`，主要来自 boundary-hugging；
+  - `MSCSO` visual review flag rate `0.6667`，且 feasible rate 为 `0.9333`。
+
+扩展主对比合并目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_extended_main_comparison_20260623_from_formal_and_recent`
+
+扩展主对比平均排名：
+
+- `CVF-AE`: `2.0000`
+- `CPO`: `3.0000`
+- `GDSAO`: `3.0000`
+- `MSCSO`: `3.3333`
+- `ERIME`: `4.3333`
+- `DBO`: `5.3333`
+- `GWO`: `7.0000`
+- `HHO`: `8.3333`
+- `PSO`: `8.6667`
+- `WOA`: `10.0000`
+- `AE`: `11.0000`
+
+阶段判断：
+
+- 加入近年改进算法后，`CVF-AE` 仍保持扩展平均排名第一；
+- `GDSAO` 在 Scene 4 scalar fitness 略优于 `CVF-AE`，但 trajectory sanity 显示其边界贴靠风险极高，不能只按 scalar fitness 下结论；
+- `MSCSO` 在 Scene 1 和 Scene 2-v2 scalar fitness 很强，但 Scene 4 feasible rate 降至 `0.9333` 且方差较大；
+- 扩展主表应与 trajectory sanity 联合呈现，论文中不应写成“近年改进算法全面弱于 CVF-AE”，而应写成“CVF-AE 在扩展对比中保持最佳综合平均排名，并在强约束场景中具有更均衡的可行性与轨迹合理性”。
