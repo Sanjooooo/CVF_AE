@@ -1104,3 +1104,45 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 默认参数不要求每项第一，但应处于稳定前列；
 - 只有参数变体在关键场景中全面、稳定、显著优于默认，并且不增加明显开销或轨迹 sanity 风险，才考虑重新打开主方法冻结；
 - 不继续为了压过 Scene 2-v2 中 `CPO` 的 raw fitness 而修改主方法。
+
+## 2026-06-23 运行开销分析
+
+阶段目标：
+
+- 复用现有正式主对比和正式消融结果，生成 `runtime`、`nEvals`、`viabilityFieldCount`、`viabilityFieldSuccessCount` 及相对 `w/o-CVF` 的开销比例；
+- 支撑“低开销 CVF-AE”的论文表述；
+- 不重跑任何优化实验。
+
+新增脚本：
+
+- `analyze_cvf_ae_runtime_overhead.m`
+
+输出目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_runtime_overhead_analysis_20260623_from_existing_results`
+
+输出文件：
+
+- `main_comparison_overhead.csv`
+- `ablation_overhead_vs_without_cvf.csv`
+- `CVF_AE_RUNTIME_OVERHEAD_INTERPRETATION.md`
+
+数据来源：
+
+- 正式主对比：`routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_conservative_20260623_091132`
+- 正式消融：`routes/route_b_cvf_ae/results/cvf_ae_formal_ablation_conservative_20260622_194947`
+
+关键结果：
+
+- 正式消融中，完整 `CVF-AE` 相对 `CVF-AE-w/o-CVF` 的平均 runtime ratio 为 `0.976`；
+- 正式消融中，完整 `CVF-AE` 相对 `CVF-AE-w/o-CVF` 的平均 `nEvals` ratio 为 `1.011`；
+- 分场景 runtime ratio 范围为 `0.768` 到 `1.094`，不应写成稳定加速；
+- 完整 `CVF-AE` 的平均 CVF 触发次数为 `39.5`，平均 CVF 成功次数为 `28.9`；
+- 额外 `nEvals` 约为 `1.1%`，支持“低评价次数开销”和“稀疏 CVF 触发”的表述；
+- 正式主对比中，`CVF-AE` 三个场景 feasible rate 均为 `1.00`，开销结论应与主对比性能、消融贡献和 trajectory sanity 一起解释。
+
+写作边界：
+
+- 可以写“低额外评价次数”和“受控运行时间开销”；
+- 不应写“无开销”；
+- 不应把 Scene 4 中 runtime ratio 小于 1 的结果解释成稳定加速，因为运行时间受 repair 次数、可行解形成速度和 MATLAB 运行波动影响。
