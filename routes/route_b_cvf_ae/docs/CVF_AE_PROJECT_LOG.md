@@ -1071,3 +1071,36 @@ Scene 2-v2 轨迹 sanity 关键指标：
 - 保守状态自适应默认 `CVF-AE` 的正式主对比通过；
 - 本目录应作为论文正式主对比结果来源；
 - 下一步建议生成论文主表、主对比轨迹图和 trajectory sanity 辅助表。
+
+## 2026-06-23 冻结主方法版本说明
+
+阶段目标：
+
+- 冻结路线 B 当前默认主方法，避免后续参数敏感性实验演变成反复调参；
+- 明确后续实验只验证鲁棒性，除非出现全面、稳定、显著优于默认版本的参数设置，否则不再反向修改主方法。
+
+新增文档：
+
+- `routes/route_b_cvf_ae/docs/CVF_AE_CONSERVATIVE_FREEZE_NOTE.md`
+
+冻结结论：
+
+- 当前默认主方法为 `CVF-AE = Constraint Viability Field guided Alpha Evolution`；
+- 默认实现为“保守状态自适应 CVF 调度版本的 CVF-AE”；
+- 保留约束感知初始化、保守状态自适应 CVF 调度和稀疏可行性保持；
+- 旧版激进状态自适应结果只作为诊断历史，不作为论文正式主方法。
+
+冻结依据：
+
+- 正式消融目录：`routes/route_b_cvf_ae/results/cvf_ae_formal_ablation_conservative_20260622_194947`；
+- 正式主对比目录：`routes/route_b_cvf_ae/results/cvf_ae_main_comparison_formal_conservative_20260623_091132`；
+- 正式消融中完整 `CVF-AE` 平均排名 `1.00`；
+- 正式主对比中完整 `CVF-AE` 平均排名 `1.33`；
+- `CVF-AE` 三个正式主对比场景 feasible rate 均为 `1.00`，且 Scene 1 / Scene 2-v2 轨迹 sanity 无人工复核风险。
+
+后续边界：
+
+- 参数敏感性只用于验证默认参数鲁棒性；
+- 默认参数不要求每项第一，但应处于稳定前列；
+- 只有参数变体在关键场景中全面、稳定、显著优于默认，并且不增加明显开销或轨迹 sanity 风险，才考虑重新打开主方法冻结；
+- 不继续为了压过 Scene 2-v2 中 `CPO` 的 raw fitness 而修改主方法。
