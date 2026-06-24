@@ -1,0 +1,19 @@
+Parameter,ParameterLabel,Level,LevelDescription,IsDefault,Scene,MeanFitness,StdFitness,FeasibleRate,SceneRank,AverageRank,RuntimeSeconds,NEvals,CVFTriggerCount
+quota_scale,CVF candidate quota scale,high,1.33x CVF sparse trigger quota,0,2,300.892448470111,2.77937346829017,1,1,1,16.70037636,9561.6,20.4
+quota_scale,CVF candidate quota scale,default,default CVF sparse trigger quota,1,2,302.066342593858,2.72247711842544,1,2,2,14.87216704,9553.4,12.6
+quota_scale,CVF candidate quota scale,low,0.67x CVF sparse trigger quota,0,2,302.710258781604,2.95161255626318,1,3,3,13.03620065,9551,9.2
+quota_scale,CVF candidate quota scale,high,1.33x CVF sparse trigger quota,0,4,340.567579352115,13.6654781691896,1,1,1,19.64399309,9366.6,85.7
+quota_scale,CVF candidate quota scale,default,default CVF sparse trigger quota,1,4,342.398730539812,19.0285230463495,1,2,2,14.83497602,9336,82.4
+quota_scale,CVF candidate quota scale,low,0.67x CVF sparse trigger quota,0,4,354.883975923183,21.846872706069,1,3,3,5.71331897,9341.9,88.8
+state_switch_threshold,Conservative state switching threshold,loose,looser evidence before formation/recovery switch,0,2,300.745700727493,3.08204004900553,1,1,2,6.26920627,9557.4,15.7
+state_switch_threshold,Conservative state switching threshold,default,default conservative switching threshold,1,2,301.239860854481,2.76019485638891,1,2,1.5,6.23726825,9551.6,9.4
+state_switch_threshold,Conservative state switching threshold,strict,stricter evidence before formation/recovery switch,0,2,303.709520730819,3.16044016128269,1,3,2.5,6.257871,9550.1,9.3
+state_switch_threshold,Conservative state switching threshold,default,default conservative switching threshold,1,4,351.042228377221,20.8199079582641,1,1,1.5,5.93557599,9343,89
+state_switch_threshold,Conservative state switching threshold,strict,stricter evidence before formation/recovery switch,0,4,354.087942003274,27.4386812935424,1,2,2.5,6.0499411,9379.6,82.9
+state_switch_threshold,Conservative state switching threshold,loose,looser evidence before formation/recovery switch,0,4,356.912157313134,17.6765021090093,1,3,2,6.07994243,9383.6,92.7
+step_strength,CVF step strength,default,default CVF field strength,1,2,300.544296257537,1.93997775498066,1,1,2,28.62980939,9557.5,16.7
+step_strength,CVF step strength,strong,1.25x CVF field strength,0,2,301.766564024276,4.05023172047178,1,2,2,29.04853466,9554.8,13.7
+step_strength,CVF step strength,weak,0.75x CVF field strength,0,2,302.135450812752,3.51192321004293,1,3,2,18.87387044,9553.4,13
+step_strength,CVF step strength,weak,0.75x CVF field strength,0,4,347.026790075119,20.4532901812193,1,1,2,20.29039721,9361.9,85.9
+step_strength,CVF step strength,strong,1.25x CVF field strength,0,4,351.598294072786,17.8449707278943,1,2,2,6.72012654,9340.2,84.6
+step_strength,CVF step strength,default,default CVF field strength,1,4,355.392949162461,16.1756703226076,1,3,2,28.3670393,9358,86.2

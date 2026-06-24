@@ -1513,3 +1513,60 @@ trajectory sanity：
 - Scene 2 中 `CPO` 和 `MSCSO` 的 scalar fitness 显著优于 `CVF-AE`，必须结合 trajectory sanity 与可行率讨论；
 - Scene 4 中 `GDSAO` 的均值略优，但差异不显著，且存在高 boundary-hugging 风险；
 - 消融显著性支持完整方法的综合有效性，但不支持“所有模块在所有场景均显著有效”的绝对表述。
+
+## 2026-06-24 论文结果材料包与图表索引
+
+阶段目标：
+
+- 将已完成的主对比、显著性、消融、参数敏感性、开销和轨迹 sanity 结果统一整理成论文可用表格；
+- 建立收敛曲线和代表轨迹图的正文/补充材料索引；
+- 生成集中审阅用 Excel 工作簿；
+- 不重跑任何优化实验。
+
+新增脚本：
+
+- `export_cvf_ae_paper_results_package.m`
+
+输出目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_paper_results_package_20260624_from_formal_results`
+
+输出内容：
+
+- `CVF_AE_PAPER_RESULTS_PACKAGE.xlsx`
+- `paper_table_main_compact.csv`
+- `paper_table_main_extended_long.csv`
+- `paper_table_main_significance.csv`
+- `paper_table_ablation.csv`
+- `paper_table_ablation_significance.csv`
+- `paper_table_parameter_sensitivity.csv`
+- `paper_table_overhead.csv`
+- `paper_table_trajectory_sanity.csv`
+- `paper_figure_index.csv`
+- `CVF_AE_PAPER_RESULTS_PACKAGE_README.md`
+- `CVF_AE_PAPER_RESULTS_WRITEUP_DRAFT.md`
+
+整理规模：
+
+- 扩展主对比：`33` 行，覆盖 `11` 个算法和 `3` 个正式场景；
+- 正式消融：`18` 行，覆盖 `6` 个版本和 `3` 个正式场景；
+- 图索引：`21` 张 PNG；
+- 正文建议图：`8` 张；
+- 补充材料建议图：`13` 张；
+- Excel 工作簿：`10` 个 sheet，包括概览、正文主表、完整长表、显著性、消融、参数、开销、轨迹 sanity 和图索引。
+
+正文材料建议：
+
+- 主表优先使用 `paper_table_main_compact.csv`；
+- 显著性正文报告场景内 Holm 校正后的 `+ / = / -`，完整 p 值和 Cliff's delta 放补充表；
+- 消融正文使用 `paper_table_ablation.csv`，并结合消融显著性解释模块互补性；
+- runtime 与 `NEvals` 单独成效率表，不将绝对 runtime 跨批次直接比较；
+- 图索引建议正文放三场景收敛曲线、三场景扩展 top-view，以及 Scene 2/4 消融 top-view；
+- 其余 3D 视图和经典基线轨迹放补充材料。
+
+验证：
+
+- MATLAB Code Analyzer 通过；
+- CSV 行数、算法数、场景数和关键结论完成断言检查；
+- Excel 共 `10` 个 sheet，全部完成渲染检查；
+- Excel 公式错误扫描未发现 `#REF!`、`#DIV/0!`、`#VALUE!`、`#NAME?` 或 `#N/A`。
