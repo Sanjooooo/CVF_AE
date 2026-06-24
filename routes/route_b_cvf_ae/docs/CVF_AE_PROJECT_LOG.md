@@ -1460,3 +1460,56 @@ trajectory sanity：
 - Stage 5 初版代表轨迹图已生成；
 - 带有 `feasible_flagged_median` 或 `infeasible_min_violation_median` 的代表轨迹必须在论文图注或正文中明确说明其复核风险；
 - 后续若要进入最终论文排版，可在当前 PNG 基础上进一步调整图例位置、线宽和是否拆分拥挤图。
+
+## 2026-06-24 正式显著性检验
+
+阶段目标：
+
+- 基于已有正式逐次运行结果完成非参数显著性检验；
+- 不重跑任何优化实验；
+- 同时覆盖扩展主对比和正式消融；
+- 对多重成对比较进行 Holm 校正，并报告效应量。
+
+新增脚本：
+
+- `analyze_cvf_ae_formal_significance.m`
+
+输出目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_formal_significance_20260624_from_formal_results`
+
+统计方案：
+
+- 两批主对比和正式消融中，不同算法的随机种子均包含算法序号偏移，因此算法样本不是严格配对样本；
+- 成对检验统一使用双侧 Wilcoxon rank-sum test（Mann-Whitney U），不使用 paired signed-rank test；
+- 每个场景内对全部成对比较使用 Holm 校正；
+- 同时输出跨所有场景比较的全局 Holm 校正结果；
+- 使用 lower-is-better Cliff's delta 报告效应量，正值表示 `CVF-AE` 更优；
+- 使用 Kruskal-Wallis 检验每个场景内全部算法分布是否存在总体差异。
+
+扩展主对比结果：
+
+- 三个场景的 Kruskal-Wallis 检验均显著，p 值范围为 `6.11e-43` 至 `1.64e-46`；
+- 场景内 Holm 校正后，`CVF-AE` 对全部 10 个基线共得到 `21 胜 / 7 平 / 2 负`；
+- Scene 1：`9 胜 / 1 平 / 0 负`，仅与 `CPO` 无显著差异；
+- Scene 2：`6 胜 / 2 平 / 2 负`，显著弱于 `CPO` 和 `MSCSO`，与 `GDSAO`、`ERIME` 无显著差异；
+- Scene 4：`6 胜 / 4 平 / 0 负`，对 `GDSAO`、`ERIME`、`MSCSO` 和 `CPO` 均无显著差异；
+- 对原正式主对比 7 个算法为 `18 胜 / 2 平 / 1 负`；
+- 对 3 个近年改进算法为 `3 胜 / 5 平 / 1 负`。
+
+正式消融结果：
+
+- 三个场景的 Kruskal-Wallis 检验均显著；
+- 场景内 Holm 校正后，完整 `CVF-AE` 对 5 个消融版本共得到 `9 胜 / 6 平 / 0 负`；
+- Scene 1：`4 胜 / 1 平 / 0 负`；
+- Scene 2：`3 胜 / 2 平 / 0 负`；
+- Scene 4：`2 胜 / 3 平 / 0 负`；
+- 完整方法在任何场景均未显著弱于消融版本，但不能声称每个模块在每个场景都产生显著提升。
+
+写作边界：
+
+- 论文中应写为 Wilcoxon rank-sum / Mann-Whitney U test，而不是 paired Wilcoxon signed-rank test；
+- 主结论使用场景内 Holm 校正 p 值，原始 p 值放入完整统计表或补充材料；
+- Scene 2 中 `CPO` 和 `MSCSO` 的 scalar fitness 显著优于 `CVF-AE`，必须结合 trajectory sanity 与可行率讨论；
+- Scene 4 中 `GDSAO` 的均值略优，但差异不显著，且存在高 boundary-hugging 风险；
+- 消融显著性支持完整方法的综合有效性，但不支持“所有模块在所有场景均显著有效”的绝对表述。
