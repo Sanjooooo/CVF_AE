@@ -4,7 +4,7 @@
 
 ## 1. 实验定位
 
-主对比用于验证 `CVF-AE` 在强约束低空 UAV 路径规划中的综合竞争力。该阶段不再继续调参，不修改 Scene 4，不恢复 code Scene 3，也不引入路线 A 叙事。
+主对比用于验证 `CVF-AE` 在强约束低空 UAV 路径规划中的综合竞争力。内部代码使用 scene IDs `[1, 2, 4]`，论文统一编号为 Scenes `[1, 2, 3]`，其中 internal map ID 4 对应 paper Scene 3。
 
 本阶段核心问题：
 
@@ -57,7 +57,7 @@
 
 预检配置：
 
-- scenes: `[1, 2, 4]`
+- paper scenes: `[1, 2, 3]`（internal code IDs: `[1, 2, 4]`）
 - algorithms: `CVF-AE`, `AE`, `PSO`, `GWO`, `WOA`, `HHO`, `DBO`, `CPO`
 - `nRuns = 3`
 - `popSize = 20`
@@ -66,7 +66,7 @@
 
 正式配置：
 
-- scenes: `[1, 2, 4]`
+- paper scenes: `[1, 2, 3]`（internal code IDs: `[1, 2, 4]`）
 - algorithms: `CVF-AE`, `AE`, `PSO`, `GWO`, `WOA`, `HHO`, `DBO`, `CPO`
 - `nRuns = 30`
 - `popSize = 30`
@@ -131,6 +131,6 @@ run_cvf_ae_main_comparison('resume-formal')
 
 - 不做 CEC 主线实验；
 - 不把 `A*`、`RRT*` 和群智能算法混排为同一平均排名；
-- 不修改 Scene 4 地图；
-- 不恢复 code Scene 3；
+- 不修改 paper Scene 3（internal map ID 4）地图；
+- 不启用内部未使用的 code Scene 3；
 - 不为了提升 `CVF-AE` 排名继续调参。

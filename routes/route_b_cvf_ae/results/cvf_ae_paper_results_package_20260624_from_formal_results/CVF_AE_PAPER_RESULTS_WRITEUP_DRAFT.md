@@ -6,7 +6,7 @@
 
 Holm 校正后的成对秩和检验共出现 2 个显著劣势，Scene 2 相对 `CPO`，Scene 2 相对 `MSCSO`。其中 CPO 和 MSCSO 在 Scene 2 的 scalar fitness 更低，但最终讨论仍需结合高空绕行、可行率和轨迹复核指标。
 
-Scene 4 中，`GDSAO` 的平均 fitness 为 346.8474，`CVF-AE` 为 349.2270；两者经 Holm 校正后差异不显著。GDSAO 同时存在较高边界贴靠复核风险，因此不宜仅依据均值判定其路径规划质量更优。
+Scene 3 中，`GDSAO` 的平均 fitness 为 346.8474，`CVF-AE` 为 349.2270；两者经 Holm 校正后差异不显著。GDSAO 同时存在较高边界贴靠复核风险，因此不宜仅依据均值判定其路径规划质量更优。
 
 ## 消融实验
 

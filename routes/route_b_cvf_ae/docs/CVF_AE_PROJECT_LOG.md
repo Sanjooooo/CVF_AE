@@ -1628,3 +1628,28 @@ trajectory sanity：
 - Scene 4 的 CPO 箱体和离群点跨度较大，支持其稳定性和可行性风险解释；
 - 箱线图仅呈现 scalar BestFitness 分布，仍需与 feasible rate 和 trajectory sanity 联合解释；
 - 流程图中的 CVF 分支必须描述为稀疏触发，不是所有个体每代强制执行。
+
+## 2026-06-24 论文场景编号统一
+
+编号规则：
+
+- 论文只使用 `Scene 1`、`Scene 2`、`Scene 3`；
+- 内部实验代码仍使用 scene IDs `[1, 2, 4]`；
+- `internal map ID 4 = paper Scene 3`；
+- 内部未使用的 code Scene 3 不进入正式实验，也不出现在论文中。
+
+执行边界：
+
+- 不修改原始 run records、MAT 文件、地图生成逻辑或实验随机种子；
+- 不把内部 source scene ID 4 直接写入论文表格、图题、文件名或正文；
+- 所有论文导出通过 `cvfAePaperSceneId.m` 统一映射，避免各脚本重复硬编码。
+
+已纳入映射的论文产物：
+
+- 正式显著性检验及消融显著性；
+- 论文结果 CSV 与 Excel；
+- 收敛曲线及其 CSV；
+- 参数敏感性图；
+- 主对比箱线图；
+- 代表轨迹图与选择表；
+- 图索引与结果分析初稿。

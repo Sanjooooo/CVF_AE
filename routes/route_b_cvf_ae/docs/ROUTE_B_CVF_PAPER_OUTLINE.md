@@ -392,16 +392,17 @@ Output: best feasible UAV path
 
 ### 6.2 UAV 场景设置
 
-当前主场景：
+当前论文主场景：
 
 - Scene 1：基础城市走廊；
 - Scene 2：密集障碍 / 窄通道；
-- Scene 4：城市配送走廊，旧论文 Paper Scene 3。
+- Scene 3：城市配送走廊（internal map ID 4）。
 
 注意：
 
-- 不恢复真实 code Scene 3；
-- Scene 4 不优先改地图；
+- 论文只使用连续编号 Scene 1、Scene 2、Scene 3；
+- 内部代码仍使用 scene ID 4 读取第三个正式地图；
+- Scene 3（internal map ID 4）不优先改地图；
 - 每个场景要说明对应挑战。
 
 ### 6.3 与经典算法对比

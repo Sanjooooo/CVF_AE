@@ -39,6 +39,7 @@ for g = 1:numel(sets)
 
     for s = 1:numel(sceneIds)
         sceneId = sceneIds(s);
+        paperSceneId = cvfAePaperSceneId(sceneId);
         reps = repmat(localEmptyRep(), numel(figSet.entries), 1);
         selectionRows = table();
 
@@ -51,7 +52,7 @@ for g = 1:numel(sets)
 
         allSelections = [allSelections; selectionRows]; %#ok<AGROW>
         writetable(selectionRows, fullfile(setOutDir, ...
-            sprintf('%s_scene%d_representative_selection.csv', figSet.name, sceneId)));
+            sprintf('%s_scene%d_representative_selection.csv', figSet.name, paperSceneId)));
 
         localPlotSceneSet(setOutDir, figSet.name, sceneId, reps, false);
         localPlotSceneSet(setOutDir, figSet.name, sceneId, reps, true);
@@ -172,11 +173,15 @@ params = applyUAVSceneOverrides(params);
 
 rep = localEmptyRep();
 rep.FigureSet = string(figSetName);
-rep.Scene = sceneId;
+rep.Scene = cvfAePaperSceneId(sceneId);
 rep.DisplayName = string(entry.label);
 rep.Algorithm = string(entry.algName);
 rep.SourceDir = string(entry.resultDir);
 rep.RunFile = selected.RunFile;
+runToken = regexp(char(selected.RunFile), 'run(\d+)', 'tokens', 'once');
+if ~isempty(runToken)
+    rep.Run = str2double(runToken{1});
+end
 rep.SelectionTier = tierName;
 rep.SelectionDistance = selected.SelectionDistance;
 rep.BestFitness = selected.BestFitness;
@@ -204,6 +209,7 @@ rep.DisplayName = "";
 rep.Algorithm = "";
 rep.SourceDir = "";
 rep.RunFile = "";
+rep.Run = NaN;
 rep.SelectionTier = "";
 rep.SelectionDistance = NaN;
 rep.BestFitness = NaN;
@@ -224,18 +230,19 @@ rep.bestPath = [];
 end
 
 function row = localRepToTable(rep)
-row = table(rep.FigureSet, rep.Scene, rep.DisplayName, rep.Algorithm, rep.SourceDir, rep.RunFile, ...
+row = table(rep.FigureSet, rep.Scene, rep.DisplayName, rep.Algorithm, rep.Run, ...
     rep.SelectionTier, rep.SelectionDistance, rep.BestFitness, rep.Feasible, rep.Violation, ...
     rep.VisualReviewFlag, rep.HighAltitudeFlag, rep.BoundaryHugFlag, rep.ExcessiveDetourFlag, ...
     rep.ControlPointEdgeFlag, rep.MeanZ, rep.MaxZ, rep.HighAltitudeFrac, rep.BoundaryHugFrac, ...
     rep.DetourRatio, ...
-    'VariableNames', {'FigureSet','Scene','DisplayName','Algorithm','SourceDir','RunFile', ...
+    'VariableNames', {'FigureSet','Scene','DisplayName','Algorithm','Run', ...
     'SelectionTier','SelectionDistance','BestFitness','Feasible','Violation', ...
     'VisualReviewFlag','HighAltitudeFlag','BoundaryHugFlag','ExcessiveDetourFlag', ...
     'ControlPointEdgeFlag','MeanZ','MaxZ','HighAltitudeFrac','BoundaryHugFrac','DetourRatio'});
 end
 
 function localPlotSceneSet(outDir, figSetName, sceneId, reps, topView)
+paperSceneId = cvfAePaperSceneId(sceneId);
 params = defaultParams();
 params.sceneId = sceneId;
 params = applyUAVSceneOverrides(params);
@@ -289,11 +296,11 @@ if topView
 else
     viewName = '3d';
 end
-title(sprintf('%s | Scene %d representative paths (%s)', figSetName, sceneId, upper(viewName)), ...
+title(sprintf('%s | Scene %d representative paths (%s)', figSetName, paperSceneId, upper(viewName)), ...
     'Interpreter', 'none');
 
-pngPath = fullfile(outDir, sprintf('%s_scene%d_representative_%s.png', figSetName, sceneId, viewName));
-figPath = fullfile(outDir, sprintf('%s_scene%d_representative_%s.fig', figSetName, sceneId, viewName));
+pngPath = fullfile(outDir, sprintf('%s_scene%d_representative_%s.png', figSetName, paperSceneId, viewName));
+figPath = fullfile(outDir, sprintf('%s_scene%d_representative_%s.fig', figSetName, paperSceneId, viewName));
 savefig(fig, figPath);
 exportgraphics(fig, pngPath, 'Resolution', 300);
 close(fig);

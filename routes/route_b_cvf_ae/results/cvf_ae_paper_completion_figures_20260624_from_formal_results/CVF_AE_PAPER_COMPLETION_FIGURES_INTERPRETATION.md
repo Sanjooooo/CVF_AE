@@ -12,7 +12,7 @@
 
 ## 输出图
 
-- `cvf_ae_parameter_sensitivity.png/.pdf`：三个关键参数在 Scene 2/4 上的均值和标准差。
+- `cvf_ae_parameter_sensitivity.png/.pdf`：三个关键参数在 paper Scene 2/3 上的均值和标准差。
 - `cvf_ae_boxplots_strong_algorithms.png/.pdf`：六个强算法的线性坐标箱线图，建议正文使用。
 - `cvf_ae_boxplots_all_algorithms_log.png/.pdf`：全部 11 个算法的对数坐标箱线图，建议补充材料使用。
 - `cvf_ae_method_flowchart.png/.pdf`：CVF-AE 方法总体流程，建议方法章节使用。

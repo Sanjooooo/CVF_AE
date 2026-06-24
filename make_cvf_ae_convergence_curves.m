@@ -67,7 +67,7 @@ for s = 1:numel(sceneIds)
         sceneCurves.(safeAlg).NumRuns = numel(curves);
         sceneCurves.(safeAlg).FeasibleRate = mean(finalFeasible, 'omitnan');
 
-        row = table(sceneId, {alg}, numel(curves), mean(finalFeasible, 'omitnan'), ...
+        row = table(cvfAePaperSceneId(sceneId), {alg}, numel(curves), mean(finalFeasible, 'omitnan'), ...
             meanCurve(end), stdCurve(end), ...
             'VariableNames', {'Scene','Algorithm','NumRuns','FeasibleRate','FinalMean','FinalStd'});
         summaryRows = [summaryRows; row]; %#ok<AGROW>
@@ -80,7 +80,7 @@ for s = 1:numel(sceneIds)
         stdCurve = localPad(C.Std, sceneLen);
 
         for iter = 1:sceneLen
-            row = table(sceneId, {C.Algorithm}, iter, meanCurve(iter), stdCurve(iter), ...
+            row = table(cvfAePaperSceneId(sceneId), {C.Algorithm}, iter, meanCurve(iter), stdCurve(iter), ...
                 max(meanCurve(iter) - stdCurve(iter), eps), meanCurve(iter) + stdCurve(iter), ...
                 'VariableNames', {'Scene','Algorithm','Iteration','MeanBestFitness','StdBestFitness','LowerStd','UpperStd'});
             curveRows = [curveRows; row]; %#ok<AGROW>
@@ -158,6 +158,7 @@ end
 end
 
 function localPlotScene(outDir, sceneId, sceneCurves, algorithms, primaryAlgorithms, sceneLen)
+paperSceneId = cvfAePaperSceneId(sceneId);
 fig = figure('Visible', 'off', 'Color', 'w', 'Position', [80, 80, 980, 620]);
 ax = axes(fig);
 set(ax, 'Position', [0.085, 0.115, 0.875, 0.795]);
@@ -200,13 +201,13 @@ end
 
 xlabel(ax, 'Iteration');
 ylabel(ax, 'Feasible-aware best fitness');
-title(ax, sprintf('Scene %d convergence', sceneId));
+title(ax, sprintf('Scene %d convergence', paperSceneId));
 set(ax, 'FontName', 'Times New Roman', 'FontSize', 11, 'LineWidth', 0.9);
 xlim(ax, [1, sceneLen]);
 legend(ax, handles, labels, 'Location', 'northeast', 'Interpreter', 'none', 'Box', 'on');
 
-pngPath = fullfile(outDir, sprintf('scene%d_convergence_mean_std.png', sceneId));
-figPath = fullfile(outDir, sprintf('scene%d_convergence_mean_std.fig', sceneId));
+pngPath = fullfile(outDir, sprintf('scene%d_convergence_mean_std.png', paperSceneId));
+figPath = fullfile(outDir, sprintf('scene%d_convergence_mean_std.fig', paperSceneId));
 savefig(fig, figPath);
 exportgraphics(fig, pngPath, 'Resolution', 300);
 close(fig);
@@ -255,7 +256,7 @@ fprintf(fid, '- `cvf_ae_convergence_curves.csv`\n');
 fprintf(fid, '- `cvf_ae_convergence_summary.csv`\n');
 fprintf(fid, '- `scene1_convergence_mean_std.png`\n');
 fprintf(fid, '- `scene2_convergence_mean_std.png`\n');
-fprintf(fid, '- `scene4_convergence_mean_std.png`\n');
+fprintf(fid, '- `scene3_convergence_mean_std.png`\n');
 end
 
 function safe = localSafeName(name)

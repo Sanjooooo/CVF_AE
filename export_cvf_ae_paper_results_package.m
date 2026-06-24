@@ -29,6 +29,13 @@ paramRank = readtable(sources.paramRank, 'TextType', 'string');
 runtimeMain = readtable(sources.runtimeMain, 'TextType', 'string');
 runtimeAblation = readtable(sources.runtimeAblation, 'TextType', 'string');
 
+main.Scene = cvfAePaperSceneId(main.Scene);
+sanity.Scene = cvfAePaperSceneId(sanity.Scene);
+ablation.Scene = cvfAePaperSceneId(ablation.Scene);
+paramSummary.Scene = cvfAePaperSceneId(paramSummary.Scene);
+runtimeMain.Scene = cvfAePaperSceneId(runtimeMain.Scene);
+runtimeAblation.Scene = cvfAePaperSceneId(runtimeAblation.Scene);
+
 tables = struct();
 tables.mainExtended = localMakeMainExtended(main, avgRank, sanity);
 tables.mainCompact = localMakeMainCompact(tables.mainExtended);
@@ -156,7 +163,7 @@ end
 
 function T = localMakeMainCompact(longTable)
 algorithmOrder = unique(longTable.Algorithm, 'stable');
-scenes = [1, 2, 4];
+scenes = [1, 2, 3];
 rows = cell(numel(algorithmOrder), 12);
 for algIdx = 1:numel(algorithmOrder)
     alg = algorithmOrder(algIdx);
@@ -178,7 +185,7 @@ end
 T = cell2table(rows, 'VariableNames', {'Algorithm', ...
     'Scene1MeanStd','Scene1FeasibleRate','Scene1Rank', ...
     'Scene2MeanStd','Scene2FeasibleRate','Scene2Rank', ...
-    'Scene4MeanStd','Scene4FeasibleRate','Scene4Rank', ...
+    'Scene3MeanStd','Scene3FeasibleRate','Scene3Rank', ...
     'AverageRank','AverageVisualReviewFlagRate'});
 end
 
@@ -417,10 +424,10 @@ end
 fprintf(fid, '。其中 CPO 和 MSCSO 在 Scene 2 的 scalar fitness 更低，');
 fprintf(fid, '但最终讨论仍需结合高空绕行、可行率和轨迹复核指标。\n\n');
 
-scene4 = main(main.Scene == 4 & ismember(main.Algorithm, ["CVF-AE","GDSAO"]), :);
-fprintf(fid, 'Scene 4 中，`GDSAO` 的平均 fitness 为 %.4f，`CVF-AE` 为 %.4f；', ...
-    scene4.MeanFitness(scene4.Algorithm == "GDSAO"), ...
-    scene4.MeanFitness(scene4.Algorithm == "CVF-AE"));
+scene3 = main(main.Scene == 3 & ismember(main.Algorithm, ["CVF-AE","GDSAO"]), :);
+fprintf(fid, 'Scene 3 中，`GDSAO` 的平均 fitness 为 %.4f，`CVF-AE` 为 %.4f；', ...
+    scene3.MeanFitness(scene3.Algorithm == "GDSAO"), ...
+    scene3.MeanFitness(scene3.Algorithm == "CVF-AE"));
 fprintf(fid, '两者经 Holm 校正后差异不显著。GDSAO 同时存在较高边界贴靠复核风险，');
 fprintf(fid, '因此不宜仅依据均值判定其路径规划质量更优。\n\n');
 

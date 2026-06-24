@@ -93,7 +93,7 @@ for paramIdx = 1:numel(paramOrder)
         errorbar(ax, x, y, e, '-o', 'Color', colors(sceneIdx, :), ...
             'LineWidth', 1.7, 'MarkerSize', 6, ...
             'MarkerFaceColor', colors(sceneIdx, :), ...
-            'CapSize', 7, 'DisplayName', sprintf('Scene %d', sceneId));
+            'CapSize', 7, 'DisplayName', sprintf('Scene %d', cvfAePaperSceneId(sceneId)));
     end
     xline(ax, 2, '--', 'Color', [0.25, 0.25, 0.25], ...
         'LineWidth', 1.0, 'HandleVisibility', 'off');
@@ -174,7 +174,7 @@ for sceneIdx = 1:numel(sceneIds)
     else
         ylabelText = 'Best fitness';
     end
-    title(ax, sprintf('Scene %d', sceneId), 'FontWeight', 'normal');
+    title(ax, sprintf('Scene %d', cvfAePaperSceneId(sceneId)), 'FontWeight', 'normal');
     if sceneIdx == 1
         ylabel(ax, ylabelText);
     end
@@ -355,7 +355,7 @@ fprintf(fid, '- 参数敏感性：`%s`\n', paramFile);
 fprintf(fid, '- 正式主对比：`%s`\n', mainRunFile);
 fprintf(fid, '- 近年改进算法：`%s`\n\n', recentRunFile);
 fprintf(fid, '## 输出图\n\n');
-fprintf(fid, '- `cvf_ae_parameter_sensitivity.png/.pdf`：三个关键参数在 Scene 2/4 上的均值和标准差。\n');
+fprintf(fid, '- `cvf_ae_parameter_sensitivity.png/.pdf`：三个关键参数在 paper Scene 2/3 上的均值和标准差。\n');
 fprintf(fid, '- `cvf_ae_boxplots_strong_algorithms.png/.pdf`：六个强算法的线性坐标箱线图，建议正文使用。\n');
 fprintf(fid, '- `cvf_ae_boxplots_all_algorithms_log.png/.pdf`：全部 11 个算法的对数坐标箱线图，建议补充材料使用。\n');
 fprintf(fid, '- `cvf_ae_method_flowchart.png/.pdf`：CVF-AE 方法总体流程，建议方法章节使用。\n\n');

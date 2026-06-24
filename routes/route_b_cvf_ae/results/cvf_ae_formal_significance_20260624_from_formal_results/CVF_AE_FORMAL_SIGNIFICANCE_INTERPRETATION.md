@@ -9,6 +9,8 @@
 
 - 正式消融：`D:\MATLAB\Project\COVE_AE_matlab\routes\route_b_cvf_ae\results\cvf_ae_formal_ablation_conservative_20260622_194947`
 
+编号规则：内部第三个正式地图的 ID 为 `4`，所有论文表格和文字统一显示为 Scene 3。
+
 两批实验中，不同算法的随机种子均包含算法序号偏移，因此算法之间不是严格配对样本。本分析统一采用双侧 Wilcoxon rank-sum 检验（Mann-Whitney U），不使用配对 signed-rank 检验。
 
 ## 检验规则
@@ -26,7 +28,7 @@
 |---:|---:|---:|:---:|
 | 1 | 242.9602 | 1.637e-46 | yes |
 | 2 | 235.0465 | 7.507e-45 | yes |
-| 4 | 225.9334 | 6.114e-43 | yes |
+| 3 | 225.9334 | 6.114e-43 | yes |
 
 ## Holm 校正胜/平/负
 
@@ -35,15 +37,15 @@
 | formal-main | all-scenes | 21 | 18 | 2 | 1 | 0.867 |
 | formal-main | Scene 1 | 7 | 6 | 1 | 0 | 1.000 |
 | formal-main | Scene 2 | 7 | 6 | 0 | 1 | 0.589 |
-| formal-main | Scene 4 | 7 | 6 | 1 | 0 | 0.867 |
+| formal-main | Scene 3 | 7 | 6 | 1 | 0 | 0.867 |
 | recent-improved | all-scenes | 9 | 3 | 5 | 1 | 0.158 |
 | recent-improved | Scene 1 | 3 | 3 | 0 | 0 | 0.971 |
 | recent-improved | Scene 2 | 3 | 0 | 2 | 1 | -0.076 |
-| recent-improved | Scene 4 | 3 | 0 | 3 | 0 | 0.153 |
+| recent-improved | Scene 3 | 3 | 0 | 3 | 0 | 0.153 |
 | all | all-scenes | 30 | 21 | 7 | 2 | 0.779 |
 | all | Scene 1 | 10 | 9 | 1 | 0 | 0.977 |
 | all | Scene 2 | 10 | 6 | 2 | 2 | 0.551 |
-| all | Scene 4 | 10 | 6 | 4 | 0 | 0.681 |
+| all | Scene 3 | 10 | 6 | 4 | 0 | 0.681 |
 
 ## 分场景关键结果
 
@@ -77,7 +79,7 @@
 | ERIME | recent-improved | 301.2018 | 316.1932 | 0.2973 | 0.5945 | = | 0.158 | small |
 | MSCSO | recent-improved | 301.2018 | 291.1680 | 0.0006549 | 0.001965 | - | -0.513 | large |
 
-### Scene 4
+### Scene 3
 
 | Baseline | Source | CVF mean | Baseline mean | Raw p | Holm p | Result | Delta | Effect |
 |---|---|---:|---:|---:|---:|:---:|---:|---|
@@ -100,7 +102,7 @@
 |---:|---:|---:|:---:|
 | 1 | 132.8720 | 5.847e-27 | yes |
 | 2 | 98.4784 | 1.106e-19 | yes |
-| 4 | 81.4919 | 4.089e-16 | yes |
+| 3 | 81.4919 | 4.089e-16 | yes |
 
 ### Holm 校正胜/平/负
 
@@ -109,7 +111,7 @@
 | all-scenes | 15 | 9 | 6 | 0 | 0.582 |
 | Scene 1 | 5 | 4 | 1 | 0 | 0.860 |
 | Scene 2 | 5 | 3 | 2 | 0 | 0.393 |
-| Scene 4 | 5 | 2 | 3 | 0 | 0.224 |
+| Scene 3 | 5 | 2 | 3 | 0 | 0.224 |
 
 ### 分场景结果
 
@@ -133,7 +135,7 @@
 | CVF-AE-w/o-SparsePreservation | 300.6612 | 303.3114 | 0.09926 | 0.1985 | = | 0.249 | small |
 | CVF-AE-w/o-CVF | 300.6612 | 303.7697 | 0.009069 | 0.02721 | + | 0.393 | medium |
 
-#### Scene 4
+#### Scene 3
 
 | Variant | CVF mean | Variant mean | Raw p | Holm p | Result | Delta | Effect |
 |---|---:|---:|---:|---:|:---:|---:|---|

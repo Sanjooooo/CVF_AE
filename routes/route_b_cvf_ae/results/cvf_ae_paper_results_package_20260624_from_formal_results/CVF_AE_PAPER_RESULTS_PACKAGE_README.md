@@ -22,7 +22,7 @@
 
 ## 图索引
 
-- `paper_figure_index.csv`：共 25 张 PNG，其中正文建议 11 张，补充材料建议 14 张。
+- `paper_figure_index.csv`：共 25 张 PNG，其中正文建议 10 张，补充材料建议 15 张。
 
 ## 数据来源
 
