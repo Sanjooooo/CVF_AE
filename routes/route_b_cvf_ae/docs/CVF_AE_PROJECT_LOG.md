@@ -1570,3 +1570,61 @@ trajectory sanity：
 - CSV 行数、算法数、场景数和关键结论完成断言检查；
 - Excel 共 `10` 个 sheet，全部完成渲染检查；
 - Excel 公式错误扫描未发现 `#REF!`、`#DIV/0!`、`#VALUE!`、`#NAME?` 或 `#N/A`。
+
+## 2026-06-24 参数图、箱线图与方法流程图
+
+阶段目标：
+
+- 补齐论文参数敏感性可视化；
+- 补齐正式主对比运行分布箱线图；
+- 绘制 CVF-AE 方法总体流程图；
+- 更新论文结果包图索引和 Excel 工作簿；
+- 不重跑任何优化实验。
+
+新增脚本：
+
+- `make_cvf_ae_paper_completion_figures.m`
+
+输出目录：
+
+- `routes/route_b_cvf_ae/results/cvf_ae_paper_completion_figures_20260624_from_formal_results`
+
+输出图：
+
+- `cvf_ae_parameter_sensitivity.png/.pdf`
+  - 三个子图：CVF trigger quota、CVF step strength、state switching threshold；
+  - 使用 Scene 2 和 Scene 4 的 mean best fitness ± std；
+  - 虚线标记默认参数档位。
+- `cvf_ae_boxplots_strong_algorithms.png/.pdf`
+  - 算法：`CVF-AE`、`CPO`、`GDSAO`、`MSCSO`、`ERIME`、`DBO`；
+  - 每算法每场景使用 `30` 次正式运行；
+  - 建议正文使用。
+- `cvf_ae_boxplots_all_algorithms_log.png/.pdf`
+  - 覆盖扩展主对比全部 `11` 个算法；
+  - 采用对数纵轴以容纳尺度差异；
+  - 建议补充材料使用。
+- `cvf_ae_method_flowchart.png/.pdf`
+  - 展示约束感知初始化、状态识别、AE 候选、稀疏 CVF 分支、局部接受、稀疏 repair、Deb population acceptance 和迭代终止。
+
+视觉检查：
+
+- 参数图默认档位标记、误差棒和图例无重叠；
+- 强算法箱线图算法颜色可区分，异常值可见；
+- 全算法箱线图完整显示 `11` 个算法；
+- 流程图分支、回环和终止路径无交叉遮挡，文本未溢出；
+- PNG 和 vector PDF 均已输出。
+
+图索引更新：
+
+- 论文总图数从 `21` 更新为 `25`；
+- 正文建议图从 `8` 更新为 `11`；
+- 补充材料建议图从 `13` 更新为 `14`；
+- `CVF_AE_PAPER_RESULTS_PACKAGE.xlsx` 的 Figure Index sheet 已同步更新；
+- Excel 更新后公式错误扫描仍为零。
+
+写作边界：
+
+- 参数敏感性图用于支持默认参数处于稳定前列，不用于宣称默认值逐场景逐参数最优；
+- Scene 4 的 CPO 箱体和离群点跨度较大，支持其稳定性和可行性风险解释；
+- 箱线图仅呈现 scalar BestFitness 分布，仍需与 feasible rate 和 trajectory sanity 联合解释；
+- 流程图中的 CVF 分支必须描述为稀疏触发，不是所有个体每代强制执行。

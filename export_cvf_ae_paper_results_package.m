@@ -116,6 +116,8 @@ sources.convergenceDir = fullfile(resultsRoot, ...
     'cvf_ae_convergence_curves_20260623_from_main_comparison');
 sources.pathDir = fullfile(resultsRoot, ...
     'cvf_ae_representative_paths_20260623_from_formal_results');
+sources.completionDir = fullfile(resultsRoot, ...
+    'cvf_ae_paper_completion_figures_20260624_from_formal_results');
 end
 
 function localAssertSources(sources)
@@ -252,7 +254,8 @@ end
 function T = localMakeFigureIndex(projectRoot, sources)
 convergence = dir(fullfile(sources.convergenceDir, '*.png'));
 paths = dir(fullfile(sources.pathDir, '**', '*.png'));
-files = [convergence; paths];
+completion = dir(fullfile(sources.completionDir, '*.png'));
+files = [convergence; paths; completion];
 rows = cell(numel(files), 9);
 for idx = 1:numel(files)
     absolutePath = fullfile(files(idx).folder, files(idx).name);
@@ -264,6 +267,8 @@ for idx = 1:numel(files)
 end
 T = cell2table(rows, 'VariableNames', {'FigureId','Group','Scene','View', ...
     'FileName','SuggestedPlacement','Purpose','Status','RelativePath'});
+T.Scene = string(T.Scene);
+T.Scene(T.Scene == "NaN") = "";
 T = sortrows(T, {'Group','Scene','View'});
 T.FigureId = (1:height(T))';
 end
@@ -280,6 +285,26 @@ if contains(path, 'convergence')
     viewName = "mean-std";
     placement = "main-text";
     purpose = "Compare feasible-aware convergence behavior";
+elseif contains(name, 'parameter_sensitivity')
+    group = "parameter-sensitivity";
+    viewName = "mean-std";
+    placement = "main-text";
+    purpose = "Evaluate robustness to key CVF parameters";
+elseif contains(name, 'boxplots_strong')
+    group = "boxplot";
+    viewName = "strong-linear";
+    placement = "main-text";
+    purpose = "Compare run distributions of six strong algorithms";
+elseif contains(name, 'boxplots_all')
+    group = "boxplot";
+    viewName = "all-log";
+    placement = "supplement";
+    purpose = "Compare run distributions of all eleven algorithms";
+elseif contains(name, 'method_flowchart')
+    group = "method";
+    viewName = "flowchart";
+    placement = "main-text";
+    purpose = "Present the complete CVF-AE procedure";
 elseif contains(path, [filesep 'extended' filesep])
     group = "extended-path";
     viewName = localView(name);
@@ -356,6 +381,7 @@ fprintf(fid, '- 参数敏感性：`%s`\n', sources.paramDir);
 fprintf(fid, '- 开销分析：`%s`\n', sources.runtimeDir);
 fprintf(fid, '- 收敛曲线：`%s`\n', sources.convergenceDir);
 fprintf(fid, '- 代表轨迹：`%s`\n\n', sources.pathDir);
+fprintf(fid, '- 补充论文图：`%s`\n\n', sources.completionDir);
 fprintf(fid, '## 使用边界\n\n');
 fprintf(fid, '- `MeanPlusMinusStd` 采用纯 ASCII `+/-`，最终排版时替换为数学符号。\n');
 fprintf(fid, '- `AverageRank` 是三个 UAV 场景的平均场景名次；Kruskal-Wallis 和 rank-sum 结果另表报告。\n');

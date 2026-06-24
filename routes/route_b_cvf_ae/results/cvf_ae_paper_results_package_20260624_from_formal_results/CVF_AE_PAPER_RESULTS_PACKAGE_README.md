@@ -22,7 +22,7 @@
 
 ## 图索引
 
-- `paper_figure_index.csv`：共 21 张 PNG，其中正文建议 8 张，补充材料建议 13 张。
+- `paper_figure_index.csv`：共 25 张 PNG，其中正文建议 11 张，补充材料建议 14 张。
 
 ## 数据来源
 
@@ -33,6 +33,8 @@
 - 开销分析：`D:\MATLAB\Project\COVE_AE_matlab\routes\route_b_cvf_ae\results\cvf_ae_runtime_overhead_analysis_20260623_from_existing_results`
 - 收敛曲线：`D:\MATLAB\Project\COVE_AE_matlab\routes\route_b_cvf_ae\results\cvf_ae_convergence_curves_20260623_from_main_comparison`
 - 代表轨迹：`D:\MATLAB\Project\COVE_AE_matlab\routes\route_b_cvf_ae\results\cvf_ae_representative_paths_20260623_from_formal_results`
+
+- 补充论文图：`D:\MATLAB\Project\COVE_AE_matlab\routes\route_b_cvf_ae\results\cvf_ae_paper_completion_figures_20260624_from_formal_results`
 
 ## 使用边界
 
