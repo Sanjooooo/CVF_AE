@@ -4,6 +4,10 @@
 
 本目录只整理已有正式实验，不重跑优化算法。
 
+全部正式结果的中文名称与位置统一记录在：
+
+`routes/route_b_cvf_ae/docs/CVF_AE_RESULTS_INDEX.md`
+
 - `CVF_AE_PAPER_RESULTS_PACKAGE.xlsx`：集中审阅全部结果表和图索引的格式化工作簿。
 
 ## 正文建议表格

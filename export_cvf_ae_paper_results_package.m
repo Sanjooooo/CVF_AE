@@ -364,6 +364,8 @@ cleanup = onCleanup(@() fclose(fid));
 fprintf(fid, '# CVF-AE 论文结果材料包\n\n');
 fprintf(fid, '生成日期：2026-06-24\n\n');
 fprintf(fid, '本目录只整理已有正式实验，不重跑优化算法。\n\n');
+fprintf(fid, '全部正式结果的中文名称与位置统一记录在：\n\n');
+fprintf(fid, '`routes/route_b_cvf_ae/docs/CVF_AE_RESULTS_INDEX.md`\n\n');
 fprintf(fid, '- `CVF_AE_PAPER_RESULTS_PACKAGE.xlsx`：集中审阅全部结果表和图索引的格式化工作簿。\n\n');
 fprintf(fid, '## 正文建议表格\n\n');
 fprintf(fid, '- `%s`：扩展主对比紧凑表，正文主表首选。\n', fileMap.mainCompact);
