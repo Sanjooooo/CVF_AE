@@ -2,6 +2,42 @@
 
 最后更新：2026-06-24
 
+## CEC 一般约束补充验证
+
+测试集选型报告：
+
+- [CVF_AE_CEC_BENCHMARK_SELECTION.md](CVF_AE_CEC_BENCHMARK_SELECTION.md)
+
+独立框架：
+
+- `cec2017_constrained_framework/`
+
+Stage A：
+
+- 28 个函数接口、参考点、容差、FE 计数、C18/C27 向量化修正和复现性测试；
+- 结果：6/6 passed。
+- 记录：
+  `cec2017_constrained_framework/results/stage_a/TEST_RESULTS.md`
+
+Stage B 首轮：
+
+- `cec2017_constrained_framework/results/stage_b_precheck`
+
+Stage B 保守修订：
+
+- `cec2017_constrained_framework/results/stage_b_precheck_v2`
+- 分析：
+  `cec2017_constrained_framework/results/stage_b_precheck_v2/STAGE_B_PRECHECK_ANALYSIS.md`
+- gate：
+  `cec2017_constrained_framework/results/stage_b_precheck_v2/STAGE_B_GATE_DECISION.md`
+
+当前结论：
+
+- Stage B 未通过；
+- 不进入 Stage C 或正式 CEC 运行；
+- 上述预检结果不作为论文正式性能结果；
+- UAV 正式结果及冻结参数未修改。
+
 本文件是路线 B / CVF-AE 论文实验结果的固定查找入口。后续新增、替换或重生成正式结果时，必须同步更新本文件中的中文名称、目录、关键文件和更新时间。
 
 ## 1. 使用规则

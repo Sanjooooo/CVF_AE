@@ -1,5 +1,155 @@
 # CVF-AE Route B Project Log
 
+## 2026-06-24 CEC constrained benchmark selection and precheck
+
+Scope:
+
+- preserve all frozen UAV parameters and formal results;
+- select a genuine general constrained benchmark;
+- build an independent framework instead of re-labeling the existing
+  bound-constrained `cec2017_framework`;
+- stop before Stage C/formal execution if the generic CVF mechanism gate fails.
+
+### Selection
+
+Selected:
+
+- CEC2017 constrained single-objective real-parameter optimization;
+- 28 functions;
+- official dimensions 10D and 100D;
+- 20 independent runs;
+- `10000 * D` FEs;
+- equality tolerance `1e-4`.
+
+Selection report:
+
+- `routes/route_b_cvf_ae/docs/CVF_AE_CEC_BENCHMARK_SELECTION.md`
+
+Source identity:
+
+- the competition and technical report are IEEE CEC materials;
+- the downloaded September 2024 MATLAB package is from the benchmark-author-
+  maintained `P-N-Suganthan/CEC2017` repository;
+- it is not described as an IEEE official code repository.
+
+Source archive SHA-256:
+
+- `5188E0C57A221BEC82C7326B0E22CF1524C997E59D5291A04FF309C9F609D8DD`
+
+### Independent framework
+
+Created:
+
+- `cec2017_constrained_framework/`
+
+Key design:
+
+- author source retained unmodified under `third_party`;
+- counted objective/constraint adapter;
+- official violation and separate normalized CVF pressure;
+- common uniform initialization, boundary projection, Deb rules, and FE budget;
+- generic population-difference CVF with no UAV geometry or reference
+  initialization;
+- AE, CVF-AE, CVF-AE-w/o-CVF, DE, and PSO;
+- resumable one-run MAT records and CSV summaries.
+
+### Stage A
+
+MATLAB tests:
+
+- 6 passed / 0 failed.
+
+Coverage:
+
+- all 28 function interfaces;
+- C01 known reference point;
+- equality tolerance;
+- FE accounting and over-budget rejection;
+- C18/C27 vectorized correction consistency;
+- fixed-seed reproducibility.
+
+MATLAB Code Analyzer:
+
+- new framework code passed;
+- the adapter reports one expected warning for the author package's required
+  `global initial_flag`.
+
+### Stage B, first implementation
+
+Result:
+
+- `cec2017_constrained_framework/results/stage_b_precheck`
+
+Protocol:
+
+- functions `[1,3,6,14,18]`;
+- 10D;
+- 3 runs;
+- population 20;
+- 3000 FEs;
+- 5 algorithms.
+
+Outcome:
+
+- CVF reduced violation on C03 and C06;
+- CVF worsened C14 and C18;
+- gate not passed.
+
+### Stage B, conservative revision
+
+Changes:
+
+- trigger only Deb-ranked infeasible candidates;
+- reduce trigger quota from 10% to 5%;
+- apply the field increment to the already constructed AE candidate;
+- retain all original functions, seeds, and budgets.
+
+Result:
+
+- `cec2017_constrained_framework/results/stage_b_precheck_v2`
+
+CVF-AE versus AE:
+
+- C01: better feasible objective;
+- C03: tie in violation;
+- C06: worse violation;
+- C14: worse violation;
+- C18: worse violation;
+- total: 1 win / 1 tie / 3 losses.
+
+Accounting:
+
+- all 75 runs completed;
+- every run used exactly 3000 FEs;
+- CVF extra FEs: `602 / 45000 = 1.34%`;
+- CVF local successes: 297;
+- feasible CVF-AE runs: 3/15, equal to AE.
+
+### Gate decision
+
+Stage B failed. Do not run Stage C or formal CEC experiments with the current
+generic CVF.
+
+Reason:
+
+- population differences do not provide a sufficiently reliable constraint
+  direction for equality manifolds and narrow mixed feasible regions;
+- local CVF candidate success does not translate into net algorithm-level
+  benefit under the same total FE budget.
+
+Formal readiness:
+
+- source and framework: ready;
+- interface/accounting: ready;
+- generic CVF mechanism: not ready;
+- full CEC run: blocked by the documented Stage B gate.
+
+Next technically defensible step:
+
+- design a counted low-dimensional constraint probe or finite-difference field;
+- charge all probes to FEs;
+- rerun the same fixed Stage B protocol before considering Stage C.
+
 ## 2026-06-18 Small Gate Handoff Execution
 
 Scope:
