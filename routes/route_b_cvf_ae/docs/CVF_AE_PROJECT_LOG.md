@@ -1,5 +1,82 @@
 # CVF-AE Route B Project Log
 
+## 2026-06-25 Target journal research
+
+Scope:
+
+- inspect the current CVF-AE mechanism, formal UAV evidence, paper outline,
+  and failed generic CEC Stage B gate;
+- verify the three required journals: `Cluster Computing`, `Evolving Systems`,
+  and `Journal of Systems Science and Systems Engineering`;
+- screen ten additional SCIE candidates;
+- separate publisher first-decision metrics from article-history
+  submission-to-acceptance time;
+- enforce the non-mandatory-APC requirement.
+
+Added:
+
+- `routes/route_b_cvf_ae/docs/CVF_AE_TARGET_JOURNAL_RESEARCH.md`
+- `routes/route_b_cvf_ae/docs/CVF_AE_JOURNAL_SHORTLIST.md`
+
+Evidence date:
+
+- 2026-06-25.
+
+Important indexing note:
+
+- the Chinese Academy of Sciences released the 2025 journal partition table
+  on 2025-03-20 and announced that it would stop updating the table from 2026;
+- this research therefore uses the 2025 partition as the final available
+  official edition;
+- subscription-only CAS subcategories and JCR quartiles remain marked for
+  final verification through the university databases.
+
+Review-time findings:
+
+- `Cluster Computing`: official first decision 25 days, but 10 recent article
+  histories give a submission-to-acceptance median of about 355 days;
+- `Evolving Systems`: official first decision 7 days, but the 10-article median
+  is about 403 days;
+- `Journal of Systems Science and Systems Engineering`: official first
+  decision 14 days, but the 10-article median is about 345 days;
+- publisher first-decision values must not be described as full peer-review
+  duration.
+
+Recommendation:
+
+1. `Arabian Journal for Science and Engineering`
+2. `International Journal of Aeronautical and Space Sciences`
+3. `International Journal of Control, Automation and Systems`
+4. `Evolving Systems`
+5. `Journal of Systems Science and Systems Engineering`
+6. fallback: `The Journal of Supercomputing`
+
+Required-journal decisions:
+
+- `Cluster Computing`: conditional C / not recommended as an early target
+  because the paper lacks a cluster/cloud/distributed-computing contribution,
+  the 2025 publication volume is about 1006 Crossref records, and sampled
+  acceptance time is slow;
+- `Evolving Systems`: B, strong topic fit but slow sampled acceptance;
+- `Journal of Systems Science and Systems Engineering`: B, genuine precedent
+  for improved metaheuristics and engineering applications, but low volume and
+  slow sampled acceptance.
+
+Hard exclusions:
+
+- `Journal of Intelligent & Robotic Systems`: converted to fully open access
+  in September 2024, so the mandatory APC route violates the task requirement;
+- `Soft Computing`: publisher first-decision median is 275 days and its
+  current JCR/MJL status presents an unacceptable indexing-risk signal.
+
+Writing strategy:
+
+- use the UAV engineering-application narrative;
+- do not present CVF-AE as a validated generic constrained optimizer while the
+  CEC2017 constrained Stage B gate remains failed;
+- add a real map/DEM case and explicit path-executability metrics before the
+  first submission.
+
 ## 2026-06-24 CEC constrained benchmark selection and precheck
 
 Scope:
