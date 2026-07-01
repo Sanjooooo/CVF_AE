@@ -1,0 +1,269 @@
+﻿\section{问题建模}
+
+\label{sec:problem-formulation}
+
+本文研究强约束三维低空无人机路径规划问题。给定三维飞行空间、起点、终点、障碍物、禁飞区和高度约束，目标是在满足安全可行性的前提下生成一条从起点到终点的平滑路径。与仅最小化路径长度的规划任务不同，低空飞行还需要同时考虑能耗、风险暴露、高度偏好、转弯平滑性和空间边界裕度。因此，本文将路径规划写成带约束的连续优化问题，并在评价阶段采用可行性优先准则，使算法搜索过程首先区分可行与不可行解，再在可行解之间比较综合目标值。
+
+\subsection{三维路径表示}
+
+设无人机起点和终点分别为
+\begin{equation}
+    \mathbf{s}=[x_s,y_s,z_s]^\mathsf{T}, \qquad
+    \mathbf{g}=[x_g,y_g,z_g]^\mathsf{T}.
+\end{equation}
+优化变量为 $K$ 个内部控制点
+\begin{equation}
+    \mathbf{X} =
+    [\mathbf{q}_1^\mathsf{T},\mathbf{q}_2^\mathsf{T},\ldots,\mathbf{q}_K^\mathsf{T}]^\mathsf{T}
+    \in \mathbb{R}^{3K},
+    \quad
+    \mathbf{q}_k=[x_k,y_k,z_k]^\mathsf{T}.
+    \label{eq:path-decision-vector}
+\end{equation}
+完整控制点序列由固定起点、内部控制点和固定终点组成：
+\begin{equation}
+    \mathcal{Q} = \{\mathbf{s}, \mathbf{q}_1,\ldots,\mathbf{q}_K,\mathbf{g}\}.
+\end{equation}
+本文使用三次 B 样条对控制点序列进行插值，得到连续路径 $\mathbf{p}(u)$，其中 $u\in[0,1]$。在实际评价中，将该连续路径均匀采样为
+\begin{equation}
+    \mathcal{P}(\mathbf{X})=\{\mathbf{p}_m\}_{m=1}^{M}, \qquad
+    \mathbf{p}_m=[x_m,y_m,z_m]^\mathsf{T}.
+    \label{eq:sampled-path}
+\end{equation}
+路径长度、风险、碰撞、禁飞区、高度和转弯约束均基于采样点序列计算。这样做有两个好处：一是优化维度保持为少量控制点维度，二是评价函数能够在统一采样网格上处理多种空间约束。
+
+\begin{table}[tbp]
+\centering
+\caption{问题建模中的主要符号}
+\label{tab:problem-notation}
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+符号 & 含义 \\
+\midrule
+$\mathbf{X}$ & 内部 B 样条控制点组成的优化变量 \\
+$K$ & 内部控制点数量 \\
+$M$ & 路径采样点数量 \\
+$L,E,R,S,H,B$ & 路径长度、能耗、风险、平滑性、高度偏好和边界代价 \\
+$C_{\mathrm{obs}},C_{\mathrm{nfz}},C_{\mathrm{curv}},C_{\mathrm{alt}}$ & 障碍物、禁飞区、转弯和高度违反量 \\
+$\mathbf c(\mathbf X)$ & 非负约束违反分量向量 \\
+$J(\mathbf{X})$ & 含惩罚项的综合目标值 \\
+$V(\mathbf{X})$ & 实现中用于排序和诊断的聚合违反量 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{优化目标}
+
+对任一路径 $\mathcal{P}(\mathbf{X})$，综合目标定义为
+\begin{equation}
+    J(\mathbf{X}) =
+    w_L L + w_E E + w_R R + w_S S + w_H H + w_B B + P_c ,
+    \label{eq:objective}
+\end{equation}
+其中 $w_L,w_E,w_R,w_S,w_H,w_B$ 为对应权重。惩罚项 $P_c$ 写为
+\begin{equation}
+    P_c =
+    \lambda_{\mathrm{obs}} C_{\mathrm{obs}}
+    + \lambda_{\mathrm{nfz}} C_{\mathrm{nfz}}
+    + \lambda_{\mathrm{curv}} C_{\mathrm{curv}}
+    + \lambda_{\mathrm{alt}} C_{\mathrm{alt}} .
+    \label{eq:penalty}
+\end{equation}
+式 \eqref{eq:objective} 中各目标项含义如下。
+
+令相邻采样点之间的段向量和段长分别为
+\begin{equation}
+    \begin{aligned}
+    \Delta \mathbf{p}_m
+    &= \mathbf{p}_{m+1}-\mathbf{p}_m,\\
+    \Delta l_m
+    &= \|\Delta \mathbf{p}_m\|_2+\epsilon_l,\\
+    m&=1,\ldots,M-1,
+    \end{aligned}
+    \label{eq:segment-definition}
+\end{equation}
+其中 $\epsilon_l$ 为防止零长度除法的极小常数。路径长度项衡量实际飞行距离：
+\begin{equation}
+    L=\sum_{m=1}^{M-1}\Delta l_m .
+    \label{eq:path-length}
+\end{equation}
+设 $\mathbf{w}_m$ 为第 $m$ 段起点处的风场向量，$\widehat{\mathbf d}_m=\Delta\mathbf p_m/\Delta l_m$ 为段方向，$\widehat{\mathbf w}_m=\mathbf w_m/(\|\mathbf w_m\|_2+\epsilon_l)$ 为风向单位向量。风阻相关项写为
+\begin{equation}
+    \Phi_m=\|\mathbf w_m\|_2
+    \left(1-\widehat{\mathbf d}_m^\mathsf{T}\widehat{\mathbf w}_m\right).
+    \label{eq:wind-alignment}
+\end{equation}
+能耗项由水平/空间飞行距离、垂向变化和逆风暴露共同构成：
+\begin{equation}
+    E=\sum_{m=1}^{M-1}
+    \left(
+    a_1\Delta l_m+a_2|\Delta z_m|+a_3\Phi_m
+    \right),
+    \label{eq:energy-term}
+\end{equation}
+其中 $\Delta z_m=z_{m+1}-z_m$，$a_1,a_2,a_3$ 为能耗系数。设 $r(\mathbf p_m)$ 为采样点处的风险场值，则风险暴露项为
+\begin{equation}
+    R=\sum_{m=1}^{M-1}r(\mathbf p_m)\Delta l_m .
+    \label{eq:risk-term}
+\end{equation}
+平滑性项基于离散二阶差分定义：
+\begin{equation}
+    S=\sum_{m=2}^{M-1}
+    \|\mathbf p_{m+1}-2\mathbf p_m+\mathbf p_{m-1}\|_2^2 .
+    \label{eq:smoothness-term}
+\end{equation}
+高度偏好项将路径高度拉向任务参考高度 $z_{\mathrm{ref}}$：
+\begin{equation}
+    H=\sum_{m=1}^{M}(z_m-z_{\mathrm{ref}})^2 .
+    \label{eq:height-term}
+\end{equation}
+边界项用于抑制路径贴近水平规划边界。以 $x$ 方向为例，若规划空间为 $[x_{\min},x_{\max}]\times[y_{\min},y_{\max}]$，边界安全裕度为 $m_b$，则
+\begin{equation}
+    B=\sum_{m=1}^{M}
+    \left[
+    b_x(\mathbf p_m)+b_y(\mathbf p_m)
+    \right],
+    \label{eq:boundary-term}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+    b_x(\mathbf p_m)
+    ={}&
+    \max(0,x_{\min}+m_b-x_m)^2\\
+    &+
+    \max(0,x_m-(x_{\max}-m_b))^2,
+    \end{aligned}
+    \label{eq:boundary-x}
+\end{equation}
+其中 $b_y(\mathbf p_m)$ 对 $y$ 方向作同样定义。式 \eqref{eq:energy-term}--\eqref{eq:boundary-x} 对应路径质量评价项；硬约束违反仍由下文的违反量单独判断。
+
+需要强调的是，$P_c$ 是评价阶段的违反惩罚，不等同于约束处理策略本身。本文方法在候选解接收时还显式使用总违反量和可行性优先准则，避免仅靠固定惩罚系数决定可行性排序。
+
+\subsection{约束条件}
+
+路径需满足以下工程约束。
+
+\paragraph{空间边界约束}
+每个内部控制点和采样点均应位于三维规划空间范围内：
+\begin{equation}
+    \mathbf{l}\leq \mathbf{q}_k \leq \mathbf{u}, \quad k=1,\ldots,K,
+    \label{eq:box-bound-control}
+\end{equation}
+其中 $\mathbf{l}$ 和 $\mathbf{u}$ 为决策变量下界和上界。候选点越界时先被投影回边界内；由于 B 样条曲线位于控制多边形凸包内，控制点投影使采样路径也保持在规划盒内。边界代价 $B$ 不再承担硬可行性判定作用，而是惩罚贴近水平边界的低裕度路径。因此，边界可行性和边界裕度在本文中分别对应硬投影与软代价。
+
+\paragraph{障碍物约束}
+设障碍物集合为 $\mathcal{O}$。若采样点位于障碍物内部，则产生障碍物违反量。障碍物约束可概括为
+\begin{equation}
+    \mathbf{p}_m \notin \mathcal{O}, \quad m=1,\ldots,M.
+    \label{eq:obstacle-constraint}
+\end{equation}
+本文的场景包含轴对齐建筑物和走廊型障碍分布。评价函数中的障碍物违反量按进入障碍物的采样点数量累计：
+\begin{equation}
+    C_{\mathrm{obs}}=
+    \sum_{m=1}^{M}\mathbb{I}(\mathbf p_m\in\mathcal O),
+    \label{eq:obs-violation}
+\end{equation}
+其中 $\mathbb{I}(\cdot)$ 为指示函数。第 \ref{sec:method} 节中的 CVF 近障碍方向可使用缓冲压力，但该压力只用于候选生成，不改变式 \eqref{eq:obs-violation} 的可行性判定口径。
+
+\paragraph{禁飞区约束}
+设禁飞区集合为 $\mathcal{Z}$。路径采样点不得进入禁飞柱体或其安全缓冲范围：
+\begin{equation}
+    \mathbf{p}_m \notin \mathcal{Z}, \quad m=1,\ldots,M.
+    \label{eq:nfz-constraint}
+\end{equation}
+禁飞区违反量同样按采样点进入禁飞区的次数统计：
+\begin{equation}
+    C_{\mathrm{nfz}}=
+    \sum_{m=1}^{M}\mathbb{I}(\mathbf p_m\in\mathcal Z).
+    \label{eq:nfz-violation}
+\end{equation}
+
+\paragraph{高度约束}
+无人机飞行高度需满足场景给定的下界和上界：
+\begin{equation}
+    z_{\min} \leq z_m \leq z_{\max}, \quad m=1,\ldots,M.
+    \label{eq:altitude-constraint}
+\end{equation}
+若路径低于 $z_{\min}$ 或高于 $z_{\max}$，对应超限距离被累计到 $C_{\mathrm{alt}}$。不同场景可采用不同的高度上界和参考高度，以反映低空走廊收紧后的飞行要求。
+
+\paragraph{转弯约束}
+令 $\mathbf v_m=\mathbf p_{m+1}-\mathbf p_m$。连续路径段形成的转弯角定义为
+\begin{equation}
+    \begin{aligned}
+    \theta_m=
+    \arccos
+    \left(
+    \frac{\mathbf v_{m-1}^\mathsf{T}\mathbf v_m}
+    {\|\mathbf v_{m-1}\|_2\|\mathbf v_m\|_2+\epsilon_l}
+    \right),\\
+    m=2,\ldots,M-1 .
+    \end{aligned}
+    \label{eq:turning-angle}
+\end{equation}
+路径转弯角不应超过允许上限 $\theta_{\max}$：
+\begin{equation}
+    \theta_m \leq \theta_{\max}, \quad m=2,\ldots,M-1.
+    \label{eq:turning-constraint}
+\end{equation}
+超出部分累计为
+\begin{equation}
+    C_{\mathrm{curv}}=\sum_{m=2}^{M-1}\max(0,\theta_m-\theta_{\max}),
+    \label{eq:curvature-violation}
+\end{equation}
+从而将急转弯或局部折线化路径识别为不可行或低质量候选。
+
+高度违反量定义为
+\begin{equation}
+    C_{\mathrm{alt}}=
+    \sum_{m=1}^{M}
+    \left[
+    \max(0,z_{\min}-z_m)+
+    \max(0,z_m-z_{\max})
+    \right].
+    \label{eq:altitude-violation}
+\end{equation}
+
+\subsection{可行性准则}
+
+为避免不同量纲约束被误解为同一物理量，本文首先将约束违反写成非负分量向量
+\begin{equation}
+    \mathbf c(\mathbf X)=
+    \left[
+    C_{\mathrm{obs}},
+    C_{\mathrm{nfz}},
+    C_{\mathrm{curv}},
+    C_{\mathrm{alt}}
+    \right]^\mathsf T .
+    \label{eq:constraint-vector}
+\end{equation}
+路径可行性按分量判定：
+\begin{equation}
+    \begin{aligned}
+    C_{\mathrm{obs}}&\leq \varepsilon_{\mathrm{obs}},&
+    C_{\mathrm{nfz}}&\leq \varepsilon_{\mathrm{nfz}},\\
+    C_{\mathrm{curv}}&\leq \varepsilon_{\mathrm{curv}},&
+    C_{\mathrm{alt}}&\leq \varepsilon_{\mathrm{alt}}.
+    \end{aligned}
+    \label{eq:component-feasible}
+\end{equation}
+在本文实现中，各分量均为非负量，且容差取极小值，因此式 \eqref{eq:component-feasible} 等价于障碍物、禁飞区、高度和转弯约束同时无违反。为了和当前实现、实验记录及 Deb 排序保持一致，本文仍记录一个实现相关违反分数
+\begin{equation}
+    V(\mathbf{X}) =
+    C_{\mathrm{obs}} + C_{\mathrm{nfz}} + C_{\mathrm{curv}} + C_{\mathrm{alt}}.
+    \label{eq:total-violation}
+\end{equation}
+当各分量非负且容差统一收紧为 $\varepsilon_v$ 时，可行性也可等价写为
+\begin{equation}
+    V(\mathbf{X}) \leq \varepsilon_v
+    \label{eq:feasible-condition}
+\end{equation}
+其中 $\varepsilon_v$ 为极小容差，用于避免浮点误差导致的误判。需要说明的是，$V$ 是 implementation-specific violation score（实现相关违反分数），只用于当前代码中的不可行解排序和诊断；它不表示统一物理量纲下的约束距离，也不用于解释哪一类安全约束在物理上更严重。若后续将违反量归一化后重新进入排序规则，应重新运行主对比、消融和统计检验。
+
+在候选解比较中，本文采用 Deb 可行性优先规则。对两个候选解 $\mathbf{X}_a$ 和 $\mathbf{X}_b$，其目标值和违反量分别为 $(J_a,V_a)$ 与 $(J_b,V_b)$，比较规则如下：
+\begin{enumerate}
+    \item 若一个解可行而另一个解不可行，则可行解优先；
+    \item 若两个解均可行，则目标值 $J$ 更小者优先；
+    \item 若两个解均不可行，则实现相关违反分数 $V$ 更小者优先；
+    \item 若违反量相同，则目标值更小者作为次级判据。
+\end{enumerate}
+该准则使算法在搜索早期能够推动不可行路径向可行区域移动，在找到可行路径后再逐步优化长度、能耗、风险和平滑性等综合质量指标。上述不可行解排序口径继承当前正式实验实现；若改为归一化违反量或安全优先词典序，应视为算法变体并重新运行正式实验。第 \ref{sec:method} 节将进一步说明 CVF-AE 如何利用这一可行性信息构造约束可行性方向。

@@ -1,5 +1,157 @@
 # CVF-AE Route B Project Log
 
+## 2026-06-27 AJSE Chinese draft scaffold
+
+Scope:
+
+- created `routes/route_b_cvf_ae/paper_ajse_zh/` as a Chinese LaTeX draft scaffold for the AJSE-first UAV engineering narrative;
+- created `main.tex`, split section files, table placeholders, `bib/`, `figures/`, and `notes/`;
+- recorded confirmed user decisions in `notes/todo_questions.md`;
+- recorded writing strategy in `notes/writing_plan.md`;
+- recorded AJSE/Springer official requirement checks in `notes/ajse_requirements.md`;
+- copied 25 indexed PNG figures and 4 available PDF figures into `figures/`;
+- generated `notes/figure_asset_manifest.csv`;
+- confirmed `evaluatePath.m` does not exist and mapped evaluation to `fitnessFAEAE.m`;
+- confirmed code has 3D A* reference-path generation but no RRT/RRT* formal comparison implementation;
+- did not write full manuscript body and did not rerun any formal UAV experiments.
+
+Verification:
+
+- `.tex` static scan found no local absolute path, internal scene-number label, forbidden statistical-test wording, or CEC mention;
+- local LaTeX compile was not run because no `xelatex`, `lualatex`, `pdflatex`, or `bibtex` command was available in this environment.
+
+## 2026-06-29 Paper table conversion
+
+Scope:
+
+- converted the formal paper CSV tables into LaTeX tables under `routes/route_b_cvf_ae/paper_ajse_zh/tables/`;
+- replaced placeholder tables for main comparison, ablation, significance, runtime overhead, and parameter sensitivity;
+- added `longtable` to `main.tex` for multipage result tables;
+- updated `notes/source_mapping.md` and `notes/quality_check.md`.
+
+Sources:
+
+- `paper_table_main_compact.csv`
+- `paper_table_ablation.csv`
+- `paper_table_main_significance.csv`
+- `paper_table_overhead.csv`
+- `paper_table_parameter_sensitivity.csv`
+
+Verification:
+
+- table files were scanned for mojibake, TODO placeholders, local absolute paths, internal scene-number labels, and forbidden statistical-test wording;
+- no formal UAV experiments were rerun.
+
+Follow-up adjustment:
+
+- `table_parameters.tex` was compressed from the full per-scene parameter table into a main-text summary table with one row per key parameter;
+- the complete parameter sensitivity details remain in `paper_table_parameter_sensitivity.csv` for supplementary use or audit.
+- `table_significance.tex` was compressed into a win/tie/loss summary with key exceptions;
+- `table_runtime.tex` was compressed into a compact CVF-AE overhead summary;
+- complete p-values, effect sizes, and per-algorithm overhead records remain in the formal CSV files.
+- runtime presentation was revised again to avoid direct comparison of absolute runtimes across different batches; the main-text table now emphasizes evaluation counts, CVF trigger scale, and same-batch ablation ratios.
+
+## 2026-06-29 Chinese draft Sections 3 and 4
+
+Scope:
+
+- drafted Section 3, `问题建模`, in the AJSE Chinese LaTeX manuscript;
+- drafted Section 4, `CVF-AE 方法`, in the AJSE Chinese LaTeX manuscript;
+- grounded the formulation in the implemented B-spline control-point encoding, objective terms, constraint violation terms, Deb feasibility rule, CVF field construction, sparse trigger, local candidate acceptance, repair boundary, and complexity accounting;
+- did not add fabricated citations and did not rerun any optimization experiments.
+
+Verification:
+
+- scanned the two section files for TODO placeholders, local absolute paths, internal scene-number labels, forbidden statistical-test wording, CEC mentions, and overclaiming phrases;
+- no matches were found in the two drafted section files;
+- compiled the Chinese draft with `xelatex -interaction=nonstopmode -halt-on-error main.tex` twice and generated `main.pdf`;
+- the final log scan found no LaTeX errors, fatal stops, emergency stops, or undefined references;
+- remaining warnings are limited to table layout overfull/underfull messages and the currently empty bibliography.
+
+Follow-up formula audit:
+
+- completed the mathematical definitions for the implemented objective terms: segment length, wind-alignment energy, risk exposure, second-difference smoothness, height preference, and horizontal boundary margin penalty;
+- corrected the constraint-violation exposition so obstacle and no-fly-zone violations are stated as sampled-point entry counts, matching `fitnessFAEAE.m`;
+- added explicit turning-angle and altitude-violation formulas;
+- completed the CVF derivation from low-density sampled-path pressure to nearest-control-point averaging, vectorized field step, component clipping, strength scaling, norm clipping, quality step, elite anchoring, and per-generation sparse trigger quota;
+- reran `xelatex` twice after the formula audit; the final log scan again found no LaTeX errors or undefined references;
+- no optimization experiments were rerun.
+
+## 2026-06-29 Chinese draft Section 5
+
+Scope:
+
+- drafted Section 5, `实验设计`, in the AJSE Chinese LaTeX manuscript;
+- covered the confirmed hardware/software environment, three paper scenes, core public optimization parameters, evaluation metrics, comparison algorithms, ablation variants, and statistical testing protocol;
+- used the final formal statistical protocol: two-sided Wilcoxon rank-sum / Mann-Whitney U tests, Holm correction, Kruskal-Wallis omnibus tests, and Cliff's delta;
+- added `sec:results-discussion` label to the results section for forward reference;
+- did not rerun any optimization experiments and did not add new result claims.
+
+Verification:
+
+- scanned the Section 5 file for TODO placeholders, local absolute paths, internal scene-number labels, forbidden statistical-test wording, CEC mentions, overclaiming phrases, and RRT references;
+- scanned all manuscript `.tex` files for local absolute paths, internal scene-number labels, forbidden statistical-test wording, CEC mentions, overclaiming phrases, and RRT references;
+- no matches were found for those forbidden patterns;
+- compiled the Chinese draft with `xelatex -interaction=nonstopmode -halt-on-error main.tex` twice and generated `main.pdf`;
+- the final log scan found no LaTeX errors, fatal stops, emergency stops, citation warnings, or undefined references;
+- remaining warnings are table/layout warnings and the currently empty bibliography.
+
+## 2026-06-29 Chinese draft Section 6
+
+Scope:
+
+- drafted Section 6, `结果与讨论`, in the AJSE Chinese LaTeX manuscript;
+- interpreted the main comparison, nonparametric significance summary, ablation table, runtime/evaluation overhead table, parameter sensitivity table, and trajectory sanity signals;
+- kept the conclusion bounded: CVF-AE is described as having balanced engineering performance rather than per-scene scalar-fitness dominance;
+- explicitly noted the Scene 2 scalar-fitness losses to CPO and MSCSO, and the Scene 3 GDSAO scalar-fitness mean edge with high boundary-hugging risk;
+- did not rerun any optimization experiments and did not add new result tables.
+
+Verification:
+
+- removed the Section 6 TODO placeholders;
+- scanned all manuscript `.tex` files for local absolute paths, internal scene-number labels, forbidden statistical-test wording, CEC mentions, RRT references, and overclaiming phrases;
+- no matches were found for those forbidden patterns;
+- compiled the Chinese draft with `xelatex -interaction=nonstopmode -halt-on-error main.tex` twice and generated `main.pdf`;
+- the final log scan found no LaTeX errors, fatal stops, emergency stops, citation warnings, undefined references, or rerun-label warnings;
+- remaining warnings are table/layout warnings and the currently empty bibliography.
+
+## 2026-06-29 Main-text figure insertion
+
+Scope:
+
+- inserted the main-text figures that had already been copied into the Chinese LaTeX project;
+- added the CVF-AE method flowchart to Section 4;
+- added strong-algorithm boxplots, three convergence curves, three extended top-view representative path figures, the Scene 2 ablation top-view figure, and the parameter sensitivity figure to Section 6;
+- added Chinese captions and local explanatory paragraphs tied to the existing result discussion;
+- did not create or rerun any experiments.
+
+Verification:
+
+- checked every new `\includegraphics` target against `paper_ajse_zh/figures/`;
+- all referenced figure files exist;
+- scanned all manuscript `.tex` files for local absolute paths, internal scene-number labels, forbidden statistical-test wording, CEC mentions, RRT references, and overclaiming phrases;
+- no matches were found for those forbidden patterns;
+- compiled the Chinese draft with `xelatex -interaction=nonstopmode -halt-on-error main.tex` twice and generated `main.pdf`;
+- the final log scan found no LaTeX errors, fatal stops, emergency stops, missing-figure errors, citation warnings, undefined references, or rerun-label warnings;
+- remaining warnings are table/layout warnings and the currently empty bibliography.
+
+Follow-up 3D figure insertion:
+
+- added a three-panel 3D representative trajectory figure for Scene 1, Scene 2, and Scene 3 using:
+  - `extended_scene1_representative_3d.png`
+  - `extended_scene2_representative_3d.png`
+  - `extended_scene3_representative_3d.png`
+- revised the trajectory discussion so the 3D and top-view figures are interpreted as complementary evidence;
+- checked all referenced figure files exist under `paper_ajse_zh/figures/`;
+- reran `xelatex` twice; the final log scan found no LaTeX errors, missing figures, undefined references, or rerun-label warnings.
+
+Follow-up ablation 3D figure insertion:
+
+- added `ablation_scene3_representative_3d.png` as a main-text ablation figure;
+- kept the existing Scene 2 ablation top-view figure and added Scene 3 3D evidence to cover height and spatial feasibility effects;
+- checked all referenced figure files exist under `paper_ajse_zh/figures/`;
+- reran `xelatex` twice; the final log scan found no LaTeX errors, missing figures, undefined references, or rerun-label warnings.
+
 ## 2026-06-25 Target journal research
 
 Scope:
@@ -1893,3 +2045,438 @@ trajectory sanity：
 - 区分论文最终数据源与 precheck、gate 等开发过程目录；
 - 列出各类结果的生成脚本；
 - 规定后续正式结果更新时必须同步修改索引日期、目录、文件名和链接。
+
+## 2026-06-29 中文初稿图表紧凑化与浮动控制
+
+调整内容：
+
+- 压缩中文初稿中的表 2、表 3、表 7 和表 8，删除表内长解释列和过长说明性 caption；
+- 将场景设计目的、公共参数含义、运行开销解释和参数敏感性结论保留在正文段落中；
+- 新增 `placeins` 并在第 5、6 章关键小节之间加入 `\FloatBarrier`，减少图表跨小节漂移；
+- 将消融实验的 Scene 2 俯视图和 Scene 3 三维图合并为一行两图，统一为消融代表轨迹图；
+- 同步缩短主对比、显著性和消融表 caption，并压缩消融长表列距。
+
+验证结果：
+
+- `xelatex -interaction=nonstopmode -halt-on-error main.tex` 编译通过并生成 `main.pdf`；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、overfull/underfull 或 longtable 宽度警告；
+- 当前唯一剩余预期提示为 bibliography 为空，待后续文献库补充。
+
+## 2026-06-29 中文初稿章节结构收敛
+
+调整内容：
+
+- 按 AJSE/Springer 常规研究论文结构，将中文稿主章节从 8 个收敛为 6 个；
+- 将“相关工作”从独立 `\section` 降为“引言”下的 `\subsection`；
+- 将“局限性”从独立 `\section` 降为“结果与讨论”末尾的 `\subsection{局限性与未来工作}`；
+- 为引言、相关工作、问题建模、局限性和结论补充稳定 label；
+- 将实验设计中硬编码的“第 3 章定义”改为 `\ref{sec:problem-formulation}` 交叉引用。
+
+验证结果：
+
+- `main.aux` 中目录主章节为：引言、问题建模、CVF-AE 方法、实验设计、结果与讨论、结论；
+- `xelatex -interaction=nonstopmode -halt-on-error main.tex` 连续编译通过；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、overfull/underfull 或 longtable 宽度警告；
+- 当前唯一剩余预期提示为 bibliography 为空，待后续文献库补充。
+
+## 2026-06-29 第一章与参考文献初稿
+
+本地文献处理：
+
+- 扫描 `D:\Zotero\Downloads` 及子文件夹，索引 `162` 篇 PDF；
+- 输出 `paper_ajse_zh/notes/local_pdf_inventory.md` 与 `local_pdf_inventory.json`；
+- Zotero local API 未运行，因此本轮直接基于 PDF 文件名、PDF 元数据、前两页文本和 DOI 线索构建本地文献池。
+
+联网核验：
+
+- 使用 DOI/BibTeX 内容协商核验并拉取候选 BibTeX；
+- 成功获取 `26` 条候选 BibTeX，另有 `2` 条 Elsevier DOI 因 HTTP 429 暂未拉取；
+- 手工整理为 `paper_ajse_zh/bib/references.bib`，统一 citation key 并剔除错误 Cliff's delta 候选 DOI。
+
+正文写作：
+
+- 完成第一章“引言”中文初稿；
+- 完成“相关工作”小节，覆盖 UAV 路径规划、元启发式优化、约束处理、人工势场/可行性引导和研究缺口；
+- 补充统计检验方法引用：Mann--Whitney U、Holm 校正、Kruskal--Wallis 和 Cliff's delta；
+- 保持主线为强约束三维/低空 UAV 路径规划 + Constraint Viability Field，不引入 CEC 或真实地图案例。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- `main.bbl` 中当前使用 `24` 条参考文献；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull/underfull 或空 bibliography；
+- 静态扫描未发现本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT 或夸大表述。
+
+## 2026-06-29 Zotero local API 复核
+
+API 状态：
+
+- Zotero local API 已启用并运行；
+- Zotero version: `9.0.5`；
+- local API status: `200`；
+- connector status: `200`。
+
+导出与审计：
+
+- 导出 Zotero BibTeX 至 `paper_ajse_zh/notes/zotero_export_full.bib`；
+- Zotero 导出条目数：`327`；
+- 生成审计文件 `paper_ajse_zh/notes/zotero_reference_audit.md`；
+- 当前 `references.bib` 条目数：`27`；
+- 当前 DOI 与 Zotero 匹配：`21`；
+- 当前 DOI 未在 Zotero 导出中匹配：`6`，均为基础方法或统计学文献：Deb 约束处理、Khatib 势场、Mann--Whitney、Kruskal--Wallis、Cliff's delta、Holm 校正；
+- 发现 `9` 个当前引用在 Zotero 中存在同 DOI 重复条目。
+
+处理结论：
+
+- 不直接用 Zotero 全量导出覆盖 `references.bib`，因为 Zotero 库中存在较多重复 DOI 条目；
+- 当前 `references.bib` 继续作为论文可编译源；
+- 后续若补充文献，优先从 Zotero 审计中的 additional relevant candidates 中逐条筛选、去重并核验。
+
+## 2026-06-29 第一章二次精修
+
+调整内容：
+
+- 删除第一章内部“相关工作”等显式小标题，使第 1 章成为连续引言；
+- 将 UAV 路径规划、元启发式优化、约束处理、势场方法和研究缺口自然合并进引言段落；
+- 保留贡献列表，并将“本文其余部分组织”置于第一章末尾；
+- 保持现有引用集合，不新增文献条目；
+- `sections/02_related_work.tex` 仅保留注释，以维持 `main.tex` 输入结构。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 目录中第 1 章仅显示“引言”，不再显示相关工作小节；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull/underfull 或空 bibliography；
+- 静态扫描未发现本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位或夸大表述。
+
+## 2026-06-29 第一章代表性工作式压缩
+
+调整内容：
+
+- 按用户意见将相关工作从综述式泛述改为“某人做了什么 + 仍有什么不足”的代表性工作串联；
+- 删除与本文无直接关系的多 UAV/编队展开，只保留单 UAV/三维低空强约束主线；
+- 将领域算子、连续蚁群、候选重构、多目标进化、CPO/RBBMO/SBO/Jellyfish 和势场方法的不足收束到 CVF-AE 的创新点；
+- 保持贡献和文章组织在第一章末尾；
+- 未新增参考文献，正文实际引用由 `24` 条降为 `20` 条。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 第一章约 `2713` 个字符；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull/underfull 或空 bibliography；
+- 静态扫描未发现本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位或夸大表述。
+
+## 2026-06-29 流程图与伪代码取舍
+
+调整内容：
+
+- 按用户意见在第 4 章中只保留 `CVF-AE 算法流程` 伪代码；
+- 删除方法流程图在正文中的图环境和正文引用；
+- 将流程图原本强调的机制边界合并进方法文字：CVF 分支是基础 AE 候选之外的额外候选，不是全种群强制更新；CVF 候选仍需通过局部接收规则；局部修复属于候选后处理；
+- 未删除 `figures/cvf_ae_method_flowchart.png` 文件，保留为后续可选材料。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过并生成 `main.pdf`；
+- `main.bbl` 当前实际编入 `20` 条参考文献；
+- 静态扫描未发现 `method-flowchart`、`cvf_ae_method_flowchart` 或 `fig:method-flowchart` 残留引用；
+- 静态扫描未发现本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位或夸大表述；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用或未定义 citation。
+
+## 2026-06-30 中文初稿双栏预览版
+
+调整内容：
+
+- 按用户导师建议，将中文初稿从 A4 单栏 `ctexart` 切换为 Letter 双栏预览版，用于估算接近 Transactions 类论文的篇幅和版面密度；
+- 主模板改为 `letterpaper`、`twocolumn`、紧凑页边距和较紧凑的图表间距；
+- 主对比、显著性、消融、运行开销和参数敏感性表改为 `table*` 跨双栏浮动；
+- 消融表由双栏不兼容的 `longtable` 改为跨栏 `tabular`；
+- 结果章节主要图改为 `figure*` 跨双栏浮动；
+- 拆分第 3、4 章中双栏下过宽的公式，并将 CVF 候选公式改写为先定义状态融合方向 $\mathbf{D}_s$ 再生成候选解的紧凑形式。
+
+验证结果：
+
+- 参考的三篇导师示例 PDF 均为 Letter 双栏，页数约 `12--13` 页；
+- 当前中文初稿生成的 `main.pdf` 为 Letter 纸，双栏，共 `18` 页；
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation 或 overfull；
+- 静态扫描未发现本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位或夸大表述；
+- 抽样渲染首页和结果页，标题、双栏正文、跨栏表格和主要结果图均能显示。
+
+## 2026-06-30 运行时间展示取舍
+
+调整内容：
+
+- 按用户确认，将效率主线从绝对 wall-clock time 调整为评价开销和稀疏触发开销；
+- 从消融表中删除 `Time(s)` 列；
+- 从评价开销表中删除 time ratio，只保留 `nEvals`、`CVF trig.`、`CVF succ.`、触发率和同批次评价比值；
+- 在实验设计和结果讨论中明确说明：由于 MATLAB 会话状态、repair 次数、路径可行形成速度和批处理负载会影响 wall-clock time，本文不将绝对运行时间作为主要效率证据；
+- 将“运行开销”相关小节和贡献表述统一改为“评价开销”“额外评价次数受控”和“稀疏触发”。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `19` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation 或 overfull；
+- 静态扫描未发现 `Time(s)`、time ratio、禁用统计写法、CEC、RRT、内部场景编号、本机绝对路径或夸大表述。
+
+## 2026-06-30 双栏留白压缩
+
+调整内容：
+
+- 将表 5 的 key exception 长描述移出表格，仅保留 `Test group`、`Scene`、`Methods`、`+`、`=` 和 `-` 六列；
+- 表 5 由跨双栏 `table*` 改为单栏 `table`，例外解释继续保留在正文统计显著性分析段落中；
+- 图 5 不再左右并排展示，改为上下两个子图；
+- 图 5 采用跨双栏 `figure*` 和固定子图高度，避免单栏上下图造成右栏整页空白。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `18` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation 或 overfull；
+- 抽样渲染第 12 页和第 14 页，表 5 能嵌入正文栏，图 5 以上下形式显示且页面下方能继续接正文。
+
+## 2026-06-30 图表标题精简与期刊式浮动
+
+调整内容：
+
+- 将结果章节图题压缩为名称型标题，表题统一改为中文短名，如“主对比”“显著性”“消融结果”“评价开销”和“参数敏感性”；
+- 移除正文 `\FloatBarrier`，图表浮动选项统一放宽为 `[tbp]`，不再强制图表停留在对应正文附近；
+- 放宽双栏浮动比例和页内浮动数量，使宽图、宽表按正式期刊常见方式集中排版；
+- 图 5 继续保持上下展示，但扩大子图显示尺寸并压缩子图标题；
+- 摘要、局限性和结论由占位文本改为正式中文短文，标题和声明区去除英文 `TODO` 占位。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation 或 overfull；
+- 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位、绝对运行时间列或夸大表述；
+- 渲染检查第 9--13 页，结果章节文字、表 5 单栏表、跨栏主图、图 5、表 8 和图 6 均能正常显示，整体浮动布局比逐节强制放置更紧凑。
+
+## 2026-06-30 双栏图表混排修正
+
+调整原因：
+
+- 双栏 LaTeX 中 `figure*` 和 `table*` 只能作为跨双栏浮动放在页顶、页底或浮动页，不能像单栏图表一样自然插入正文中间；
+- 结果章连续出现主对比表、收敛图、代表性轨迹图、消融表和消融轨迹图等多个跨栏对象时，LaTeX 会把它们排成纯图表页；
+- 按正式期刊常见做法，版面应减少跨栏对象数量，保留少数确需跨栏的大表/大图，其余图表改为单栏或更紧凑排布。
+
+调整内容：
+
+- 收敛曲线由跨栏三联图改为单栏纵向三子图，使其能与正文同页混排；
+- 评价开销表和参数敏感性表由跨栏表改为单栏短表；
+- 消融轨迹图改为左右并排，减少跨栏图高度；
+- 主轨迹图保留跨栏 2 行 3 列排布，仍展示俯视和三维视角；
+- 调整双栏浮动比例，避免过度鼓励纯图表浮动页。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `15` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation 或 overfull；
+- 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位、绝对运行时间列或夸大表述；
+- 渲染检查第 9--13 页：第 10 页已由纯图表页调整为“跨栏主表 + 单栏收敛图 + 正文/单栏显著性表”的混排；消融图、评价开销表和参数表均与正文混排。代表性轨迹图和消融大表仍作为必要的大型结果展示跨栏排版。
+
+## 2026-06-30 消融轨迹小图化
+
+调整内容：
+
+- 将“消融轨迹”由跨双栏 `figure*` 改为单栏 `figure`；
+- 保留 Scene 2 俯视图和 Scene 3 三维图两个子图，但在单栏内左右并排作为小图展示；
+- 继续保留统一图号和 `fig:ablation-paths` 标签，正文引用不变。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `15` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation 或 overfull；
+- 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位、绝对运行时间列或夸大表述；
+- 渲染检查第 10--12 页，消融轨迹图已作为单栏小图与评价开销表和正文混排，不再占用跨栏大图位置。
+
+## 2026-06-30 SCI 三区大修意见响应
+
+调整内容：
+
+- 新增 `paper_ajse_zh/notes/major_revision_plan.md`，将审稿式意见拆分为“立刻落稿”“需补实验或重跑”“投稿前处理”三类任务；
+- 第 3 章将可行性判定改为非负约束分量分别满足，并说明当前聚合违反量只作为实现中的排序和诊断量，不解释为统一物理量；
+- 第 3 章补充边界硬约束与边界裕度软代价的关系，避免边界违反逻辑不一致；
+- 第 4 章补充基础 AE 方向模板、状态判定指标与阈值、保守状态调度滞回规则、CVF 状态权重和融合权重；
+- 第 4 章将障碍物、禁飞区、风险、高度、边界和转弯 CVF 分量从概念性描述改为可追溯到代码实现的公式表达；
+- 第 5 章将高空绕行、边界贴靠、绕行比例和控制点贴边等轨迹复核指标前置定义，并补充基线公平性说明。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 Missing character；
+- 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位、绝对运行时间列或夸大表述；
+- 渲染检查第 4--9 页，新增方法公式和实验指标定义可读，未出现公式压栏或图表遮挡。
+
+## 2026-06-30 统计明细表补充
+
+调整内容：
+
+- 从 `routes/route_b_cvf_ae/results/cvf_ae_formal_significance_20260624_from_formal_results/cvf_ae_pairwise_rank_sum_holm.csv` 读取正式主对比统计结果；
+- 新增 `paper_ajse_zh/tables/table_significance_detail.tex`，按三场景并排列出 CVF-AE 对 10 个基线的场景内 Holm 校正 `p` 值、Cliff's delta 和胜平负关系；
+- 在第 6 章“统计显著性分析”中接入该明细表，并说明 `R` 与 Cliff's delta 的方向含义；
+- 保留原有显著性摘要表，用于快速展示主对比和消融的胜/平/负概况。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 Missing character；
+- 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、未核验引用占位、绝对运行时间列或夸大表述；
+- 渲染检查第 10--12 页，新增统计明细表与正文混排，未形成纯表页。
+
+## 2026-06-30 显著性表合并
+
+调整内容：
+
+- 将原“显著性摘要表”和“逐场景统计明细表”合并为单个 `paper_ajse_zh/tables/table_significance.tex`；
+- 删除 `paper_ajse_zh/tables/table_significance_detail.tex`，避免正文连续放置两张显著性表；
+- 当前正文只展示主对比 CVF-AE 对 10 个基线的逐场景 Holm 校正 `p` 值、Cliff's delta 和胜平负关系；
+- 第 6 章消融讨论不再引用消融显著性，改为基于消融均值解释状态自适应、CVF、初始化和稀疏保持的互补关系。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现 `table_significance_detail`、`significance-detail`、消融显著性正文表述、禁用统计写法、CEC、RRT、绝对路径、`Scene 4` 或夸大表述；
+- 渲染检查第 10--12 页，合并后的表 5 位于正文页顶部，未形成纯表页或压栏。
+
+## 2026-06-30 参数敏感性正文合并
+
+调整内容：
+
+- 删除主文中的独立“参数敏感性”小节；
+- 删除 `paper_ajse_zh/tables/table_parameters.tex`，不再将参数敏感性作为正文表 8 展示；
+- 移除参数敏感性图的正文调用；
+- 将关键结论压缩并入“评价开销与参数稳健性”小节，强调参数扰动只作为稳健性检查，不作为独立性能证据或重新调参依据。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现 `table_parameters`、`tab:parameters`、`fig:parameter-sensitivity`、禁用统计写法、CEC、RRT、绝对路径、`Scene 4` 或夸大表述；
+- 渲染检查第 12--14 页，表 7、合并后的参数稳健性段落、综合讨论、局限性和结论均正常显示，未出现参数表/参数图残留。
+
+## 2026-06-30 表 5 单栏化与标题恢复
+
+调整内容：
+
+- 将 `paper_ajse_zh/tables/table_significance.tex` 从跨栏三场景横向并列表改为单栏纵向明细表；
+- 保留 CVF-AE 对 10 个基线算法在 3 个场景上的 Holm 校正 `p` 值、Cliff's delta 和胜平负关系；
+- 将主要图题和表题由名称型短标题恢复为标准描述型 caption，包括主对比、显著性、消融、评价开销、收敛曲线、代表性轨迹和消融轨迹。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过；
+- 当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现禁用统计写法、CEC、RRT、绝对路径、`Scene 4`、残留参数表引用或夸大表述；
+- 渲染检查第 10--12 页，表 5 为单栏纵向表并与正文混排，未形成纯表页或压栏。
+
+## 2026-06-30 二轮审稿意见硬修
+
+调整内容：
+
+- 第 3 章进一步澄清 $V(\mathbf X)$ 是当前实现中的 implementation-specific violation score，仅用于不可行解排序和诊断，不解释为统一物理量纲距离；
+- Deb 规则说明改为“实现相关违反分数 $V$ 更小者优先”，并明确归一化违反量或安全优先词典序属于后续算法变体，需要重新运行主对比、消融和统计检验；
+- 第 4 章修正状态识别公式的逻辑关系，使用明确的 `\land` 和 `\lor`，删除 `\rho_f=0,\rho_f<0.20` 这类歧义写法；
+- 第 4 章说明质量细化状态在本文保守调度中主要作为观测状态和权重模板保留，正式运行主要在可行性保持、可行性形成和停滞恢复之间切换；
+- CVF 候选接收规则改写为“保守局部接收”，承认更激进的可行性改善接收不属于当前正式实验；
+- 第 5、6 章将“参数敏感性实验”统一降格为“参数稳健性检查/补充说明”，并修正“风风险热点”错字；
+- 局限性补充当前排序和候选接收策略的算法边界。
+
+验证结果：
+
+- `xelatex -> xelatex` 增量编译通过，当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、参数图表残留、`风风险` 或 `参数敏感性实验`；
+- 渲染检查第 4--6 页，新增 $V$ 说明、状态判定公式和保守调度说明均正常显示，未出现公式压栏或文字遮挡。
+
+## 2026-06-30 投稿化降调与参考文献核验
+
+调整内容：
+
+- 摘要、贡献第 4 条、综合讨论和结论均降调为“所测试的三类合成低空场景”，避免把三组合成实验泛化为普遍结论；
+- 主对比表末列由 `Flag` 改为 `Review flag`，并补充复核标记率表注；
+- 消融表补充 `CVF trig./succ.` 含义，评价开销表补充 `Trig.`、`Succ.` 和 `Ratio` 含义；
+- 对 `bib/references.bib` 进行 DOI 元数据核验，并新增 `paper_ajse_zh/notes/reference_verification_20260630.md`；
+- `Holm1979Sequential` 删除不可解析 DOI-like stable 编号，改用 JSTOR stable URL；`Deb2000ConstraintHandling` 的 issue 字段规范为 `2-4`；
+- 复查 `Kumar2025UAVReview` 的 DOI 元数据：issued date 为 2025，但 ACM CSUR 卷期为 58(3)，当前保留 year 2025 并在核验记录中说明。
+
+验证结果：
+
+- `xelatex -> bibtex -> xelatex -> xelatex` 编译链通过，当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- DOI 复核结果：27 条参考文献中 26 条 DOI 可解析，1 条无 DOI 但保留 JSTOR stable URL，修正后无题名、期刊、年份、卷期或页码不一致项；
+- 正文 `.tex` 静态扫描未发现 `TODO`、本机绝对路径、内部场景编号、禁用统计写法、CEC、RRT、参数图表残留、`风风险`、`参数敏感性实验` 或“所有正式场景”；
+- 渲染检查第 10--14 页，新增表注后的主对比表、消融表和评价开销表均正常显示，未出现表格压栏或文字遮挡。
+
+## 2026-06-30 图 3、图 4 拆分排版
+
+调整内容：
+
+- 按用户意见保留表 6 为单张跨栏消融表，不拆成逐场景表；
+- 将原图 3 的 6 子图拆成两张跨栏图：三类测试场景的代表性路径俯视对比、三类测试场景的代表性路径三维对比；
+- 将原图 4 的两子图拆成两张单栏图：Scene 2 消融俯视对比、Scene 3 消融三维对比；
+- 更新结果章中相关图引用和说明文字。
+
+验证结果：
+
+- `xelatex -> xelatex` 增量编译通过，当前双栏 `main.pdf` 为 Letter 纸，共 `17` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现旧 `fig:extended-paths` 引用、禁用统计写法、CEC、RRT、绝对路径、`Scene 4`、`风风险`、`参数敏感性实验` 或“所有正式场景”；
+- 渲染检查第 12--16 页，拆分后的轨迹图明显放大，表 6 未拆分且正常显示，未出现图表压栏或文字遮挡。
+
+## 2026-06-30 轨迹图拆分版式二次调整
+
+调整内容：
+
+- 图 3 俯视对比和图 4 三维对比均改为一行三图，避免上一版两图一行加单图居中的断裂感；
+- 图 5 和图 6 消融轨迹图缩小为 `0.78\linewidth` 的单栏正文图，使其更接近图 1、图 2 的正文混排节奏；
+- 表 6 继续保持单张跨栏消融表，不拆分。
+
+验证结果：
+
+- `xelatex -> xelatex -> xelatex` 编译通过，当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现旧图引用、禁用统计写法、CEC、RRT、绝对路径、`Scene 4`、`风风险`、`参数敏感性实验` 或“所有正式场景”；
+- 渲染检查第 12--14 页，主轨迹图为两张一行三图，消融图 5/6 以较小单栏图嵌入正文中，未出现图表压栏或文字遮挡。
+
+## 2026-06-30 投稿前四项小修
+
+调整内容：
+
+- 将第 6 章主对比结果中的“最佳综合排名”改为“最佳平均场景排名”，避免把适应度平均排名误表述为可行率、复核标记和开销的综合排名；
+- 将第 5 章主对比公平性说明收紧为“完整 CVF-AE 框架相对于未嵌入本文专属约束引导机制的基线搜索器”的比较，并说明模块贡献由消融实验解释；
+- 将主对比表中 `Review flag` 的表注明确为“三场景共 90 次运行中被任一轨迹复核规则标记的比例”；
+- 将第 4 章基础 AE 方向系数从正文内嵌小表改为正式编号表 `tab:base-ae-coefficients`。
+
+验证结果：
+
+- `xelatex -> xelatex -> xelatex` 编译通过，当前双栏 `main.pdf` 为 Letter 纸，共 `16` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现旧表述“综合排名”“搜索机制本身”“Review flag 表示”，也未发现 TODO、本机绝对路径、CEC、RRT、`Scene 4`、绝对运行时间列或夸大表述；
+- 渲染检查第 5--6 页，新增基础 AE 系数表位于右栏顶部，未造成异常空白、压栏或遮挡。
+
+## 2026-06-30 符号与公式小修
+
+调整内容：
+
+- 规范第 4 章禁飞区高度判断的区间写法，将 `p_z\notin[z_l,z_u]` 改为 `p_z \notin [z_l,z_u]`；
+- 复核第 4 章中 `\bar V`、`\mathbf d_o/d_o` 和 `\mathbf d_z/d_z` 的写法，保留向量加粗、标量不加粗的区分；
+- 将原式 (48) 的转弯分量从比例式 `\propto` 改为显式分段公式，给出 $\gamma_{\mathrm{curv}}=0.22$、$\theta_c=\alpha_{\mathrm{curv}}\theta_{\max}$ 和 $\alpha_{\mathrm{curv}}=0.85$；
+- 补充说明转弯分量后续仍经过状态权重、逐维截断和整体范数截断，避免读者误解其为无限制强制平滑。
+
+验证结果：
+
+- `xelatex -> xelatex` 编译通过，当前双栏 `main.pdf` 为 Letter 纸，共 `17` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull、rerun-label 或 Missing character；
+- 正文 `.tex` 静态扫描未发现 `\propto`、旧式 `p_z\notin[`、`V >¯`、禁用统计写法、CEC、RRT、绝对路径、`Scene 4` 或夸大表述；
+- 渲染检查第 6--7 页，禁飞区符号、障碍物/NFZ 向量标量写法和转弯分量公式均正常显示。

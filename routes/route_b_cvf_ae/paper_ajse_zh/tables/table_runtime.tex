@@ -1,0 +1,23 @@
+\begin{table}[tbp]
+\centering
+\caption{CVF-AE 评价开销与稀疏触发统计}
+\label{tab:runtime}
+\tiny
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Group & Sc. & nEvals & Trig. & Succ. & Rate & Ratio \\
+\midrule
+Main & 1 & 9568.9 & 23.9 & 21.8 & 0.25\% & -- \\
+Main & 2 & 9554.2 & 13.1 & 9.8 & 0.14\% & -- \\
+Main & 3 & 9355.2 & 88.6 & 60.1 & 0.95\% & -- \\
+\midrule
+Abl. & 1 & 9566.4 & 21.1 & 19.2 & 0.22\% & 1.010 \\
+Abl. & 2 & 9551.6 & 10.6 & 7.9 & 0.11\% & 1.013 \\
+Abl. & 3 & 9367.1 & 86.8 & 59.5 & 0.93\% & 1.012 \\
+\bottomrule
+\end{tabular}%
+}
+\vspace{1mm}
+\parbox{\columnwidth}{\footnotesize 注：Trig. 和 Succ. 分别表示平均触发的 CVF 候选数和平均被接收的 CVF 候选数；Ratio 为完整 CVF-AE 相对于同批次 w/o-CVF 消融版本的评价次数比。}
+\end{table}

@@ -7,6 +7,17 @@
 *.tmp
 *.log
 
+.codex_tmp/
+**/.claude/settings.local.json
+
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.xdv
+
 results_*/
 *_results/
 *_figures/
@@ -14,3 +25,7 @@ results_*/
 run_records/
 *_summary_workspace.mat
 uav_comparison_results.mat
+
+!routes/route_b_cvf_ae/paper_ajse_zh/figures/
+!routes/route_b_cvf_ae/paper_ajse_zh/figures/*.png
+!routes/route_b_cvf_ae/paper_ajse_zh/figures/*.pdf
