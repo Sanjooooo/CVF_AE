@@ -1,0 +1,170 @@
+﻿\section{问题建模}
+
+\label{sec:problem-formulation}
+
+本文研究强约束三维低空无人机路径规划问题。给定三维飞行空间、起点、终点、障碍物、禁飞区和高度约束，目标是在安全可行前提下生成平滑路径。与仅最小化长度的规划不同，低空飞行还需兼顾能耗、风险暴露、高度偏好、转弯平滑性和边界裕度。因此，本文将路径规划写成带约束的连续优化问题，并采用可行性优先准则比较候选解。
+
+\subsection{三维路径表示}
+
+设无人机起点和终点分别为 $\mathbf{s}=[x_s,y_s,z_s]^\mathsf{T}$ 和 $\mathbf{g}=[x_g,y_g,z_g]^\mathsf{T}$。优化变量为 $K$ 个内部控制点 $\mathbf{X}=[\mathbf{q}_1^\mathsf{T},\mathbf{q}_2^\mathsf{T},\ldots,\mathbf{q}_K^\mathsf{T}]^\mathsf{T}\in\mathbb{R}^{3K}$，其中 $\mathbf{q}_k=[x_k,y_k,z_k]^\mathsf{T}$。完整控制点序列为 $\mathcal{Q}=\{\mathbf{s},\mathbf{q}_1,\ldots,\mathbf{q}_K,\mathbf{g}\}$。本文使用 open-uniform 三次 B 样条对控制点序列进行插值，得到连续路径 $\mathbf{p}(u)$，$u\in[0,1]$；实际评价中均匀采样为 $\mathcal{P}(\mathbf{X})=\{\mathbf{p}_m\}_{m=1}^{M}$，$\mathbf{p}_m=[x_m,y_m,z_m]^\mathsf{T}$。
+路径长度、风险、碰撞、禁飞区、高度和转弯约束均基于采样点序列计算，从而在较低控制点维度下统一处理多种空间约束。
+
+\subsection{优化目标}
+
+对任一路径 $\mathcal{P}(\mathbf{X})$，本文采用综合路径质量代理目标
+\begin{equation}
+    J(\mathbf{X}) =
+    w_L L + w_E E + w_R R + w_S S + w_H H + w_B B + P_c ,
+    \label{eq:objective}
+\end{equation}
+其中 $L,E,R,S,H,B$ 分别表示长度、能耗、风险、平滑性、高度偏好和边界代价，$w_L,w_E,w_R,w_S,w_H,w_B$ 为对应权重。惩罚项 $P_c$ 写为
+\begin{equation}
+    P_c =
+    \lambda_{\mathrm{obs}} C_{\mathrm{obs}}
+    + \lambda_{\mathrm{nfz}} C_{\mathrm{nfz}}
+    + \lambda_{\mathrm{curv}} C_{\mathrm{curv}}
+    + \lambda_{\mathrm{alt}} C_{\mathrm{alt}} .
+    \label{eq:penalty}
+\end{equation}
+式 \eqref{eq:objective} 中各目标项基于采样序列定义。令相邻采样点之间的段向量和段长分别为
+\begin{equation}
+    \begin{aligned}
+    \Delta \mathbf{p}_m
+    &= \mathbf{p}_{m+1}-\mathbf{p}_m,\\
+    \Delta l_m
+    &= \|\Delta \mathbf{p}_m\|_2+\epsilon_l,\\
+    m&=1,\ldots,M-1,
+    \end{aligned}
+    \label{eq:segment-definition}
+\end{equation}
+其中 $\epsilon_l$ 为防止零长度除法的极小常数，路径长度项为 $L=\sum_{m=1}^{M-1}\Delta l_m$。
+设 $\mathbf{w}_m$ 为第 $m$ 段起点处的风场向量，$\widehat{\mathbf d}_m=\Delta\mathbf p_m/\Delta l_m$ 为段方向，$\widehat{\mathbf w}_m=\mathbf w_m/(\|\mathbf w_m\|_2+\epsilon_l)$ 为风向单位向量。风阻相关项写为
+\begin{equation}
+    \Phi_m=\|\mathbf w_m\|_2
+    \left(1-\widehat{\mathbf d}_m^\mathsf{T}\widehat{\mathbf w}_m\right).
+    \label{eq:wind-alignment}
+\end{equation}
+能耗项由水平/空间飞行距离、垂向变化和逆风暴露共同构成：
+\begin{equation}
+    E=\sum_{m=1}^{M-1}
+    \left(
+    a_1\Delta l_m+a_2|\Delta z_m|+a_3\Phi_m
+    \right),
+    \label{eq:energy-term}
+\end{equation}
+其中 $\Delta z_m=z_{m+1}-z_m$，$a_1,a_2,a_3$ 为能耗系数。若 $r(\mathbf p_m)$ 为采样点风险值，则风险项为 $R=\sum_{m=1}^{M-1}r(\mathbf p_m)\Delta l_m$。平滑性项为 $S=\sum_{m=2}^{M-1}\|\mathbf p_{m+1}-2\mathbf p_m+\mathbf p_{m-1}\|_2^2$，高度偏好项为 $H=\sum_{m=1}^{M}(z_m-z_{\mathrm{ref}})^2$。
+边界项抑制路径贴近水平规划边界。以 $x$ 方向为例，若规划空间为 $[x_{\min},x_{\max}]\times[y_{\min},y_{\max}]$，边界安全裕度为 $m_b$，则
+\begin{equation}
+    B=\sum_{m=1}^{M}
+    \left[
+    b_x(\mathbf p_m)+b_y(\mathbf p_m)
+    \right],
+    \label{eq:boundary-term}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+    b_x(\mathbf p_m)
+    ={}&
+    \max(0,x_{\min}+m_b-x_m)^2\\
+    &+
+    \max(0,x_m-(x_{\max}-m_b))^2,
+    \end{aligned}
+    \label{eq:boundary-x}
+\end{equation}
+其中 $b_y(\mathbf p_m)$ 对 $y$ 方向作同样定义。式 \eqref{eq:energy-term}--\eqref{eq:boundary-x} 为固定采样设置下的路径质量代理项，不解释为严格飞行动力学或真实能耗模型；硬约束违反由下文单独判断。$P_c$ 仅是评价阶段惩罚，候选接收仍显式使用违反量和可行性优先准则。
+
+\subsection{约束条件}
+
+路径需满足以下工程约束。
+
+\paragraph{空间边界约束}
+每个内部控制点和采样点均应位于三维规划空间范围内，即 $\mathbf{l}\leq \mathbf{q}_k \leq \mathbf{u}$，$k=1,\ldots,K$，其中 $\mathbf{l}$ 和 $\mathbf{u}$ 为决策变量下界和上界。
+候选点越界时先被投影回边界内；对本文采用的 open-uniform B 样条，基函数非负且满足 partition of unity，因此当控制点位于规划盒内时，路径采样点保持在控制点凸包内。边界代价 $B$ 只惩罚低裕度路径，不承担硬可行性判定。
+
+\paragraph{障碍物约束}
+设障碍物集合为 $\mathcal{O}$。采样点不得进入障碍物，即 $\mathbf{p}_m \notin \mathcal{O}$，$m=1,\ldots,M$。
+障碍物违反量按进入障碍物的采样点数量累计：
+\begin{equation}
+    C_{\mathrm{obs}}=
+    \sum_{m=1}^{M}\mathbb{I}(\mathbf p_m\in\mathcal O),
+    \label{eq:obs-violation}
+\end{equation}
+其中 $\mathbb{I}(\cdot)$ 为指示函数。CVF 可在候选生成中使用近障碍缓冲压力，但不改变式 \eqref{eq:obs-violation} 的可行性判定。
+
+\paragraph{禁飞区约束}
+设禁飞区集合为 $\mathcal{Z}$，其中 $\mathcal{Z}$ 表示已合并安全缓冲后的禁飞区集合。路径采样点不得进入禁飞柱体或其安全缓冲范围，即 $\mathbf{p}_m \notin \mathcal{Z}$，$m=1,\ldots,M$。
+禁飞区违反量同样按采样点进入禁飞区的次数统计：
+\begin{equation}
+    C_{\mathrm{nfz}}=
+    \sum_{m=1}^{M}\mathbb{I}(\mathbf p_m\in\mathcal Z).
+    \label{eq:nfz-violation}
+\end{equation}
+
+\paragraph{高度约束}
+无人机飞行高度需满足场景给定的下界和上界，即 $z_{\min} \leq z_m \leq z_{\max}$，$m=1,\ldots,M$。
+若路径低于 $z_{\min}$ 或高于 $z_{\max}$，对应超限距离累计到 $C_{\mathrm{alt}}$。不同场景可采用不同高度上界和参考高度，以反映低空走廊收紧要求。
+
+\paragraph{转弯约束}
+令 $\mathbf v_m=\mathbf p_{m+1}-\mathbf p_m$。连续路径段形成的转弯角定义为
+\begin{equation}
+    \begin{aligned}
+    \theta_m=
+    \arccos
+    \left[
+    \mathrm{clip}\left(
+    \frac{\mathbf v_{m-1}^\mathsf{T}\mathbf v_m}
+    {\|\mathbf v_{m-1}\|_2\|\mathbf v_m\|_2+\epsilon_l},
+    -1,1
+    \right)
+    \right],\\
+    m=2,\ldots,M-1 .
+    \end{aligned}
+    \label{eq:turning-angle}
+\end{equation}
+其中 $\mathrm{clip}(x,-1,1)$ 表示将标量 $x$ 截断到 $[-1,1]$，用于避免数值舍入导致反余弦输入越界。
+路径转弯角不应超过允许上限 $\theta_{\max}$，即 $\theta_m \leq \theta_{\max}$，$m=2,\ldots,M-1$；超出部分累计为 $C_{\mathrm{curv}}=\sum_{m=2}^{M-1}\max(0,\theta_m-\theta_{\max})$，
+从而将急转弯或局部折线化路径识别为不可行或低质量候选。
+
+高度违反量定义为
+\begin{equation}
+    C_{\mathrm{alt}}=
+    \sum_{m=1}^{M}
+    \left[
+    \max(0,z_{\min}-z_m)+
+    \max(0,z_m-z_{\max})
+    \right].
+    \label{eq:altitude-violation}
+\end{equation}
+
+\subsection{可行性准则}
+
+为避免不同量纲约束被误解为同一物理量，本文首先将约束违反写成非负分量向量
+\begin{equation}
+    \mathbf c(\mathbf X)=
+    \left[
+    C_{\mathrm{obs}},
+    C_{\mathrm{nfz}},
+    C_{\mathrm{curv}},
+    C_{\mathrm{alt}}
+    \right]^\mathsf T .
+    \label{eq:constraint-vector}
+\end{equation}
+路径可行性按分量判定：
+\begin{equation}
+    \begin{aligned}
+    C_{\mathrm{obs}}&\leq \varepsilon_{\mathrm{obs}},&
+    C_{\mathrm{nfz}}&\leq \varepsilon_{\mathrm{nfz}},\\
+    C_{\mathrm{curv}}&\leq \varepsilon_{\mathrm{curv}},&
+    C_{\mathrm{alt}}&\leq \varepsilon_{\mathrm{alt}}.
+    \end{aligned}
+    \label{eq:component-feasible}
+\end{equation}
+在本文实现中，各分量均为非负量，且容差取极小值，因此式 \eqref{eq:component-feasible} 等价于障碍物、禁飞区、高度和转弯约束同时无违反。为与当前代码和实验记录一致，本文仍记录实现相关违反分数
+\begin{equation}
+    V(\mathbf{X}) =
+    C_{\mathrm{obs}} + C_{\mathrm{nfz}} + C_{\mathrm{curv}} + C_{\mathrm{alt}}.
+    \label{eq:total-violation}
+\end{equation}
+当各分量非负且容差统一收紧为 $\varepsilon_v$ 时，可行性也可等价写为 $V(\mathbf{X}) \leq \varepsilon_v$，其中 $\varepsilon_v$ 为极小容差，用于避免浮点误差误判。$V$ 是 implementation-specific violation score（实现相关违反分数），只用于当前代码中的不可行解排序和诊断；它不表示统一物理量纲下的约束距离，也不解释安全约束的物理严重性。
+
+候选解比较采用 Deb 可行性优先规则。对两个候选解 $\mathbf{X}_a$ 和 $\mathbf{X}_b$，若仅一个解可行，则可行解优先；若二者均可行，则 $J$ 更小者优先；若二者均不可行，则 $V$ 更小者优先；若 $V$ 相同，再以 $J$ 作为次级判据。该规则使不可行候选的排序倾向于降低实现相关违反分数，并在可行候选之间比较路径质量。上述不可行解排序口径继承当前正式实验实现。第 \ref{sec:method} 节将进一步说明 CVF-AE 如何利用这一可行性信息构造约束可行性方向。

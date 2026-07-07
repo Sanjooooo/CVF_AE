@@ -1,11 +1,11 @@
 ﻿\section{CVF-AE 方法}
 \label{sec:method}
 
-本文提出的 CVF-AE 方法在自适应进化搜索框架中引入约束可行性场（Constraint Viability Field, CVF）。其核心思想不是改变目标函数，也不是在评价后简单修复路径，而是在候选解生成阶段利用障碍物、禁飞区、高度、转弯、边界和风险信息形成一个有界的方向增量，使控制点在被评价之前就朝更可行、更稳健的区域移动。这样可以减少搜索在不可行区域内的无效迭代，同时保留进化算法对多目标质量折中的全局探索能力。
+本文提出的 CVF-AE 在自适应进化搜索中引入约束可行性场（Constraint Viability Field, CVF）。CVF 不改写目标函数，也不等同于评价后修复，而是在候选生成阶段由障碍物、禁飞区、高度、转弯、边界和风险信息给出有界方向增量，使控制点在评价前向更可行、更稳健的区域移动。
 
 \subsection{总体框架}
 
-CVF-AE 的一次迭代由基础进化搜索、约束状态识别、CVF 候选生成、稀疏局部修复和可行性优先接收组成。给定种群 $\{\mathbf{X}_i\}_{i=1}^{N}$，算法首先根据式 \eqref{eq:objective} 和式 \eqref{eq:total-violation} 评价每个个体，记录当前最优可行解、种群可行率、平均违反量和近期改进情况。随后，基础自适应进化算子生成候选方向 $\mathbf{D}_{\mathrm{AE}}$。当个体满足 CVF 触发条件时，算法额外构造约束可行性方向 $\mathbf{D}_{\mathrm{CVF}}$ 和质量引导方向 $\mathbf{D}_{\mathrm{Q}}$，并生成融合候选。
+CVF-AE 的一次迭代包括基础进化搜索、状态识别、CVF 候选生成、稀疏可行性保持和可行性优先接收。本文的稀疏可行性保持包括少量候选的局部修复后处理，用于维持可行性但不替代 CVF 候选方向。给定种群 $\{\mathbf{X}_i\}_{i=1}^{N}$，算法先按式 \eqref{eq:objective} 和式 \eqref{eq:total-violation} 评价个体并记录最优可行解、可行率、平均违反量和近期改进；基础算子生成 $\mathbf{D}_{\mathrm{AE}}$，被触发的个体再构造 $\mathbf{D}_{\mathrm{CVF}}$ 与 $\mathbf{D}_{\mathrm{Q}}$。
 
 候选生成可写为
 \begin{equation}
@@ -36,9 +36,9 @@ CVF-AE 的一次迭代由基础进化搜索、约束状态识别、CVF 候选生
     \end{aligned}
     \label{eq:cvf-candidate}
 \end{equation}
-其中 $\mathbf{D}_s$ 为状态融合方向，$\Pi_{\Omega}(\cdot)$ 表示边界投影，$\mathbf{X}_{\mathrm{elite}}$ 为当前精英池中采样得到的精英个体，$\mu_t$ 为随迭代推进的小权重锚定系数，$\alpha_s,\beta_s,\gamma_s$ 为由约束状态 $s$ 决定的融合权重。CVF 候选不是每代对所有个体都生成，而是通过稀疏触发控制额外评价次数。需要强调的是，CVF 分支是基础 AE 候选之外的额外候选，而不是全种群强制更新；CVF 候选必须通过局部接收规则，不能只依靠降低违反量进入种群；局部修复属于候选后处理，不等同于 CVF 场本身。
+其中 $\mathbf{D}_s$ 为状态融合方向，$\Pi_{\Omega}(\cdot)$ 为边界投影，$\mathbf{X}_{\mathrm{elite}}$ 为精英池采样个体，$\mu_t$ 为小权重锚定系数，$\alpha_s,\beta_s,\gamma_s$ 由状态 $s$ 决定。CVF 分支只为被稀疏触发的个体提供额外候选，并需通过局部接收规则；稀疏可行性保持则作为候选后处理独立执行。
 
-基础 AE 方向 $\mathbf D_{\mathrm{AE}}$ 按当前状态选择四类搜索模式。令 $\tau=t/T$，$\mathbf d_{\mathrm{best}}=\mathbf X^*-\mathbf X_i$，$\mathbf d_{\mathrm{elite}}=\bar{\mathbf X}_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{sample}}=\mathbf X_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{ref}}=\mathbf X_{\mathrm{ref}}-\mathbf X_i$；$\mathbf d_{ab}$ 和 $\mathbf d_{cd}$ 为从种群中随机抽取个体形成的两个差分向量，$\boldsymbol\xi$ 为按变量范围缩放的均匀随机扰动，$\boldsymbol\zeta$ 为高斯扰动。本文实现中的基础方向采用统一模板
+基础 AE 方向 $\mathbf D_{\mathrm{AE}}$ 按状态选择四类搜索模式。令 $\tau=t/T$，$\mathbf d_{\mathrm{best}}=\mathbf X^*-\mathbf X_i$，$\mathbf d_{\mathrm{elite}}=\bar{\mathbf X}_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{sample}}=\mathbf X_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{ref}}=\mathbf X_{\mathrm{ref}}-\mathbf X_i$；$\mathbf d_{ab}$ 和 $\mathbf d_{cd}$ 为随机差分向量，$\boldsymbol\xi$ 和 $\boldsymbol\zeta$ 分别为范围缩放均匀扰动和高斯扰动。基础方向统一写为
 \begin{equation}
     \begin{aligned}
     \mathbf D_{\mathrm{AE}}
@@ -51,7 +51,7 @@ CVF-AE 的一次迭代由基础进化搜索、约束状态识别、CVF 候选生
     \end{aligned}
 \label{eq:ae-state-direction}
 \end{equation}
-其中各 $\mathbf r$ 为 $[0,1]^{3K}$ 上的独立随机向量，$\odot$ 表示逐维乘积。四个状态分别对应可行性形成、可行性保持、质量细化和停滞恢复，其非零系数见表 \ref{tab:base-ae-coefficients}。
+其中各 $\mathbf r$ 为 $[0,1]^{3K}$ 上的独立随机向量，$\odot$ 表示逐维乘积。四个状态依次为可行性形成、可行性保持、质量细化和停滞恢复，非零系数见表 \ref{tab:base-ae-coefficients}。
 
 \begin{table}[tbp]
 \centering
@@ -72,11 +72,11 @@ $s$ & $c_b$ & $c_e$ & $c_s$ & $c_r$ & $c_1$ & $c_2$ & $c_u$ & $c_g$\\
 }
 \end{table}
 
-该基础方向与 CVF 方向分开定义，使消融实验中的 AE 基线和去除 CVF 版本具有明确复现口径。
+该定义使 AE 基线和去除 CVF 的消融版本具有一致复现口径。
 
 \subsection{约束状态识别}
 
-CVF-AE 根据种群当前搜索状态动态调整约束引导强度。令 $\rho_f$ 表示种群可行率，$\bar{V}$ 表示平均违反量，$D_{\mathrm{pop}}$ 表示种群多样性，$\Delta J_{\mathrm{recent}}$ 表示近期目标改进幅度：
+CVF-AE 由种群状态调节约束引导强度。令 $\rho_f$、$\bar{V}$、$D_{\mathrm{pop}}$ 和 $\Delta J_{\mathrm{recent}}$ 分别表示可行率、平均违反量、多样性和近期目标改进：
 \begin{equation}
     \rho_f=\frac{1}{N}\sum_{i=1}^{N}\mathbb I(\mathbf X_i\ \mathrm{feasible}),
     \qquad
@@ -109,11 +109,11 @@ s_{\mathrm{obs}}=
 \end{cases}
 \label{eq:observed-state}
 \end{equation}
-式 \eqref{eq:observed-state} 给出的是观测状态模板。正式方法进一步采用保守状态调度：默认处于可行性保持状态；仅当当前最优解尚不可行且 $\rho_f\leq0.10$ 或 $\bar V\geq18$ 时，请求切换到可行性形成状态；仅当搜索停滞、$\rho_f<0.55$ 且 $\bar V\geq6$ 时，请求切换到停滞恢复状态。非保持状态需要连续确认 $2$ 代才生效。质量细化状态保留为观测状态和权重模板；在本文保守调度下，若不满足形成或恢复切换条件，正式运行回到保持状态，因此本文不将质量细化写成单独决定性能的核心状态。该滞回规则减少了频繁状态跳变，避免 CVF 在已接近可行的阶段过度干预。
+式 \eqref{eq:observed-state} 为观测模板。正式运行采用保守调度：默认保持状态；当当前最优解尚不可行且 $(\rho_f\leq0.10\lor \bar V\geq18)$ 时请求形成状态；当搜索停滞、$\rho_f<0.55$ 且 $\bar V\geq6$ 时请求恢复状态。非保持状态需连续确认 $2$ 代才生效。质量细化状态保留为观测和权重模板；若不满足形成或恢复条件，正式运行回到保持状态，以减少状态跳变和过度干预。经保守调度后得到生效状态 $s_t$；下文所有 $\alpha_s,\beta_s,\gamma_s$ 和 CVF 权重均使用生效状态。
 
 \subsection{约束可行性场构建}
 
-CVF 在内部控制点空间中构造。实际构造时使用一个较低密度的路径采样集 $\widetilde{\mathcal P}=\{\widetilde{\mathbf p}_m\}_{m=1}^{\widetilde M}$，以降低场构建成本。对采样点 $\widetilde{\mathbf p}_m$，首先将其约束压力分配到最近的内部控制点：
+CVF 并非目标函数或约束函数的解析梯度，而是由局部约束压力构造的有界启发式候选方向，仅用于候选生成阶段。CVF 在内部控制点空间中构造，并使用低密度路径采样集 $\widetilde{\mathcal P}=\{\widetilde{\mathbf p}_m\}_{m=1}^{\widetilde M}$ 降低成本。采样点压力先分配到最近内部控制点：
 \begin{equation}
     k^*(m)=\arg\min_{1\leq k\leq K}\|\widetilde{\mathbf p}_m-\mathbf{q}_k\|_2 .
     \label{eq:nearest-control}
@@ -123,16 +123,31 @@ CVF 在内部控制点空间中构造。实际构造时使用一个较低密度�
     \begin{aligned}
     \mathbf{F}_k =
     \sum_{c\in\mathcal{C}}
-    \eta_c(s,V_c)\mathbf{F}_{k,c},\\
+    \eta_c(s)\mathbf{F}_{k,c},\\
     \mathcal{C}=
     \{\mathrm{obs},\mathrm{nfz},\mathrm{risk},\mathrm{alt},\mathrm{curv},\mathrm{bnd}\},
     \end{aligned}
     \label{eq:cvf-field}
 \end{equation}
-其中 $\mathbf{F}_{k,c}$ 为第 $c$ 类约束或质量压力对应的方向分量，$\eta_c(s,V_c)$ 为与当前约束状态和局部违反程度有关的权重。
-正式实验中，$(\mathrm{obs},\mathrm{nfz},\mathrm{risk},\mathrm{alt},\mathrm{curv},\mathrm{bnd})$ 的状态权重分别为：可行性形成 $(1.20,1.15,0.85,1.10,0.85,0.65)$，可行性保持 $(0.95,0.95,0.85,0.90,0.75,0.55)$，质量细化 $(0.35,0.35,0.55,0.40,0.95,0.35)$，停滞恢复 $(0.80,0.80,0.75,0.75,0.55,0.45)$。状态融合权重 $(\alpha_s,\beta_s,\gamma_s)$ 在保守调度下取 $(0.80,0.40,0.04)$、$(0.90,0.38,0.06)$、$(1.00,0.38,0.06)$ 和 $(0.90,0.28,0.04)$，分别对应上述四类状态。其中质量细化权重用于完整状态模板说明；在本文正式保守调度中，它主要作为候选权重定义保留，而非频繁触发的主导状态。
+其中 $\mathbf{F}_{k,c}$ 为第 $c$ 类压力方向，$\eta_c(s)$ 为状态相关权重；局部违反程度通过各压力分量 $\mathbf{F}_{k,c}$ 的幅值体现。按 $(\mathrm{obs},\mathrm{nfz},\mathrm{risk},\mathrm{alt},\mathrm{curv},\mathrm{bnd})$ 排列，四类状态权重和融合权重为
+\begin{center}
+\scriptsize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}c c c@{}}
+\toprule
+$s$ & $\eta_s$ & $(\alpha_s,\beta_s,\gamma_s)$\\
+\midrule
+1 & $(1.20,1.15,0.85,1.10,0.85,0.65)$ & $(0.80,0.40,0.04)$\\
+2 & $(0.95,0.95,0.85,0.90,0.75,0.55)$ & $(0.90,0.38,0.06)$\\
+3 & $(0.35,0.35,0.55,0.40,0.95,0.35)$ & $(1.00,0.38,0.06)$\\
+4 & $(0.80,0.80,0.75,0.75,0.55,0.45)$ & $(0.90,0.28,0.04)$\\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+其中细化权重主要保留为完整状态模板。
 
-若多个采样点映射到同一内部控制点，先累加其压力再按命中次数求平均。记 $n_k$ 为映射到第 $k$ 个控制点且压力非零的采样点数量，则非曲率分量的控制点增量可写为
+若多个采样点映射到同一控制点，则累加压力并按命中次数平均。记 $n_k$ 为映射到第 $k$ 个控制点且压力非零的采样点数量，非曲率增量为
 \begin{equation}
     \Delta \mathbf q_k^{\mathrm{path}}=
     \begin{cases}
@@ -141,7 +156,7 @@ CVF 在内部控制点空间中构造。实际构造时使用一个较低密度�
     \end{cases}
     \label{eq:cvf-average-pressure}
 \end{equation}
-其中 $\mathbf F(\widetilde{\mathbf p}_m)$ 为该采样点处障碍物、禁飞区、风险、高度和边界压力的加权和。曲率分量直接在控制点序列上计算，并与 $\Delta \mathbf q_k^{\mathrm{path}}$ 相加得到最终控制点增量 $\Delta\mathbf q_k$。
+其中 $\mathbf F(\widetilde{\mathbf p}_m)$ 为采样点处障碍物、禁飞区、风险、高度和边界压力的加权和。曲率分量在控制点序列上计算，并与 $\Delta \mathbf q_k^{\mathrm{path}}$ 相加得到 $\Delta\mathbf q_k$。
 
 \paragraph{障碍物分量}
 对于轴对齐障碍物 $\mathcal B=[x_1,x_2]\times[y_1,y_2]\times[z_1,z_2]$，令 $\mathbf c_{\mathcal B}(\mathbf p)$ 为 $\mathbf p$ 在该盒体上的最近点。若 $\mathbf p$ 位于障碍物外部，定义
@@ -163,7 +178,7 @@ CVF 在内部控制点空间中构造。实际构造时使用一个较低密度�
     (r_o+d_{\min})\mathbf n_{\min},
     \label{eq:obstacle-inside-pressure}
 \end{equation}
-其中 $d_{\min}$ 为到最近水平面的穿透深度，$r_o=7$ 为障碍物影响半径。垂向距离在式 \eqref{eq:obstacle-distance-vector} 中被压缩，是为了降低通过大幅爬升绕开水平约束的倾向。
+其中 $d_{\min}$ 为到最近水平面的穿透深度，$r_o=7$。式 \eqref{eq:obstacle-distance-vector} 压缩垂向距离，以抑制单纯大幅爬升绕障。
 
 \paragraph{禁飞区分量}
 设柱状禁飞区为 $\mathcal Z=(\mathbf c_z,r_z,z_l,z_u)$。若 $p_z\notin [z_l,z_u]$，该分量为零；否则令 $\mathbf d_z=[p_x-c_{z,x},p_y-c_{z,y},0]^\mathsf T$，$d_z=\|\mathbf d_z\|_2$。禁飞区径向压力定义为
@@ -192,7 +207,7 @@ CVF 在内部控制点空间中构造。实际构造时使用一个较低密度�
     \frac{\widetilde{\mathbf d}_h}{\|\widetilde{\mathbf d}_h\|_2+\epsilon_l},
     \label{eq:risk-pressure}
 \end{equation}
-其中 $\phi_0=0.24$，$\kappa_r=1.8$。该分量只降低风险暴露倾向，不改变障碍物、禁飞区和高度约束的可行性定义。
+其中 $\phi_0=0.24$，$\kappa_r=1.8$。该分量仅作为质量压力，不改变硬约束可行性定义。
 
 \paragraph{高度和边界分量}
 记 $z_l=z_{\min}$，$z_u=z_{\max}$。高度分量采用分段形式：
@@ -220,10 +235,10 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously},
 \end{aligned}
 \label{eq:boundary-pressure}
 \end{equation}
-其中 $b_b=6$。该分量提高水平边界裕度，但边界硬约束仍由控制点投影保证。
+其中 $b_b=6$。该分量只提高水平边界裕度，硬边界仍由投影保证。
 
 \paragraph{转弯分量}
-若连续控制点形成的局部转角 $\vartheta_k$ 接近或超过允许阈值，转弯分量对相关内部控制点施加局部平滑方向。$\vartheta_k$ 按式 \eqref{eq:turning-angle} 的夹角定义计算，但将采样点 $\mathbf p_m$ 替换为控制点 $\mathbf q_k$：
+若连续控制点形成的局部转角 $\vartheta_k$ 接近或超过阈值，转弯分量施加局部平滑方向。$\vartheta_k$ 按式 \eqref{eq:turning-angle} 计算，但以控制点 $\mathbf q_k$ 替代采样点 $\mathbf p_m$：
 \begin{equation}
     \mathbf{F}_{k,\mathrm{curv}}=
     \begin{cases}
@@ -235,7 +250,7 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously},
     \end{cases}
     \label{eq:curvature-field}
 \end{equation}
-其中 $\gamma_{\mathrm{curv}}=0.22$，$\theta_c=\alpha_{\mathrm{curv}}\theta_{\max}$，$\alpha_{\mathrm{curv}}=0.85$。该分量不会直接替代 B 样条平滑，而是降低控制多边形的局部尖锐程度；随后它还会经过式 \eqref{eq:cvf-field} 中的状态权重、式 \eqref{eq:component-clip} 中的逐维截断和式 \eqref{eq:norm-clip} 中的范数截断。
+其中 $\gamma_{\mathrm{curv}}=0.22$，$\theta_c=\alpha_{\mathrm{curv}}\theta_{\max}$，$\alpha_{\mathrm{curv}}=0.85$。该分量降低控制多边形局部尖锐程度，并继续受状态权重、逐维截断和范数截断约束。
 
 将全部内部控制点增量向量化后得到未截断 CVF 步长：
 \begin{equation}
@@ -246,7 +261,7 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously},
     \right).
     \label{eq:cvf-vectorization}
 \end{equation}
-为避免 CVF 方向过大导致路径跨越可行走廊，所有分量叠加后需要进行逐维截断、强度缩放和整体范数截断：
+所有分量叠加后进行逐维截断、强度缩放和整体范数截断：
 \begin{equation}
     \bar D_{\mathrm{CVF},j}=
     \mathrm{clip}
@@ -263,36 +278,45 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously},
     \label{eq:cvf-strength}
 \end{equation}
 \begin{equation}
-    \|\mathbf{D}_{\mathrm{CVF}}\|_2
-    \leq
-    \rho_{\mathrm{norm}}\|\mathbf{u}-\mathbf{l}\|_2 ,
+    h_{\mathrm{cvf}}=\rho_{\mathrm{norm}}\|\mathbf u-\mathbf l\|_2,\qquad
+    r_{\mathrm{cvf}}=\frac{h_{\mathrm{cvf}}}
+    {\|\mathbf D_{\mathrm{CVF}}^{(0)}\|_2+\epsilon_l}.
+\end{equation}
+\begin{equation}
+    \mathbf D_{\mathrm{CVF}}=
+    \begin{cases}
+    \mathbf D_{\mathrm{CVF}}^{(0)}, &
+    \|\mathbf D_{\mathrm{CVF}}^{(0)}\|_2\leq h_{\mathrm{cvf}},\\
+    r_{\mathrm{cvf}}\mathbf D_{\mathrm{CVF}}^{(0)}, &
+    \mathrm{otherwise}.
+    \end{cases}
     \label{eq:norm-clip}
 \end{equation}
-其中 $\kappa_{\mathrm{cvf}}$ 为 CVF 强度系数。若 $\|\mathbf D_{\mathrm{CVF}}^{(0)}\|_2$ 超过式 \eqref{eq:norm-clip} 的上界，则按比例缩放到该上界内；否则令 $\mathbf D_{\mathrm{CVF}}=\mathbf D_{\mathrm{CVF}}^{(0)}$。其中 $\rho_{\mathrm{step}}$ 和 $\rho_{\mathrm{norm}}$ 为小比例截断系数。该有界设计是 CVF-AE 区别于普通势场排斥的关键：CVF 只提供受控的可行性方向，不允许单次候选生成主导整个搜索步长。
+其中 $\kappa_{\mathrm{cvf}}$ 为 CVF 强度系数。$\rho_{\mathrm{step}}$ 和 $\rho_{\mathrm{norm}}$ 为小比例截断系数，使 CVF 只提供受控方向而不主导单次搜索步长。本文中 $\mathrm{clip}(\cdot,\rho)$ 表示逐维对称截断；若上下界不同，则显式写出上下界。
 
 质量引导方向 $\mathbf D_{\mathrm Q}$ 由当前最优解、采样精英个体和控制点平滑项共同构成：
 \begin{equation}
     \mathbf D_{\mathrm Q}=
     \mathrm{clip}
-    \left[
+    \left(
     0.6(\mathbf X^*-\mathbf X_i)
     +0.4(\mathbf X_{\mathrm{elite}}-\mathbf X_i)
     +\mathbf D_{\mathrm{sm}},
     \rho_{\mathrm Q}
-    \right],
+    \right),
     \label{eq:quality-step}
 \end{equation}
 其中 $\mathbf D_{\mathrm{sm}}$ 为控制点局部平滑增量，$\rho_{\mathrm Q}$ 表示逐维质量步长上界。
 
 \subsection{稀疏触发与候选接收}
 
-CVF-AE 仅在有必要时生成并评价 CVF 候选。触发策略综合考虑个体排名、是否接近可行、当前约束状态和代内评价预算。设第 $t$ 代状态为 $s_t$，对应触发比例为 $r_{s_t}$，则单代 CVF 候选数满足
+CVF 候选由个体排名、近可行程度、当前状态和代内评价预算共同触发。设第 $t$ 代状态为 $s_t$，对应触发比例为 $r_{s_t}$，则
 \begin{equation}
     N_{\mathrm{cvf}}^{(t)}\leq
     \left\lceil r_{s_t}N\right\rceil .
     \label{eq:cvf-quota}
 \end{equation}
-对于可行性形成状态，算法优先处理违反量较小、具有进入可行区域潜力的个体；对于质量细化状态，算法减少 CVF 触发频率，重点保护已有可行精英；对于停滞恢复状态，算法允许少量额外 CVF 候选用于恢复搜索活性。
+形成状态优先处理低违反量个体，细化状态降低触发频率以保护可行精英，恢复状态允许少量额外候选恢复搜索活性。
 
 每个被触发的个体先评价基础候选 $\mathbf{X}_{\mathrm{AE}}$。若生成了 $\mathbf{X}_{\mathrm{CVF}}$，则对二者进行局部候选比较。CVF 候选被采用需同时满足两个条件：
 \begin{equation}
@@ -305,26 +329,27 @@ CVF-AE 仅在有必要时生成并评价 CVF 候选。触发策略综合考虑�
     J(\mathbf{X}_{\mathrm{AE}}),
     \label{eq:local-cvf-accept}
 \end{equation}
-其中 $\prec_{\mathrm{Deb}}$ 表示第 3 节定义的可行性优先比较关系。这是一个保守局部接收规则：CVF 候选不仅需要在可行性优先比较中优于基础候选，还不能带来更高综合目标值。该设计降低了 CVF 分支在早期以较高目标值强行替代 AE 候选的风险，但也意味着它不是最激进的可行性优先接收。若改为“可行性改善即接收”或允许不可行阶段目标容忍，应作为新的算法变体重新运行正式实验。最终候选再与父代个体按同一可行性优先规则比较，决定是否进入下一代。
+其中 $\prec_{\mathrm{Deb}}$ 为第 3 节的可行性优先关系。该保守规则要求 CVF 候选既 Deb 优于基础候选，又不增加综合目标值。因此，CVF 分支并不保证所有生成的 CVF 候选均被用于可行性推进；它只允许相对于基础候选同时满足可行性优先和目标不劣的保守改进进入后续竞争。最终候选再与父代按同一规则比较。
 
-算法还保留稀疏局部修复机制，用于对少量候选进行碰撞、禁飞区、转弯和风险方向上的局部校正。修复发生在候选生成之后，且不改变 CVF 的定位：CVF 是评价前的方向场引导，修复是额外的局部后处理，两者在功能上相互独立。
+稀疏可行性保持仅对少量候选作碰撞、禁飞区、转弯和风险校正，发生在候选生成之后，作为独立后处理。
 
 \subsection{算法复杂度}
 
-设种群规模为 $N$，最大迭代次数为 $T$，路径采样点数量为 $M$，内部控制点数量为 $K$，空间约束元素数量为 $G$。基础进化搜索每代需要约 $N$ 次候选评价，总评价规模为 $O(TN)$。单次路径评价需要生成 B 样条采样点并检查目标项与约束项，其主要代价可概括为
+设种群规模为 $N$，最大迭代次数为 $T$，完整路径评价采样点数为 $M$，CVF 低密度采样点数为 $\widetilde M$，内部控制点数为 $K$，空间约束元素数为 $G$。基础搜索总评价规模为 $O(TN)$；单次路径评价生成 B 样条采样点并检查目标与约束，主要代价为
 \begin{equation}
     O\big(M(G+K)\big).
 \end{equation}
 
-CVF 会带来额外候选评价和场构造开销。若每代触发 CVF 的个体数为 $N_{\mathrm{cvf}}$，则额外评价规模为 $O(TN_{\mathrm{cvf}})$，场构造开销约为
+若每代触发个体数为 $N_{\mathrm{cvf}}$，则 CVF 额外候选评价次数为 $O(TN_{\mathrm{cvf}})$，对应完整路径评价代价为 $O(TN_{\mathrm{cvf}}M(G+K))$；低密度场构造开销约为
 \begin{equation}
-    O\big(TN_{\mathrm{cvf}}M(G+K)\big).
+    O\big(TN_{\mathrm{cvf}}\widetilde M(G+K)\big).
 \end{equation}
-由于 $N_{\mathrm{cvf}}$ 受到稀疏触发比例和后期节流机制限制，通常满足 $N_{\mathrm{cvf}}\ll N$。因此，CVF-AE 的额外评价开销主要由少量关键个体承担，而不是对全体种群施加强制场更新。该设计使方法能够在强约束场景中提高可行路径形成能力，同时避免因全种群 CVF 更新带来评价预算膨胀。
+由于稀疏触发和后期节流通常使 $N_{\mathrm{cvf}}\ll N$，额外开销主要由少量关键个体承担，而非全种群强制场更新。
 
 \begin{algorithm}[htbp]
 \caption{CVF-AE 的完整算法流程}
 \label{alg:cvf-ae}
+\scriptsize
 \begin{algorithmic}[1]
 \Require 地图 $\mathcal{M}$，起点 $\mathbf{s}$，终点 $\mathbf{g}$，种群规模 $N$，最大迭代次数 $T$
 \Ensure 最优可行路径 $\mathcal{P}^*$
@@ -332,7 +357,7 @@ CVF 会带来额外候选评价和场构造开销。若每代触发 CVF 的个�
 \State 评价所有个体的 $J(\mathbf{X}_i)$ 与 $V(\mathbf{X}_i)$
 \State 按 Deb 可行性优先规则记录当前最优解 $\mathbf{X}^*$
 \For{$t=1$ to $T$}
-    \State 根据可行率、平均违反量、多样性和近期改进识别约束状态 $s_t$
+    \State 识别观测状态 $s_{\mathrm{obs}}$，并通过保守调度得到生效状态 $s_t$
     \For{$i=1$ to $N$}
         \State 由基础自适应进化算子生成 $\mathbf{X}_{\mathrm{AE}}$
         \State 评价 $\mathbf{X}_{\mathrm{AE}}$ 的目标值和违反量
@@ -348,7 +373,7 @@ CVF 会带来额外候选评价和场构造开销。若每代触发 CVF 的个�
         \Else
             \State $\mathbf{Y}\gets \mathbf{X}_{\mathrm{AE}}$
         \EndIf
-        \If{$\mathbf{Y}$ 满足稀疏修复条件}
+        \If{$\mathbf{Y}$ 被选入稀疏可行性保持集合}
             \State 对 $\mathbf{Y}$ 进行局部路径修复并重新评价
         \EndIf
         \If{$\mathbf{Y} \prec_{\mathrm{Deb}} \mathbf{X}_i$}

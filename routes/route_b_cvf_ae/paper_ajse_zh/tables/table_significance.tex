@@ -1,43 +1,23 @@
 \begin{table}[tbp]
 \centering
-\caption{CVF-AE 与基线算法的逐场景显著性比较}
+\caption{CVF-AE 与所选基线算法的逐场景显著性比较}
 \label{tab:significance}
-\scriptsize
-\setlength{\tabcolsep}{2.8pt}
-\begin{tabular}{@{}llccc@{}}
+\tiny
+\setlength{\tabcolsep}{2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
 \toprule
-Baseline & Scene & $p_{\mathrm{Holm}}$ & $\delta$ & R \\
+Baseline & S1 $p/R$ & S1 $\delta$ & S2 $p/R$ & S2 $\delta$ & S3 $p/R$ & S3 $\delta$ \\
 \midrule
-AE & 1 & 3.0e-10 & +1.00 & + \\
-AE & 2 & 3.0e-10 & +1.00 & + \\
-AE & 3 & 3.0e-10 & +1.00 & + \\
-PSO & 1 & 2.0e-07 & +0.81 & + \\
-PSO & 2 & 5.5e-04 & +0.59 & + \\
-PSO & 3 & 3.0e-10 & +1.00 & + \\
-GWO & 1 & 3.0e-10 & +1.00 & + \\
-GWO & 2 & 0.001 & +0.55 & + \\
-GWO & 3 & 2.1e-05 & +0.70 & + \\
-WOA & 1 & 3.0e-10 & +1.00 & + \\
-WOA & 2 & 3.0e-10 & +1.00 & + \\
-WOA & 3 & 3.0e-10 & +1.00 & + \\
-HHO & 1 & 1.0e-09 & +0.95 & + \\
-HHO & 2 & 0.001 & +0.55 & + \\
-HHO & 3 & 5.9e-08 & +0.87 & + \\
-DBO & 1 & 3.0e-10 & +1.00 & + \\
-DBO & 2 & 1.5e-06 & +0.78 & + \\
-DBO & 3 & 5.1e-05 & +0.66 & + \\
-CPO & 1 & 0.773 & +0.04 & = \\
-CPO & 2 & 3.0e-10 & -1.00 & - \\
-CPO & 3 & 0.934 & +0.14 & = \\
-GDSAO & 1 & 5.5e-10 & +0.97 & + \\
-GDSAO & 2 & 0.620 & -0.08 & = \\
-GDSAO & 3 & 0.934 & +0.15 & = \\
-ERIME & 1 & 4.0e-10 & +0.98 & + \\
-ERIME & 2 & 0.595 & +0.16 & = \\
-ERIME & 3 & 0.097 & +0.34 & = \\
-MSCSO & 1 & 4.8e-07 & +0.78 & + \\
-MSCSO & 2 & 0.002 & -0.51 & - \\
-MSCSO & 3 & 0.934 & +0.13 & = \\
+AE & 1.8e-10/+ & +1.00 & 1.8e-10/+ & +1.00 & 1.8e-10/+ & +1.00 \\
+PSO & 1.3e-07/+ & +0.81 & 6.0e-06/+ & +0.73 & 1.8e-10/+ & +1.00 \\
+GWO & 1.8e-10/+ & +1.00 & 0.002/+ & +0.52 & 1.2e-04/+ & +0.62 \\
+HHO & 3.0e-10/+ & +0.98 & 0.252/= & +0.17 & 3.4e-08/+ & +0.87 \\
+ERIME & 6.6e-08/+ & +0.84 & 0.002/+ & +0.53 & 0.290/= & +0.16 \\
+MSCSO & 0.064/= & +0.28 & 0.006/- & -0.45 & 0.193/= & +0.25 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
+\vspace{1mm}
+\parbox{\columnwidth}{\footnotesize 注：$p$ 为场景内 6 次比较的 Holm 校正值，$R$ 为胜/平/负关系，$\delta$ 为面向最小化问题定义的 Cliff's delta；正值表示 CVF-AE 分布更优。}
 \end{table}

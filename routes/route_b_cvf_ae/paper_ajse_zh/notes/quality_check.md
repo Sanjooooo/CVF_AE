@@ -1,5 +1,18 @@
 # Quality Check
 
+## 2026-07-07 unified main comparison rerun
+
+- [x] 已按统一设置重跑主对比实验：`AE, PSO, GWO, HHO, ERIME, MSCSO, CVF-AE`，三类低空合成场景、每算法每场景 30 次，共 630 个 run record。
+- [x] 新增 `run_cvf_ae_selected7_main_comparison.m` 作为统一重跑入口，结果目录为 `routes/route_b_cvf_ae/results/cvf_ae_selected7_main_comparison_formal_20260707_101155/`。
+- [x] 更新 `make_cvf_ae_selected7_paper_artifacts.m`，基于本次统一 run records 重算 mean/std/feasible rate、平均排名、Wilcoxon rank-sum / Mann--Whitney U、Holm 校正、Cliff's delta 和 win/tie/loss。
+- [x] 新图已写入 `paper_ajse_zh/figures/`，包括 `selected7_boxplots.png`、三张收敛曲线和六张代表性轨迹图；投稿版图内不再放小标题。
+- [x] `table_main_comparison.tex`、`table_significance.tex`、`table_runtime.tex` 已替换为本次统一重跑统计；正文摘要、结果讨论和结论中的数值同步更新。
+- [x] 本次统一重跑结果：CVF-AE 平均排名 1.33，三场景可行率均为 1.00，工程复核标记均值 0.10；CVF-AE 对 6 个基线共 18 次比较为 13 胜、4 平、1 负。
+- [x] 工程轨迹复核分项表已重新生成至 `notes/engineering_review_breakdown_draft.md` 和 `.csv`，仅供内部审查，未接入论文正文。
+- [x] `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 12 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 已渲染抽查 PDF 第 7--10 页，主结果表、显著性表、收敛图、箱线图和代表性路径图显示正常，图例均为本次主对比算法。
+- [x] 已静态检查正文、表格、caption、aux/bbl 和主 LaTeX 文件，未发现用户要求规避的旧口径表述、被排除算法名、内部场景编号、CEC/RRT 相关表述或夸大结论。
+
 ## 当前阶段
 
 - [x] 未写大段正文。
@@ -68,6 +81,58 @@
 - [x] 基础 AE 方向系数已从正文内嵌小表改为正式编号表 `tab:base-ae-coefficients`；渲染抽查第 5--6 页，表格位于右栏顶部且未造成异常空白、压栏或遮挡。
 - [x] 符号和公式小修已完成：规范 `p_z \notin [z_l,z_u]` 的区间写法，复核 `\bar V`、`\mathbf d_o/d_o` 与 `\mathbf d_z/d_z` 的向量/标量区分，并将原式 (48) 的 `\propto` 转弯分量改为显式分段缩放公式。
 - [x] 渲染抽查第 6--7 页，禁飞区符号、障碍物/NFZ 向量标量写法和转弯分量公式显示正常；编译日志未发现 overfull、未定义引用或未定义 citation。
+- [x] 第二章源文件仅为占位注释，不产生正文篇幅；第三章已压缩冗余说明、删除未被引用的符号表，并将 Deb 可行性规则由列表改为紧凑段落，保留所有关键建模公式、标签和可行性推导。
+- [x] 第三章压缩后 `03_problem_formulation.tex` 由约 8319 字符降至 7370 字符，当前双栏 PDF 为 16 页；渲染抽查第 2--4 页，问题建模与 CVF-AE 方法衔接正常。
+- [x] 第四章 `04_method.tex` 已压缩总体框架、状态调度、CVF 分量解释、候选接收和复杂度说明；保留核心公式、label、CVF 分量定义、状态判定、候选接收规则和伪代码。
+- [x] 第四章压缩后由约 15090 字符降至 13751 字符，减少约 1339 字符；状态权重由长段落改为非浮动紧凑小表以避免双栏 overfull。
+- [x] `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 16 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 正文 `.tex` 与表格静态扫描未发现 TODO、本机绝对路径、CEC、RRT、`Scene 4`、`signed-rank` 或“通用最优/全面优于”等夸大表述；“绝对运行时间”仅出现在否定性效率口径说明中。
+- [x] 根据 AI 审稿意见完成三处公式--代码一致性小修：将目标函数降调为综合路径质量代理目标，将 CVF 权重由 $\eta_c(s,V_c)$ 校准为 $\eta_c(s)$，并在复杂度中区分完整评价采样 $M$ 与 CVF 低密度采样 $\widetilde M$。
+- [x] 小修后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 16 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 已按 AI 审稿意见收束贡献主线：摘要、引言贡献段和结论均改为突出“约束违反信息前移到候选生成阶段的有界方向修正”，弱化 CVF、初始化、状态调度和稀疏保持的模块堆栈感。
+- [x] 贡献主线收束后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 16 页；正文 `.tex` 与表格扫描未发现 TODO、本机绝对路径、CEC、RRT、`Scene 4`、`signed-rank` 或夸大表述。
+- [x] 已将 `Review flag` 统一降调为 `Eng. flag` / 工程轨迹复核标记，并说明该固定阈值复核仅作 sanity check 和诊断信息，不作为安全认证指标或独立优化目标。
+- [x] 工程复核措辞调整后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 16 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 已继续压缩第 5/6 章重复解释性段落：第 5 章收紧实验环境、场景、公共参数、对比算法和统计检验说明；第 6 章压缩 Scene 2/3 例外、统计解释、消融、开销和综合讨论中的重复防御性表述。
+- [x] 第 5/6 章压缩后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 降至 15 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 已按用户意见继续收紧排版：第 2 章仍为占位注释且无正文公式；第 3 章将未被交叉引用的小公式改为行内公式，保留目标函数、惩罚项、核心违反分量、可行性判定和 Deb 规则。
+- [x] 第 4 章算法伪代码已改为 `\scriptsize`；表 5 由 30 行逐场景明细压缩为每个基线一行、三场景并列的单栏表；消融版本已在正文定义为 V0--V5，表 6 仅保留编号。
+- [x] 表 6 去除 `resizebox` 放大，改用 `tabular*` 铺满双栏，避免编号化后表格被不必要放大；渲染抽查第 10 页和第 12 页，表 5、表 6 和表 7 未出现压栏、遮挡或乱码。
+- [x] 本轮压缩后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 降至 14 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 正文 `.tex` 与表格静态扫描未发现 TODO、本机绝对路径、CEC、RRT、`Scene 4`、`Review flag`、旧式“复核风险”或“通用最优/全面优于”等夸大表述。
+- [x] 已按最新非实验审稿意见完成文字和公式小修：弱化摘要/结论中的“工程型”和防御式表述，统一“稀疏可行性保持机制”，并明确观测状态 $s_{\mathrm{obs}}$ 与保守调度后的生效状态 $s_t$。
+- [x] 已补充 CVF 非解析梯度说明和保守接收解释；第 3 章移除“若改归一化违反量需重跑”的重复提醒，仅在局限性保留算法变体需重新实验的边界说明。
+- [x] 已完成公式一致性小修：转弯角加入 `clip(...,-1,1)`，禁飞区集合说明为已合并安全缓冲，B 样条边界说明补充 open-uniform、非负基函数与 partition of unity 条件，CVF 范数截断改为分段缩放定义并统一 `clip` 记号。
+- [x] 小修后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 14 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning；渲染抽查第 3、5、6、7 页未发现压栏、遮挡或乱码。
+- [x] 已将主文对比算法收缩为 7 个代表性算法：AE、PSO、GWO、HHO、ERIME、MSCSO、CVF-AE；正文、表格、caption、引用图和最终 `main.bbl` 中未再出现被删除算法名。
+- [x] 已基于既有 raw run CSV / run records 重新生成 selected-7 统计与图件，未重跑优化实验；每场景 mean/std/feasible rate、场景排名、平均排名、Wilcoxon rank-sum / Mann--Whitney U、Holm 校正、胜平负和 Cliff's delta 均按 7 算法口径重算。
+- [x] selected-7 结果：CVF-AE 平均排名为 1.33；CVF-AE 对 6 个基线在 3 个场景共 18 次 Holm 校正比较中得到 15 胜、2 平、1 负；唯一显著劣势为 Scene 2 对 MSCSO 的标量适应度比较。
+- [x] 已新增 `make_cvf_ae_selected7_paper_artifacts.m` 与 `routes/route_b_cvf_ae/results/cvf_ae_selected7_paper_artifacts_20260706/`，并将主文图切换为 `selected7_boxplots.png`、`selected_scene*_convergence_mean_std.png` 和 `selected_scene*_representative_{top,3d}.png`。
+- [x] 已重跑 `bibtex` 清理旧参考文献条目，并执行 `xelatex -> bibtex -> xelatex -> xelatex`；当前 `main.pdf` 为 14 页，日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 渲染抽查第 8--11 页，主结果表、显著性表、箱线图、收敛图和代表性路径图均未出现被删除算法，图表未见压栏、遮挡或明显乱码。
+- [x] 已针对 Scene 2 主对比图中 CVF-AE 代表航迹的低空视觉问题重新筛选既有 run：由原 `scene2_CVF-AE_run028.mat` 改为 `scene2_CVF-AE_run009.mat`，该 run 可行、无工程复核标记、MeanZ=14.9056、MaxZ=18、建筑足迹投影比例为 0。
+- [x] 已更新 selected-7 代表路径生成规则：仅对 Scene 2 的 CVF-AE 代表图使用低空优先评分，其余场景和算法仍沿用原代表路径筛选；重画 `selected_scene2_representative_top.png` 和 `selected_scene2_representative_3d.png` 后重新编译，当前 PDF 仍为 14 页。
+- [x] 已将正文地图图统一同步为 SCI 风格 muted 配色：建筑由橙色半透明改为浅灰蓝低饱和背景，禁飞区改为低饱和红，风热点改为蓝灰，CVF-AE 使用深蓝粗实线，其它算法使用色盲友好 muted 颜色和线型双编码。
+- [x] 已重画 selected-7 箱线图、收敛图、三场景代表路径图和消融代表路径图；本轮仅修改绘图配色和线型，不改变实验数据、统计表数值或代表 run 筛选结果。
+- [x] 配色同步后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 14 页；日志未发现 LaTeX Error、未定义引用、未定义 citation、overfull 或 rerun-label warning；渲染抽查第 9--11 页未见压栏、遮挡或明显乱码。
+- [x] 已按“算法单独一章、实验结果及分析单独一章”的思路重排主文：`main.tex` 不再输入独立的 `05_experimental_setup.tex` 和 `07_limitations.tex`，第 4 章统一为“实验结果与分析”。
+- [x] 新第 4 章按“整体实验设置、主对比结果、消融分析、显著性分析、开销分析与局限性”组织；原实验设置内容压缩并前置，结果解释分别放入主对比、消融、显著性和开销小节。
+- [x] 已同步引言末尾章节安排，并加入 `placeins`/`\FloatBarrier` 控制结果章浮动体，避免图表越过对应小节标题。
+- [x] 结构重排后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 13 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 静态扫描 `main.aux`、`main.bbl`、sections、tables 和 `main.tex`，未发现被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
+- [x] 渲染抽查第 7--10 页，实验设置、主对比、消融、显著性和开销小节顺序清楚；主结果表、箱线图、收敛图、路径图、消融表、显著性表和开销表未见压栏、遮挡或明显乱码。
+- [x] 已将局限性从结果章移入结论章：第 4 章末节改为“开销分析”，只保留评价次数、触发率、同批次评价比值和参数稳健性说明；结论末段集中说明静态合成场景、真实地图/DEM、动态障碍、多机协同、算法变体和闭环验证等边界。
+- [x] 已清理无效章节 tex：删除 `02_related_work.tex`、`05_experimental_setup.tex` 和 `07_limitations.tex`；剩余章节文件按实际结构重命名为 `02_problem_formulation.tex`、`03_method.tex`、`04_results_and_discussion.tex`、`05_conclusion.tex`。
+- [x] `main.tex` 现在只输入有效章节文件：摘要、引言、问题建模、方法、实验结果与分析、结论。
+- [x] 本轮清理后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 12 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 静态扫描未发现旧章节输入文件名、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述；渲染抽查第 10--12 页未见压栏、遮挡或明显乱码。
+- [x] 已按用户选择采纳新一轮审稿意见：主文保留代表性基线选择原则，但不出现历史算法集合、旧排名、更大集合校正或补充材料扩展算法说明。
+- [x] 已删除“低空优先规则从既有可行 run 中筛选”等路径筛选敏感表述，改为说明代表性路径仅用于可视化展示，不参与优化、统计检验或表格排名。
+- [x] 已将“所选代表性基线中最佳平均排名”口径贯穿摘要、主对比结果、综合结果段和结论；表注改为“主对比算法”排名口径。
+- [x] 已采纳公式与伪代码小修：质量引导方向中的 `\mathrm{clip}` 改为圆括号函数调用；Algorithm 1 第 21 行改为候选被选入稀疏可行性保持集合。
+- [x] 已生成工程轨迹复核分项表草稿 `notes/engineering_review_breakdown_draft.md` 和 `.csv`，仅供内部审查，未接入论文正文或 LaTeX 输入链路。
+- [x] 本轮修改后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 12 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 静态扫描未发现“更大/旧排名/低空优先/既有可行/所选 7/需要重新开展正式实验/补充材料/Supplementary”、被删除算法名、旧 `11/10` 口径、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
 - [ ] 仍需后续补充：作者/单位/通讯作者、基金/致谢/声明信息和第二轮文献精筛。
 
 ## 后续每阶段检查
