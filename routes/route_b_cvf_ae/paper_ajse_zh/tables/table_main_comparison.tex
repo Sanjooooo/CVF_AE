@@ -1,4 +1,4 @@
-\begin{table*}[tbp]
+\begin{table*}[!t]
 \centering
 \caption{主对比实验结果}
 \label{tab:main-comparison}
@@ -7,7 +7,7 @@
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lccccccccccc}
 \toprule
-Algorithm & S1 $J$ & S1 FR & S1 R & S2 $J$ & S2 FR & S2 R & S3 $J$ & S3 FR & S3 R & Avg. R & Eng. flag \\
+Algorithm & S1 $J$ & S1 FR & S1 R & S2 $J$ & S2 FR & S2 R & S3 $J$ & S3 FR & S3 R & Avg. R & Aux. flag \\
 \midrule
 AE & 656.1972 $\pm$ 325.9113 & 0.60 & 7 & 1627.2324 $\pm$ 330.2622 & 0.00 & 7 & 1680.4468 $\pm$ 208.6819 & 0.00 & 7 & 7.00 & 0.22 \\
 PSO & 423.3491 $\pm$ 216.2313 & 0.90 & 6 & 659.5587 $\pm$ 303.2289 & 0.43 & 6 & 1303.4640 $\pm$ 388.2979 & 0.03 & 6 & 6.00 & 0.49 \\
@@ -20,5 +20,5 @@ CVF-AE & 298.5286 $\pm$ 2.6211 & 1.00 & 1 & 301.1934 $\pm$ 2.8253 & 1.00 & 2 & 3
 \end{tabular}%
 }
 \vspace{1mm}
-\parbox{\textwidth}{\footnotesize 注：FR 为可行率，R 为主对比算法按平均适应度升序得到的场景排名，Avg. R 为三场景平均排名。Eng. flag 为三场景共 90 次运行中被任一工程轨迹复核规则标记的比例；该固定阈值复核仅作 sanity check，不作为安全认证指标。}
+\parbox{\textwidth}{\footnotesize 注：FR 为可行率，R 为主对比算法按平均适应度升序得到的场景排名，Avg. R 为三场景平均排名。Aux. flag 为三场景共 90 次运行中被任一预设阈值辅助复核规则标记的比例；该标记仅用于可视化和结果复核，不作为安全认证指标。}
 \end{table*}

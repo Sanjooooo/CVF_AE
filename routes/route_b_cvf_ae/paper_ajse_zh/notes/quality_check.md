@@ -1,5 +1,28 @@
 # Quality Check
 
+## 2026-07-13 Section 4 recovery
+
+- [x] Restored the Section 4 methodological boundaries after an unintended partial revert: representative-baseline wording, common experimental controls, unpaired rank-sum rationale, per-scene Holm scope, and the auxiliary-review-only status of trajectory flags.
+- [x] Restored conservative interpretation of the Scene 2 scalar-fitness result and clarified that representative paths do not participate in optimization, statistical testing, or ranking.
+- [x] Removed an unsupported directional parameter claim; the robustness check is now limited to the default configuration rather than a scene-independent optimum claim.
+- [x] `xelatex -> xelatex` completed without LaTeX errors, undefined references/citations, or overfull boxes. The latest PDF has 13 pages; page 13 contains reference-list continuation only.
+
+
+## 2026-07-13 State-scheduler consistency fix
+
+- [x] Revised Eq. `eq:conservative-state` to define the requested state $q_t$ rather than the active state $s_t$.
+- [x] Stated explicitly that non-maintenance requests require two consecutive confirmations and that the confirmed state is $s_t$, aligning the equation with Algorithm 2 and the conservative scheduling implementation.
+
+
+## 2026-07-07 method section restructuring
+
+- [x] 已重排第 3 章 `CVF-AE 方法`：3.1 提前展示基础 AE 与 CVF-AE 两套伪代码，3.2 集中说明约束可行性引导机制，3.3 单独说明复杂度。
+- [x] 新增 `alg:base-ae`，保留 `alg:cvf-ae`、核心公式 label、CVF 分量定义、状态判定、候选融合、稀疏触发和局部接收规则。
+- [x] 3.2 使用三级标题串联状态识别、CVF 构建、压力分量、有界融合和稀疏接收，删除原先框架段与后置伪代码之间的重复解释。
+- [x] 两个算法环境改为 `[H]`，保证伪代码跟随 3.1 源码位置展示，不漂移到章节标题之前。
+- [x] `xelatex -> xelatex` 编译通过，当前 `main.pdf` 仍为 12 页；日志未发现 LaTeX Error、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 已渲染抽查第 4--7 页，第 3 章伪代码、三级标题、公式、表格和第 4 章衔接未见压栏、遮挡或明显排版错误。
+
 ## 2026-07-07 unified main comparison rerun
 
 - [x] 已按统一设置重跑主对比实验：`AE, PSO, GWO, HHO, ERIME, MSCSO, CVF-AE`，三类低空合成场景、每算法每场景 30 次，共 630 个 run record。
@@ -133,6 +156,37 @@
 - [x] 已生成工程轨迹复核分项表草稿 `notes/engineering_review_breakdown_draft.md` 和 `.csv`，仅供内部审查，未接入论文正文或 LaTeX 输入链路。
 - [x] 本轮修改后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 12 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
 - [x] 静态扫描未发现“更大/旧排名/低空优先/既有可行/所选 7/需要重新开展正式实验/补充材料/Supplementary”、被删除算法名、旧 `11/10` 口径、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
+- [x] 已补齐第 3 章中“约束感知初始化与参考弱引导”方法说明：新增参考控制向量、净空/风险扰动半径、引导初始化和弱参考方向描述，使其与第 4.3 节 V4“仅去除约束感知初始化”消融项对应。
+- [x] 已修正伪代码口径：基础 AE 仍为普通随机初始化，CVF-AE 伪代码明确生成参考控制序列并进行约束感知初始化。
+- [x] 本轮方法补齐后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 13 页；日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning。
+- [x] 静态扫描 `main.tex`、sections 和 tables 未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
+- [x] 已复核并统一基础 AE、CVF-AE 与实验实现的描述：基础 AE 使用固定平衡进化算子；状态化内部候选、参考弱方向、CVF 压力与保守局部门控均明确限定为 CVF-AE 机制。
+- [x] 已补充 CVF-AE 专属参考序列的生成方式：以平面 \SI{5}{m}、垂向 \SI{4}{m} 的三维栅格 A* 生成参考控制序列，仅用于内部初始化与弱方向先验，不作为对比算法；复杂障碍布局使用固定走廊控制点模板扩展初始覆盖。
+- [x] 已将论文中的保守状态调度统一为形成、保持和恢复三种状态，并以正式配置的切换条件、候选系数和 CVF 权重进行定义。
+- [x] 已完成内部模板影响消融：仅对复杂场景运行 CVF-AE 的模板开启/关闭对照，各 30 次，保持参考路径、引导初始化、CVF、状态调度、预算和种子规则不变。结果存于 `results/template_initialization_ablation_20260711_225319/`，未接入论文、LaTeX 或论文图表。
+- [x] 内部结果：模板开启/关闭的可行率为 `1.0000/0.7333`，Fisher 精确检验 `p=0.004575`；总体最终适应度秩和检验 `p=0.652044`，说明模板的主要影响体现在可行性形成与 CVF 触发负担，而非可行解中位适应度。
+- [x] 已决定保留固定走廊控制点模板，作为约束感知初始化的组成；内部模板消融继续仅供决策使用，不加入论文正文、表格、图表或统计结论。
+- [x] 已明确 V4 去除约束感知初始化而不移除迭代阶段的参考弱方向；在 Scene 3 中，该消融同时移除初始化走廊模板。
+- [x] 已将轨迹阈值结果统一为“预设阈值辅助复核标记”，仅用于可视化和复核，不与统计检验并列为同等强度证据；同时删除未由主文图表支撑的参数方向性结论。
+- [x] 已将复杂度改为区分候选评价次数与评价工作量，并计入 CVF 额外候选的完整评价代价。
+- [x] 本轮已执行 `xelatex -> xelatex`，当前 `main.pdf` 为 Letter 纸、共 `12` 页；日志未发现 LaTeX Error、undefined reference、undefined citation、overfull 或 rerun-label warning。渲染抽查第 4--6 页，算法、状态系数表、参考初始化说明与 CVF 图均显示正常。
+- [x] 已在第 2 章 Deb 可行性优先准则定义后加入单栏解释图 `deb_feasibility_criterion_flowchart.png`，图内不含小标题，仅说明可行、均可行和均不可行三类比较路径；CVF 的局部接收未并入该图。
+- [x] 加图后已执行 `xelatex -> xelatex`，当前 `main.pdf` 为 13 页；日志未发现 LaTeX Error、undefined reference/citation、overfull 或 rerun-label warning。渲染抽查第 4 页，图和标题均在单栏内正常显示，未遮挡正文或方法章内容。
+- [x] 静态扫描 `main.tex`、sections 和 tables 未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
+- [x] 已重新平衡图文布局：第 3 章两段算法从 `[H]` 改为 `[tbp]`；第 4 章移除图前和章末的强制浮动屏障，连续跨栏图分别设为页首或页底优先，并限制子图高度以避免连续图表页；Deb 准则图同步改为紧凑单栏版。
+- [x] 布局调整后 `xelatex -> xelatex` 编译通过，当前 `main.pdf` 为 12 页；日志未发现 LaTeX Error、undefined reference/citation、overfull 或 rerun-label warning。渲染抽查第 4、8--10 页：第 3 章开头无大面积留白，第 9--10 页均为图表与正文混排，未见纯图表页、压栏或遮挡。
+- [x] 2026-07-14 全文审查已将公平性口径改为“相同种群规模和迭代次数”，明确不同算法的函数评价次数不强制相同并单独报告；正文不再使用“相同预算/统一预算”表述。
+- [x] 第 2 章可行性判定已明确采用总违反分数阈值 $V\leq10^{-10}$；第 3 章状态请求 $q_t$、生效状态 $s_t$、状态化方向 $\mathbf D_{\mathrm{AE}}^{(s_t)}$ 和 `round` 触发配额已与实现口径统一。
+- [x] 新增紧凑的稀疏触发与可行性保持参数表，仅保留近可行阈值、候选范围、三状态配额、可行后节流和局部修复限制等 6 项行为关键参数；未扩展为全部目标函数、CVF 和场景常数清单。
+- [x] 已为 PSO、GWO、HHO、增强 RIME 来源和 MSCSO 加入原始文献引用；Feng 文献元数据修正为 `Scientific Reports 16, 101 (2026)`。
+- [x] 结果章宽表限定页首、单栏统计表就地排版，并提高纯浮动页阈值；最终 `main.pdf` 为 Letter 纸 13 页。第 9 页为主结果/统计图文混排，第 10 页为带对应文字的集中图版，第 11 页为消融表、结论和声明混排，不再存在连续两页纯图表。
+- [x] 最终执行 `bibtex -> xelatex -> xelatex`；日志无 LaTeX Error、undefined reference/citation、overfull、纯浮动页或 rerun warning。PDF 文本层与源文件扫描未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或夸大表述。
+- [x] 2026-07-14 参考论文参数披露对照后再次精简第 3 章：撤除 6 行触发/修复参数表，将三状态内部 AE 微观系数改为方向侧重描述，并删除三状态六类压力的 18 个显式权重。
+- [x] 基础 AE 调度、初始化扰动、压力半径/缩放、风险激活、高度/边界缓冲、曲率激活、质量牵引和局部修复筛选中的实现级数值已改为符号或定性说明；保留状态判定阈值、9 个融合权重、名义触发比例及可行后节流配置。
+- [x] 参数精简未改变任何公式结构、算法步骤、实验设置、数据、统计或图件；目标权重、惩罚、运动约束、种群规模和迭代次数继续集中保留在实验设置表中。
+- [x] 精简后执行 `xelatex -> xelatex`，`main.pdf` 仍为 Letter 纸 13 页；日志无 LaTeX Error、undefined reference/citation、overfull、纯浮动页或 rerun warning。渲染检查第 4--8 页无新增空白、压栏、遮挡或乱码。
+- [x] 参数精简导致消融图 7 延迟到参考文献区域后，已将其由双栏横排改为单栏纵排，并保留结果章末浮动屏障；图 7 现位于第 11 页左栏顶部、结论之前，未进入参考文献区域。
+- [x] 图 7 修复后执行 `xelatex -> xelatex`，PDF 恢复为 13 页；第 9--11 页无纯图页、遮挡或异常空白，日志无 LaTeX Error、undefined reference/citation 或 overfull。
 - [ ] 仍需后续补充：作者/单位/通讯作者、基金/致谢/声明信息和第二轮文献精筛。
 
 ## 后续每阶段检查

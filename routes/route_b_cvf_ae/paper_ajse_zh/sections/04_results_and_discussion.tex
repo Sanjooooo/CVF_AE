@@ -1,14 +1,14 @@
 \section{实验结果与分析}
 \label{sec:results-discussion}
 
-本章按实验设置、主对比、消融、显著性和开销分析的顺序报告结果。所有结论均基于既有正式结果包，不重跑优化实验；单一标量适应度不能完全代表强约束低空路径质量，因此下文结合可行率、平均排名、工程轨迹复核标记、代表性路径和评价开销进行解释。
+本章按实验设置、主对比、消融、统计显著性与评价开销报告结果。单一适应度不能完全代表强约束低空路径质量，因此结合可行率、平均排名、工程轨迹复核标记、代表性路径和评价开销解释。
 
 \subsection{整体实验设置}
 \label{sec:experimental-setup}
 
-实验在同一台本地工作站上完成：Intel(R) Core(TM) i5-14600KF \SI{3.50}{GHz}，\SI{32}{GB} 内存，64 位系统，MATLAB R2022b。所有正式运行均为单进程串行；由于 wall-clock time 受 MATLAB 会话状态、repair 次数和批处理负载影响，效率主要由函数评价次数、CVF 触发规模和同批次评价比值刻画。
+实验在同一台本地工作站上单进程串行完成：Intel(R) Core(TM) i5-14600KF \SI{3.50}{GHz}，\SI{32}{GB} 内存，64 位系统，MATLAB R2022b。效率主要由函数评价次数、CVF 触发规模和同批次评价比值刻画。
 
-\begin{table}[tbp]
+\begin{table}[H]
 \centering
 \caption{三维低空路径规划测试场景设置}
 \label{tab:scene-setup}
@@ -26,7 +26,7 @@ Scene 3 & 17 & 3 & 5 & $[8,26]$ \\
 
 三维规划空间水平方向均为 $[0,100]\times[0,100]$，起点和终点分别为 $\mathbf{s}=[5,5,12]^\mathsf{T}$ 和 $\mathbf{g}=[95,95,18]^\mathsf{T}$。三个场景均含建筑物、柱状禁飞区和风险热点，约束密度、高度上界和风险分布逐步收紧；Scene 1/2 使用 $z_{\mathrm{ref}}=16$，Scene 3 使用 $z_{\mathrm{ref}}=14$。
 
-\begin{table}[tbp]
+\begin{table}[H]
 \centering
 \caption{公共路径编码与评价参数设置}
 \label{tab:common-setup}
@@ -37,7 +37,7 @@ Scene 3 & 17 & 3 & 5 & $[8,26]$ \\
 \midrule
 路径编码 & $K=6$，维度 $18$ \\
 B 样条 & 三次 B 样条，$M=220$ \\
-搜索预算 & $N=30$，$T=300$，30 次独立运行 \\
+搜索配置 & $N=30$，$T=300$，30 次独立运行 \\
 目标权重 & $w_L=1.00$，$w_E=0.60$，$w_R=1.20$，$w_S=0.15$，$w_H=0.80$，$w_B=0.80$ \\
 违反惩罚 & $\lambda_{\mathrm{obs}}=150$，$\lambda_{\mathrm{nfz}}=200$，$\lambda_{\mathrm{curv}}=20$，$\lambda_{\mathrm{alt}}=30$ \\
 运动约束 & $\theta_{\max}=55^\circ$，默认高度 $[8,40]$ \\
@@ -45,141 +45,144 @@ B 样条 & 三次 B 样条，$M=220$ \\
 \end{tabularx}
 \end{table}
 
-基线选择遵循覆盖性和可复现性原则：AE 作为基础进化搜索骨架，PSO、GWO 和 HHO 代表经典群智能优化方法，ERIME 和 MSCSO 代表近期改进型元启发式方法。所有算法使用相同路径编码、评价函数、边界投影和 Deb 可行性优先准则；基线不调用 CVF 场、约束状态调度、稀疏可行性保持或 CVF-AE 专属初始化。消融实验与主对比保持相同场景、运行次数、种群规模和迭代次数。
+基线选择遵循覆盖性和可复现性原则：AE 作为基础进化搜索骨架，PSO \citep{Kennedy1995PSO}、GWO \citep{Mirjalili2014GWO} 和 HHO \citep{Heidari2019HHO} 代表经典群智能优化方法；ERIME 依据增强 RIME 文献中的精英反向学习与软/硬霜冰更新机制进行任务适配实现 \citep{Xie2024ELRIME}，MSCSO 依据面向三维 UAV 路径规划的混沌初始化、L\'{e}vy--Metropolis 探索、SA--PSO 开发和精英变异机制实现 \citep{Zhan2025MSCSO}。所有算法使用相同路径编码、评价函数、边界投影、种群规模、迭代次数和 Deb 可行性优先准则；不同算法因内部候选与局部搜索机制不同，函数评价次数不强制相同，并在开销分析中单独报告。基线不调用 CVF 场、约束状态调度、稀疏可行性保持或 CVF-AE 专属初始化。消融实验与主对比保持相同场景、运行次数、种群规模和迭代次数。
 
-主要指标包括最终最佳适应度、可行率、最终违反量、函数评价次数、平均排名和工程轨迹复核标记。工程复核规则由高空绕行、边界贴靠、过度绕行和控制点贴边四类固定阈值标记取逻辑或得到，仅作 sanity check，不作为安全认证指标或独立优化目标。由于不同算法的随机种子不视为严格配对样本，CVF-AE 与各基线采用双侧 Wilcoxon rank-sum / Mann--Whitney U 检验 \citep{Mann1947RankSum}，场景内多重比较采用 Holm 校正 \citep{Holm1979Sequential}，并报告面向最小化问题定义的 Cliff's delta \citep{Cliff1993Dominance}。
+主要指标包括最终最佳适应度、可行率、最终违反量、函数评价次数、平均排名和工程轨迹复核标记。工程复核由高空绕行、边界贴靠、过度绕行和控制点贴边四类固定阈值取逻辑或，作为预设阈值辅助复核标记，仅用于可视化和结果复核，不构成安全认证或独立优化目标。由于随机种子不作严格配对，CVF-AE 与各基线采用双侧 Wilcoxon rank-sum / Mann--Whitney U 检验 \citep{Mann1947RankSum}，场景内采用 Holm 校正 \citep{Holm1979Sequential}，并报告面向最小化问题定义的 Cliff's delta \citep{Cliff1993Dominance}。
 
 
-\begin{figure}[tbp]
+\subsection{主对比结果}
+
+\input{tables/table_main_comparison}
+
+表 \ref{tab:main-comparison} 给出了主对比结果。CVF-AE 在三个场景中的可行率均为 $1.00$，平均场景排名为 $1.33$，并取得所选代表性基线中最佳平均排名；其预设阈值辅助复核标记比例为 $0.10$，优势主要体现为可行性、平均排名和轨迹形态诊断之间的综合能力。
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{selected7_boxplots.png}
 \caption{主对比算法的最终适应度分布}
 \label{fig:boxplots-strong}
 \end{figure}
-\FloatBarrier
-\subsection{主对比结果}
-
-\input{tables/table_main_comparison}
-
-表 \ref{tab:main-comparison} 给出了主对比结果。CVF-AE 在三个场景中的可行率均为 $1.00$，平均场景排名为 $1.33$，并取得所选代表性基线中最佳平均排名；其工程轨迹复核标记比例为 $0.10$，优势主要体现为可行性、平均排名和轨迹形态诊断之间的折中。
 
 
 
-图 \ref{fig:boxplots-strong} 展示逐次运行分布。CVF-AE 在 Scene 1 和 Scene 3 中箱体较窄且均值最低；Scene 2 中 MSCSO 的标量适应度更低，但其工程轨迹复核标记比例较高，因此该场景不支持 CVF-AE 标量最优结论，而支持其更保守的低空走廊折中。Scene 3 中，CVF-AE 的平均适应度为 $350.7658$，略低于 ERIME 的 $356.4928$ 和 MSCSO 的 $449.9550$，并保持 $1.00$ 可行率；ERIME 虽保持可行率，但工程复核标记比例较高。
+图 \ref{fig:boxplots-strong} 展示逐次运行分布。CVF-AE 在 Scene 1 和 Scene 3 中箱体较窄且均值最低；Scene 2 中 MSCSO 的标量适应度更低且辅助复核标记比例较高，故不将 CVF-AE 解释为该场景的标量最优，而视为更保守的低空走廊折中。Scene 3 中，CVF-AE 平均适应度为 $350.7658$，略低于 ERIME 的 $356.4928$，并保持 $1.00$ 可行率。
 
-\begin{figure}[tbp]
+\begin{figure*}[!b]
 \centering
-\begin{subfigure}{0.96\linewidth}
+\begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene1_convergence_mean_std.png}
+    \includegraphics[width=\linewidth,height=0.17\textheight,keepaspectratio]{selected_scene1_convergence_mean_std.png}
     \caption{Scene 1}
 \end{subfigure}
-
-\begin{subfigure}{0.96\linewidth}
+\hfill
+\begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene2_convergence_mean_std.png}
+    \includegraphics[width=\linewidth,height=0.17\textheight,keepaspectratio]{selected_scene2_convergence_mean_std.png}
     \caption{Scene 2}
 \end{subfigure}
-
-\begin{subfigure}{0.96\linewidth}
+\hfill
+\begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene3_convergence_mean_std.png}
+    \includegraphics[width=\linewidth,height=0.17\textheight,keepaspectratio]{selected_scene3_convergence_mean_std.png}
     \caption{Scene 3}
 \end{subfigure}
+\vspace{-1.0mm}
 \caption{三类测试场景的平均收敛曲线}
 \label{fig:convergence}
-\end{figure}
+\end{figure*}
 
-图 \ref{fig:convergence} 给出平均收敛行为。CVF-AE 在 Scene 1 和 Scene 3 中较快进入稳定区间；Scene 2 中 MSCSO 最终均值更低，对应主表中的标量适应度优势，但仍需结合轨迹形态解释。
+图 \ref{fig:convergence} 给出平均收敛行为。CVF-AE 在 Scene 1 和 Scene 3 中较快进入稳定区间；Scene 2 中 MSCSO 最终均值更低，与主表一致。
 
-\begin{figure*}[tbp]
+\begin{figure*}[!b]
 \centering
 \begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene1_representative_top.png}
+    \includegraphics[width=\linewidth,height=0.18\textheight,keepaspectratio]{selected_scene1_representative_top.png}
     \caption{Scene 1}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene2_representative_top.png}
+    \includegraphics[width=\linewidth,height=0.18\textheight,keepaspectratio]{selected_scene2_representative_top.png}
     \caption{Scene 2}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene3_representative_top.png}
+    \includegraphics[width=\linewidth,height=0.18\textheight,keepaspectratio]{selected_scene3_representative_top.png}
     \caption{Scene 3}
 \end{subfigure}
 \caption{主对比算法的路径俯视对比}
 \label{fig:selected-paths-top}
 \end{figure*}
 
-\begin{figure*}[tbp]
+\begin{figure*}[!b]
 \centering
 \begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene1_representative_3d.png}
+    \includegraphics[width=\linewidth,height=0.18\textheight,keepaspectratio]{selected_scene1_representative_3d.png}
     \caption{Scene 1}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene2_representative_3d.png}
+    \includegraphics[width=\linewidth,height=0.18\textheight,keepaspectratio]{selected_scene2_representative_3d.png}
     \caption{Scene 2}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.32\linewidth}
     \centering
-    \includegraphics[width=\linewidth]{selected_scene3_representative_3d.png}
+    \includegraphics[width=\linewidth,height=0.18\textheight,keepaspectratio]{selected_scene3_representative_3d.png}
     \caption{Scene 3}
 \end{subfigure}
 \caption{主对比算法的路径三维对比}
 \label{fig:selected-paths-3d}
 \end{figure*}
 
-图 \ref{fig:selected-paths-top} 和图 \ref{fig:selected-paths-3d} 解释上述数值差异。代表性路径仅用于可视化展示，不参与优化、统计检验或表格排名；Scene 2 俯视图显示 CVF-AE 避开建筑足迹并沿走廊推进，Scene 3 中部分基线在低高度和密集障碍下出现边界贴靠或大幅绕行，说明强约束低空路径规划不能只按最终适应度排序。
+图 \ref{fig:selected-paths-top} 和图 \ref{fig:selected-paths-3d} 给出代表性路径。代表性路径仅用于可视化，不参与优化、统计检验或排名；Scene 2 中 CVF-AE 避开建筑足迹并沿走廊推进，Scene 3 中部分基线出现边界贴靠或大幅绕行，不能仅按最终适应度解释路径质量。
 
 % \FloatBarrier
 \subsection{消融分析}
 
-为压缩表格，消融版本记为 V0--V5：V0 为完整 CVF-AE，V1 去除 CVF 场，V2 去除状态自适应 CVF，V3 去除稀疏可行性保持，V4 去除约束感知初始化，V5 为 Base-AE。
+为压缩表格，消融版本记为 V0--V5：V0 为完整 CVF-AE，V1 去除 CVF 场，V2 去除状态自适应 CVF，V3 去除稀疏可行性保持，V4 仅去除约束感知初始化，V5 为 Base-AE。
 
 \input{tables/table_ablation}
 
-表 \ref{tab:ablation} 展示正式消融结果。完整 CVF-AE 的消融平均排名为 $1.00$，并在所有场景保持 $1.00$ 可行率；相对 Base-AE，它在 Scene 2/3 中将可行率从 $0$ 提升到 $1.00$，说明约束感知初始化、CVF 候选和稀疏可行性保持共同支撑可行路径形成。
+表 \ref{tab:ablation} 展示消融结果。完整 CVF-AE 的消融平均排名为 $1.00$，并在所有场景保持 $1.00$ 可行率；相对 Base-AE，Scene 2/3 的可行率从 $0$ 提升到 $1.00$。
 
-\begin{figure}[tbp]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.78\linewidth]{ablation_scene2_representative_top.png}
-\caption{Scene 2 关键模块消融版本的路径俯视对比}
-\label{fig:ablation-scene2-top}
+\begin{subfigure}{0.92\linewidth}
+    \centering
+    \includegraphics[width=\linewidth,height=0.22\textheight,keepaspectratio]{ablation_scene2_representative_top.png}
+    \caption{Scene 2 俯视}
+    \label{fig:ablation-scene2-top}
+\end{subfigure}
+\par\smallskip
+\begin{subfigure}{0.92\linewidth}
+    \centering
+    \includegraphics[width=\linewidth,height=0.22\textheight,keepaspectratio]{ablation_scene3_representative_3d.png}
+    \caption{Scene 3 三维}
+    \label{fig:ablation-paths}
+    \label{fig:ablation-scene3-3d}
+\end{subfigure}
+\vspace{-1.0mm}
+\caption{关键模块消融版本的代表性路径对比}
 \end{figure}
 
-\begin{figure}[tbp]
-\centering
-\includegraphics[width=0.78\linewidth]{ablation_scene3_representative_3d.png}
-\caption{Scene 3 关键模块消融版本的路径三维对比}
-\label{fig:ablation-paths}
-\label{fig:ablation-scene3-3d}
-\end{figure}
+图 \ref{fig:ablation-scene2-top} 和图 \ref{fig:ablation-scene3-3d} 展示消融路径形态。去除 CVF 场后算法仍可保持可行，但适应度上升：Scene 1 从 $297.8318$ 到 $306.1985$，Scene 2 从 $300.6612$ 到 $303.7697$，Scene 3 从 $348.5856$ 到 $355.8347$。去除约束感知初始化在 Scene 3 影响最大，可行率从 $1.00$ 降至 $0.70$，平均适应度升至 $556.7515$。
 
-图 \ref{fig:ablation-scene2-top} 和图 \ref{fig:ablation-scene3-3d} 展示消融路径形态。Scene 2 俯视图显示完整方法更稳定地沿可行走廊推进；Scene 3 三维图说明，在更低高度上界和更密集约束下，去除初始化或 CVF 相关机制后更容易出现低质量绕行。去除 CVF 场后算法仍可保持可行，但适应度上升：Scene 1 从 $297.8318$ 到 $306.1985$，Scene 2 从 $300.6612$ 到 $303.7697$，Scene 3 从 $348.5856$ 到 $355.8347$。去除约束感知初始化在 Scene 3 影响最大，可行率从 $1.00$ 降至 $0.70$，平均适应度升至 $556.7515$。
-
-% \FloatBarrier
-\subsection{显著性分析}
+\subsection{统计显著性与评价开销}
 
 \input{tables/table_significance}
-
-表 \ref{tab:significance} 给出了 CVF-AE 与 6 个基线的逐场景 Holm 校正 $p$ 值和 Cliff's delta。Holm 校正范围限定为每个场景内 6 次比较；成对比较中，CVF-AE 在 $18$ 次比较中得到 $13$ 胜、$4$ 平和 $1$ 负。唯一显著劣势出现在 Scene 2，对应 MSCSO 的标量适应度优势。表中 $R$ 为 Holm 校正后的胜、平、负关系，$\delta>0$ 表示 CVF-AE 分布更优。统计检验只作用于最终最佳适应度分布，不能替代工程轨迹复核，因此本文将结论限定为综合均衡优势，而非逐场景标量最优。
-
-% \FloatBarrier
-\subsection{开销分析}
-
 \input{tables/table_runtime}
 
-表 \ref{tab:runtime} 给出了评价开销摘要。CVF-AE 在 Scene 1--3 的平均评价次数分别为 $9569.5$、$9552.7$ 和 $9362.5$，与 $N=30$、$T=300$ 的基础规模接近。CVF 触发次数分别为 $25.0$、$12.4$ 和 $83.8$；更强约束场景触发更多，但触发率仍低于 $1\%$。同批次消融中，完整 CVF-AE 相对于去除 CVF 的评价次数比值约为 $1.010$、$1.013$ 和 $1.012$，说明额外评价开销约为 $1\%$ 量级。本文不以绝对 wall-clock time 作为主要效率证据。
+表 \ref{tab:significance} 汇总逐场景 Holm 校正 $p$ 值和 Cliff's delta，校正范围为每个场景内六次比较。CVF-AE 在 $18$ 次比较中得到 $13$ 胜、$4$ 平和 $1$ 负；唯一显著劣势出现在 Scene 2，对应 MSCSO 的标量适应度优势。表中 $R$ 为校正后的胜、平、负关系，$\delta>0$ 表示 CVF-AE 分布更优；统计检验仅针对最终最佳适应度，不能替代辅助复核，因此结论限定为综合均衡优势，而非逐场景标量最优。
 
-参数稳健性检查仅作补充。更高触发配额可在 Scene 2/3 降低部分适应度均值，但会增加触发和评价规模；步长强度较优档位随场景变化；状态切换阈值未出现同时稳定占优的非默认设置。因此，本文保留默认参数，并将结论限定为默认配置的折中稳健性。
+表 \ref{tab:runtime} 给出评价开销摘要。CVF-AE 在 Scene 1--3 的平均评价次数分别为 $9569.5$、$9552.7$ 和 $9362.5$，CVF 触发率均低于 $1\%$；相对去除 CVF 的同批次消融版本，评价次数比值约为 $1.010$、$1.013$ 和 $1.012$。
 
-综合主对比、消融、显著性和开销分析，CVF-AE 的价值在于：在所选代表性基线中保持 $1.00$ 可行率并取得最佳平均排名；在 Scene 2/3 提供较均衡的路径形态诊断；通过稀疏触发将 CVF 额外评价控制在较低水平。本文据此将 CVF-AE 定位为强约束低空路径规划中兼顾可行性、轨迹形态诊断和评价开销的均衡型候选生成框架。
+参数稳健性检查仅作补充，不将其扩展为场景无关的最优参数结论；本文采用表 \ref{tab:common-setup} 所列默认配置。
+
+综合来看，CVF-AE 在所选代表性基线中保持 $1.00$ 可行率并取得最佳平均排名，同时通过稀疏触发控制额外评价开销，可作为强约束低空路径规划中兼顾可行性、轨迹形态诊断和评价开销的候选生成框架。
+
+\FloatBarrier

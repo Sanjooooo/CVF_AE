@@ -33,7 +33,7 @@
 转换状态：
 
 - 2026-06-29：以上 LaTeX 表已由正式 CSV 机械转换生成。
-- 主对比表保留 11 个算法、3 个场景的 fitness、feasible rate、rank、average rank 和 visual flag rate。
+- 主对比表保留 7 个算法、3 个场景的 fitness、feasible rate、rank、average rank 和辅助复核标记率。
 - 消融表使用跨栏 `tabular`；显著性表使用单栏纵向明细表；运行开销表使用主文摘要表。
 - 表格 caption 已恢复为标准中文描述型标题，表头保留必要英文缩写以节省宽度。
 - 2026-06-30：参数敏感性表已从主文删除，关键结论并入“评价开销与参数稳健性”小节；完整逐场景明细保留在 `paper_table_parameter_sensitivity.csv`。
@@ -49,3 +49,5 @@
 - 从 `paper_figure_index.csv` 中复制 ready PNG 共 25 张。
 - 同名 PDF 存在时一并复制，共 4 个 PDF。
 - 所有 LaTeX 图像引用后续必须使用 `figures/` 下相对文件名。
+- `deb_feasibility_criterion_flowchart.png`：根据第 2 章的 Deb 规则及 `debBetter.m` 绘制的单栏解释图，不含实验结果。
+- `draft_cvf_pressure_mapping_with_synthesis_inset_preview.pdf`：由根目录 `make_cvf_pressure_mapping_preview.m` 根据第 3 章 CVF 分量定义生成，用于说明采样点压力映射、控制点平均和局部分量合成，不含实验结果。

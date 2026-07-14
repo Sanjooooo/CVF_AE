@@ -1,5 +1,25 @@
 # CVF-AE Route B Project Log
 
+## 2026-07-07 Method section restructuring
+
+Scope:
+
+- reorganized `paper_ajse_zh/sections/03_method.tex`;
+- moved algorithm presentation to the beginning of the method section;
+- added `Algorithm 1` for the base AE path-search flow and retained `Algorithm 2` for CVF-AE;
+- restructured the method section into `3.1` base/CVF-AE pseudocode and framework, `3.2` constraint-viability guidance mechanisms, and `3.3` complexity;
+- grouped the innovation details under subsubsections for state scheduling, CVF construction and pressure components, bounded fusion, sparse triggering, and local acceptance;
+- preserved the existing core equations, labels, CVF component definitions, state decision rule, candidate fusion rule, local acceptance rule, and complexity formulas;
+- changed both algorithm environments to `[H]` so the pseudocode stays with the 3.1 source position instead of floating ahead of the subsection heading;
+- did not modify MATLAB algorithm code, experimental data, tables, or figures.
+
+Verification:
+
+- ran `xelatex -> xelatex`; current `paper_ajse_zh/main.pdf` remains 12 pages;
+- log scan found no LaTeX Error, fatal stop, emergency stop, undefined citation, undefined reference, overfull warning, or rerun-label warning;
+- rendered and visually checked pages 4--7, covering the reorganized method section and the transition into the results section;
+- static scans of manuscript source, tables, captions, `main.aux`, and `main.bbl` found no disallowed comparison wording, excluded algorithm names, internal scene numbering, CEC/RRT wording, or overclaiming phrases.
+
 ## 2026-07-07 Unified seven-algorithm main comparison rerun
 
 Scope:
@@ -2794,3 +2814,137 @@ API 状态：
 - 已执行 `xelatex -> xelatex`，当前双栏 `main.pdf` 为 Letter 纸，共 `12` 页；
 - 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning；
 - `main.tex`、sections、tables、`main.aux` 和 `main.bbl` 静态扫描未发现“更大/旧排名/低空优先/既有可行/所选 7/需要重新开展正式实验/补充材料/Supplementary”、被删除算法名、旧 `11/10` 口径、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
+
+## 2026-07-07 第 3 章初始化与参考引导补齐
+
+调整内容：
+
+- 在第 3.2 节新增“约束感知初始化与参考弱引导”，补充参考控制向量、净空/风险扰动半径、引导初始化和弱参考方向的可复现说明；
+- 将第 3.2 节开头从三步机制改为四个环节：约束感知初始化与弱参考方向、状态识别、CVF 压力映射、稀疏触发与保守接收；
+- 修正 Algorithm 1/2 的初始化口径：基础 AE 保持普通初始化，CVF-AE 明确生成参考控制序列并进行约束感知初始化；
+- 将第 4.3 节消融版本说明中的 V4 改为“仅去除约束感知初始化”，避免把该消融误解释为去除全部参考方向。
+
+验证结果：
+
+- 已执行 `xelatex -> xelatex`，当前双栏 `main.pdf` 为 Letter 纸，共 `13` 页；
+- 编译日志未发现 LaTeX Error、Fatal error、Emergency stop、未定义引用、未定义 citation、overfull 或 rerun-label warning；
+- `main.tex`、sections 和 tables 静态扫描未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或“全面优于/通用最优”等表述。
+
+## 2026-07-11 论文方法归因与表述一致性修订
+
+调整内容：
+
+- 将第 3.1 节的基础 AE 流程和候选公式改为实际使用的固定平衡进化算子，移除原先误归入基础 AE 的状态调度和参考方向；
+- 将状态化内部候选明确归入 CVF-AE，并将论文中的保守调度统一为形成、保持和恢复三种状态；
+- 在第 3.2.1 节披露 CVF-AE 专属参考控制序列：采用平面 \SI{5}{m}、垂向 \SI{4}{m} 的三维栅格 A* 生成，作为内部初始化与弱方向先验，不作为对比算法；复杂障碍布局使用固定走廊控制点模板扩展初始覆盖；
+- 保留 V4“去除约束感知初始化”的消融定义，并明确其不代表移除迭代阶段参考弱方向；Scene 3 的 V4 同时移除初始化走廊模板；
+- 将 CVF 候选接收统一表述为“Deb 优先且目标不增的保守局部门控”，将路径阈值结果降级为仅供可视化与复核的辅助标记；
+- 删除未由主文图表直接支撑的参数方向性结论，区分复杂度中的评价次数和评价工作量，并在摘要、引言、结果和结论中压缩重复表述。
+
+验证结果：
+
+- 已执行 `xelatex -> xelatex`，当前双栏 `main.pdf` 为 Letter 纸，共 `12` 页；
+- 编译日志未发现 LaTeX Error、undefined reference、undefined citation、overfull 或 rerun-label warning；
+- 静态扫描 `main.tex`、sections、tables、`main.aux` 和 `main.bbl` 未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或夸大表述；
+- 已渲染抽查第 4--6 页，基础 AE/CVF-AE 伪代码、状态系数表、参考初始化说明、CVF 图与公式均未见压栏、遮挡或明显乱码。
+
+## 2026-07-11 内部模板影响消融
+
+调整内容：
+
+- 新建隔离实验目录 `routes/route_b_cvf_ae/experiments/template_initialization_ablation/`，其中的 `overrides/init_COVE_AE.m` 为原初始化函数的仅实验覆盖副本；生产初始化函数、优化器、论文数据和图表均未修改；
+- 新建运行器 `run_template_initialization_ablation.m`：仅运行复杂场景的 CVF-AE，模板开启与关闭各 30 次，参考路径、引导初始化、CVF、状态调度、修复、评价函数、预算和种子规则保持一致；
+- 新建 `analyze_template_initialization_ablation.m`，仅输出内部 CSV、MAT 与 Markdown 汇总，不生成论文图表或 LaTeX 表格；
+- 结果输出至 `results/template_initialization_ablation_20260711_225319/`，模板开启/关闭均为 30 个匹配种子 run。
+
+内部结果：
+
+- 模板开启：平均适应度 `344.242892`，中位数 `341.417588`，可行率 `1.0000`，平均 CVF 触发 `88.87`；
+- 模板关闭：平均适应度 `477.179717`，中位数 `342.471549`，可行率 `0.7333`，平均 CVF 触发 `355.03`；
+- 两条件总体最终适应度的双侧秩和检验为 `p=0.652044`，Cliff's delta 为 `0.008889`；可行率的双侧 Fisher 精确检验为 `p=0.004575`；
+- 因此，固定走廊模板在该复杂场景中主要提高可行性形成稳定性并降低 CVF 介入次数。该结论目前仅供内部决策，尚未写入论文。
+- 决策：保留固定走廊控制点模板作为约束感知初始化的组成；论文继续使用当前弱化的实现说明，不加入本内部消融的数值、图表或显著性结论。
+# 2026-07-13: State-scheduler notation consistency
+
+- Updated `paper_ajse_zh/sections/03_method.tex`: the conservative scheduler equation now outputs a requested state `q_t`; a non-maintenance request becomes the active state `s_t` only after two consecutive confirmations. This removes the notation mismatch between the equation, the explanatory text, and Algorithm 2 without changing the algorithm or experiments.
+
+## 2026-07-13 可行性优先准则解释图
+
+调整内容：
+
+- 在 `paper_ajse_zh/sections/02_problem_formulation.tex` 的 Deb 可行性优先准则定义后加入单栏图 `fig:deb-feasibility-criterion`；
+- 图仅展示候选解可行性比较：存在可行解时优先可行解、二者均可行时比较 $J$、二者均不可行时比较 $V$ 并以 $J$ 破除并列；
+- CVF-AE 的“Deb 优先且目标不增”局部接收继续由第 3 章的伪代码和式 `eq:local-cvf-accept` 定义，未并入该图；
+- 新图为单栏解释图，不使用实验结果、不改变算法或实验设置。其来源已记录在 `paper_ajse_zh/notes/source_mapping.md`。
+
+验证结果：
+
+- 已执行 `xelatex -> xelatex`，当前双栏 `main.pdf` 为 Letter 纸，共 `13` 页；
+- 编译日志未发现 LaTeX Error、undefined reference、undefined citation、overfull 或 rerun-label warning；
+- 已渲染抽查第 4 页，图和标题在单栏内正常显示，未见压栏、遮挡或乱码；
+- 静态扫描 `main.tex`、sections 和 tables 未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或夸大表述。
+
+## 2026-07-13 图文排版重平衡
+
+调整内容：
+
+- 将第 3 章的两段算法由 `[H]` 改为 `[tbp]`，避免算法无法在当前栏容纳时留下大面积空白；
+- 将 Deb 可行性优先准则图替换为紧凑单栏横向版本，降低其占用高度；
+- 移除第 4 章图前和章末的强制浮动屏障；收敛图保持页首优先，路径对比和消融路径图改为页底优先；
+- 对连续跨栏图设置保守的高度上限，使图后正文可回填到同页或相邻栏，不改变图表数据、实验设置或结论。
+
+验证结果：
+
+- 已执行 `xelatex -> xelatex`，当前双栏 `main.pdf` 为 Letter 纸，共 `12` 页；
+- 编译日志未发现 LaTeX Error、undefined reference、undefined citation、overfull 或 rerun-label warning；
+- 已渲染抽查第 4、8--10 页：第 3 章开头无大面积留白，第 9--10 页均为图表与正文混排，未见纯图表页、压栏、遮挡或乱码；
+- 静态扫描 `main.tex`、sections 和 tables 未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或夸大表述。
+# 2026-07-13: Section 4 partial-revert recovery
+
+- Reapplied the intended Section 4 result-reporting language in `paper_ajse_zh/sections/04_results_and_discussion.tex`: selected representative baseline scope, shared controls, auxiliary trajectory-review boundaries, rank-sum/Holm/Cliff's delta protocol, conservative Scene 2 interpretation, and representative-path usage limits.
+- Replaced the unsupported directional parameter statement with a compact default-configuration statement. No MATLAB algorithm code, experimental data, statistics, tables, or figures were changed.
+- Recompiled twice with XeLaTeX. The document is now 13 pages because the reference list continues onto the final page; visual inspection confirms that the Section 4 table and figure group is intact, with no clipping or overlap.
+
+## 2026-07-14 全文一致性、文献与版面审查
+
+调整内容：
+
+- 将主对比公平性统一表述为相同路径编码、评价函数、边界投影、种群规模和迭代次数；不同算法的函数评价次数不强制相同，并在开销部分独立报告；
+- 第 2 章明确以总违反分数 $V\leq10^{-10}$ 判定可行；第 3 章按实现统一请求状态 $q_t$、生效状态 $s_t$、状态化 AE 方向和 `round` 触发配额；
+- 新增 6 行紧凑参数表，仅披露决定稀疏触发对象、触发数量和修复开销的关键参数，暂不加入完整目标/CVF 常数清单；
+- 为 PSO、GWO、HHO、增强 RIME 来源和 MSCSO 补充文献引用；将 Feng 文献修正为 `Scientific Reports 16, 101 (2026)`；
+- 重新约束宽图、宽表和单栏表的浮动位置，消除结果章连续纯图表页，同时保持路径图横向尺寸和图例可读性；未重跑实验，也未修改任何结果数值。
+
+验证结果：
+
+- 已执行 `bibtex -> xelatex -> xelatex`，最终双栏 `main.pdf` 为 Letter 纸，共 `13` 页；
+- 编译日志未发现 LaTeX Error、undefined reference、undefined citation、overfull、纯浮动页或 rerun-label warning；
+- 渲染检查第 9--11 页：主结果、统计表、集中图版、消融表和结论衔接正常，无压栏、遮挡或乱码；
+- 源文件与 PDF 文本层扫描未发现 TODO、本机绝对路径、被删除算法名、旧 `11/10` 口径、`extended comparison`、`Scene 4`、CEC、RRT 或夸大表述。
+
+## 2026-07-14 方法参数披露精简
+
+对照内容：
+
+- 检查桌面“无人机参考文献”目录中的 15 份 PDF（约 14 篇独立论文）；多数论文仅在正文给出少量关键参数或一张紧凑设置表，只有进行参数敏感性/正交分析的少数论文采用详细披露；
+- 当前 CVF-AE 稿件原先同时列出基础 AE 系数、三状态内部系数、18 个压力权重、压力几何常数和 6 行触发/修复参数，明显高于该组参考论文的正文披露密度。
+
+调整内容：
+
+- 撤除稀疏触发与可行性保持参数表，仅在正文保留三状态名义触发比例和产生可行解后的节流配置；
+- 三状态候选表由 8 个内部方向系数加 3 个融合权重改为“方向侧重 + 3 个融合权重”，并将 18 个压力权重改为形成/保持/恢复状态的定性侧重；
+- 将基础 AE 调度、初始化扰动、压力缓冲与缩放、风险激活、高度/边界缓冲、曲率激活、质量牵引和修复筛选中的实现级数值改为符号说明；
+- 保留状态判定阈值、9 个融合权重、触发比例、可行后节流，以及实验设置中的目标权重、惩罚、运动约束、种群规模和迭代次数；未修改算法代码或实验结果。
+
+验证结果：
+
+- 已执行 `xelatex -> xelatex`，最终 `main.pdf` 为 Letter 纸，共 `13` 页；
+- 编译日志未发现 LaTeX Error、undefined reference、undefined citation、overfull、纯浮动页或 rerun warning；
+- 渲染检查第 4--8 页，精简后的状态表、CVF 公式、复杂度和实验设置连续排布，无大面积空白、压栏、遮挡或乱码；
+- 静态扫描未发现已撤除参数表引用、旧实现数值残留、TODO、本机绝对路径或禁用术语。
+
+### 图 7 浮动位置修复
+
+- 参数精简后，双栏页底消融图被延迟到第 11 页参考文献区域；强制双栏页首会形成单独纯图页；
+- 最终将图 7 改为单栏纵向两子图，取消消融小节内的局部屏障，保留结果章末总屏障；
+- 图 7 现位于第 11 页左栏顶部并先于结论和参考文献，页面恢复为 13 页；双遍 XeLaTeX 与第 9--13 页渲染检查通过。
