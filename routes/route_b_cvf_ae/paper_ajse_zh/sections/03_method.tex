@@ -1,7 +1,7 @@
 ﻿\section{CVF-AE 方法}
 \label{sec:method}
 
-CVF-AE 在基础自适应进化搜索中引入约束可行性场（Constraint Viability Field, CVF），在候选生成阶段利用障碍物、禁飞区、高度、转弯、边界和风险信息构造有界方向增量，使少量关键候选在评价前向更可行的区域移动。
+CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础自适应进化搜索，而将其置于候选生成阶段：障碍物、禁飞区、高度、转弯、边界和风险信息先构造为有界方向增量，再仅作用于少量关键候选，使约束违反信息在评价前提供局部移动建议，同时保留基础搜索的全局探索职责。
 
 \subsection{基础 AE 与 CVF-AE 流程}
 
@@ -99,7 +99,7 @@ CVF-AE 在基础自适应进化搜索中引入约束可行性场（Constraint Vi
 
 \subsection{CVF-AE 算法设计}
 
-CVF-AE 的新增环节包括约束感知初始化、状态调度、CVF 候选构造和保守接收，分别对应算法 \ref{alg:cvf-ae} 中的初始化、状态识别、候选生成和候选接收。
+CVF-AE 的新增环节形成连续闭环，而非彼此独立的模块：约束感知初始化回答如何进入潜在可行走廊，状态调度决定何时介入，CVF 候选构造给出怎样移动，保守接收判断修正是否值得保留。它们分别对应算法 \ref{alg:cvf-ae} 中的初始化、状态识别、候选生成和候选接收。
 
 \subsubsection{约束感知初始化与参考弱引导}
 
@@ -135,6 +135,8 @@ CVF-AE 在随机初始化之外引入低分辨率参考控制序列，并重采�
     \label{eq:guided-init}
 \end{equation}
 其中 $d_{\mathrm{clr}}(\cdot)$ 为到障碍物、禁飞区、高度边界和水平边界的最小裕度，$\phi(\cdot)$ 为风险场强度，$c_d$、$c_\phi$ 和 $r_{\min}$ 控制扰动范围。若扰动点落入硬约束内部，则先投影到边界内并局部外推；其余个体采用均匀随机初始化。对复杂障碍布局，约束感知初始化采用固定走廊控制点模板扩展初始覆盖；模板、参考序列和其余样本均按同一评价函数与 Deb 规则筛选。迭代阶段参考序列仅作为下文状态化内部候选中的弱方向项 $\mathbf d_{\mathrm{ref}}$。
+
+约束感知初始化只能改善搜索开始时进入潜在可行走廊的机会，不能决定后续各代是否仍应施加约束引导。因此，CVF-AE 进一步依据群体的可行性、违反程度和搜索进展识别介入时机。
 
 \subsubsection{状态识别与保守调度}
 
@@ -331,6 +333,8 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously}
 \end{equation}
 其中 $\gamma_{\mathrm{curv}}$ 为平滑强度，$\theta_c=\alpha_{\mathrm{curv}}\theta_{\max}$，$\alpha_{\mathrm{curv}}$ 为转弯压力的激活比例。
 
+上述局部压力回答控制点应远离何种违反区域，但其叠加幅度不天然与路径质量一致。因此，CVF 不能直接替代基础进化候选，仍需经有界融合、稀疏触发和保守接收限制其影响范围。
+
 \subsubsection{有界融合与稀疏接收}
 
 将全部内部控制点增量向量化后得到未截断 CVF 步长：
@@ -427,6 +431,8 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously}
     \label{eq:local-cvf-accept}
 \end{equation}
 式 \eqref{eq:local-cvf-accept} 是 Deb 优先且目标不增的保守局部门控：CVF 候选必须同时满足两项条件，否则保留基础候选。稀疏可行性保持发生在候选生成之后，仅对少量候选进行碰撞、禁飞区和转弯修复，并施加局部风险降低校正。
+
+至此，CVF-AE 将初始化先验、状态化介入、局部移动建议和候选保留边界连接为闭环；基础 AE 始终承担主体搜索，CVF 仅在必要时提供受限修正。
 
 \subsection{算法复杂度}
 

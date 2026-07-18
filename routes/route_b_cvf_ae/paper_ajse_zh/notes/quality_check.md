@@ -201,3 +201,20 @@
 - [ ] 是否出现“通用最优”“全面优于”等夸大说法。
 - [ ] 图表来源是否记录。
 - [ ] TODO 是否集中列入状态文件。
+
+## 2026-07-18 Narrative Coherence Revision
+
+- [x] Rewrote the Chinese introduction around one causal tension: post-evaluation constraint handling cannot provide a movement direction, whereas global mandatory field updates can undermine evolutionary exploration.
+- [x] Reframed CVF-AE as a closed candidate-generation loop: constraint-aware entry, state-governed intervention, bounded CVF movement, and conservative retention.
+- [x] Reduced the contribution list from four items to three method contributions; moved experimental validation outside the contribution list.
+- [x] Synchronized the method opening and conclusion with the same entry--intervention--movement--retention narrative; no MATLAB code, experimental data, statistics, tables, or figures were changed.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, or rerun-label warning.
+- [x] Rendered and reviewed pages 1, 4, and 11. The revised introduction, method transition, and conclusion render without overlap, clipping, or abnormal whitespace.
+- [x] Removed the duplicate experimental-validation sentence after the contribution list; experimental design and evidence remain exclusively in Section 4. Recompiled twice: 13 pages, with no LaTeX Error, undefined reference/citation, overfull, or rerun-label warning.
+
+## 2026-07-18 Method--Results Narrative Bridges
+
+- [x] Added short causal bridges in Section 3 from constraint-aware initialization to state-governed intervention, from local field pressure to bounded fusion, and from conservative acceptance to the complete CVF-AE loop.
+- [x] Reframed Section 4 as a layered test of the loop: overall value, mechanism removal, distribution-level evidence, and sparse-intervention cost. The ablation opening now maps V4, V2, V1, V3, and V5 to their respective mechanism roles without claiming that the conservative acceptance gate was independently ablated.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, or rerun-label warning.
+- [x] Rendered and reviewed pages 5, 7, 8, and 9. The added bridges, Section 4 framing, and ablation introduction do not overlap figures/tables or cause abnormal whitespace.
