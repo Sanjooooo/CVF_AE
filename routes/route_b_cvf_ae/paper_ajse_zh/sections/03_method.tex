@@ -83,7 +83,7 @@ CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础
     \right)
     \label{eq:ae-candidate}
 \end{equation}
-其中 $\Pi_{\Omega}(\cdot)$ 为边界投影，$\mathbf{X}_{\mathrm{elite}}$ 为精英池采样个体。令 $\tau=t/T$，$\mathbf d_{\mathrm{best}}=\mathbf X^*-\mathbf X_i$，$\mathbf d_{\mathrm{elite}}=\bar{\mathbf X}_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{sample}}=\mathbf X_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{ab}$、$\mathbf d_{cd}$ 为随机差分向量，$\boldsymbol\xi\sim\mathcal U([-1,1]^{3K})$。其方向为
+其中 $\Pi_{\Omega}(\cdot)$ 为边界投影，$\mathbf{X}_{\mathrm{elite}}$ 为精英池采样个体。令 $\tau=t/T$，$\mathbf d_{\mathrm{best}}=\mathbf X^*-\mathbf X_i$，$\mathbf d_{\mathrm{elite}}=\bar{\mathbf X}_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{sample}}=\mathbf X_{\mathrm{elite}}-\mathbf X_i$。从 $\{1,\ldots,N\}\setminus\{i\}$ 中无放回均匀抽取四个互异索引 $a,b,c,d$，并定义 $\mathbf d_{ab}=\mathbf X_a-\mathbf X_b$、$\mathbf d_{cd}=\mathbf X_c-\mathbf X_d$；另有 $\boldsymbol\xi\sim\mathcal U([-1,1]^{3K})$。其方向为
 \begin{equation}
     \begin{aligned}
     \mathbf D_{\mathrm{AE}}
@@ -100,6 +100,15 @@ CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础
 \subsection{CVF-AE 算法设计}
 
 CVF-AE 的新增环节形成连续闭环，而非彼此独立的模块：约束感知初始化回答如何进入潜在可行走廊，状态调度决定何时介入，CVF 候选构造给出怎样移动，保守接收判断修正是否值得保留。它们分别对应算法 \ref{alg:cvf-ae} 中的初始化、状态识别、候选生成和候选接收。
+
+图 \ref{fig:cvf-ae-framework} 将四个环节组织为候选生成闭环。约束感知初始化只作用于搜索起点；进入迭代后，群体可行性、违反程度、多样性和搜索进展反馈到 F/P/R 状态调度，调度结果控制 CVF 候选的稀疏生成，保守接收与可行性保持再决定哪些修正进入更新后的种群。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{cvf_ae_closed_loop_framework.pdf}
+    \caption{CVF-AE 候选生成闭环及四个环节的作用关系}
+    \label{fig:cvf-ae-framework}
+\end{figure}
 
 \subsubsection{约束感知初始化与参考弱引导}
 
@@ -230,12 +239,12 @@ CVF 不是目标或约束函数的解析梯度，而是在控制点空间中由�
     \end{cases}
     \label{eq:cvf-average-pressure}
 \end{equation}
-其中 $\mathbf F(\widetilde{\mathbf p}_m)$ 为采样点处各类压力的加权和。图 \ref{fig:cvf-pressure-mapping-inset} 示意了采样压力映射、平均及局部分量合成；曲率分量在控制点序列上计算，并与 $\Delta \mathbf q_k^{\mathrm{path}}$ 相加得到 $\Delta\mathbf q_k$。
+其中 $\mathbf F(\widetilde{\mathbf p}_m)$ 为采样点处各类压力的加权和。图 \ref{fig:cvf-pressure-mapping-inset} 以上下两个尺度展示同一批采样压力：上图给出采样点到控制点 $q_k$ 的映射关系，下图将对应箭头平移到共同原点并取平均。曲率分量在控制点序列上计算，并与 $\Delta \mathbf q_k^{\mathrm{path}}$ 相加得到 $\Delta\mathbf q_k$。
 
 \begin{figure}[tbp]
     \centering
-    \includegraphics[width=\linewidth]{draft_cvf_pressure_mapping_with_synthesis_inset_preview.pdf}
-    \caption{CVF 压力映射与局部分量合成示意。红色箭头为采样点压力，青绿色箭头为映射平均后的控制点增量；嵌入图展示同一数据下的分量向量合成。}
+    \includegraphics[width=\linewidth]{cvf_pressure_mapping_and_synthesis.pdf}
+    \caption{CVF 采样压力的映射与平均合成示意。上下图中同色箭头表示同一采样点压力，青绿色箭头表示映射到控制点 $q_k$ 后的平均方向。}
     \label{fig:cvf-pressure-mapping-inset}
 \end{figure}
 
@@ -387,11 +396,17 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously}
     \omega_{\mathrm Q}(\mathbf X^*-\mathbf X_i)
     +(1-\omega_{\mathrm Q})(\mathbf X_{\mathrm{elite}}-\mathbf X_i),\\
     \mathbf D_{\mathrm Q}
-    &=\mathrm{clip}(\mathbf G_{\mathrm Q}+\mathbf D_{\mathrm{sm}},\rho_{\mathrm Q})
+    &=\mathrm{clip}(\mathbf G_{\mathrm Q}+\mathbf D_{\mathrm{sm}},\boldsymbol\rho_{\mathrm Q})
     \end{aligned}
     \label{eq:quality-step}
 \end{equation}
-其中 $\omega_{\mathrm Q}$ 为固定最优解牵引权重，$\mathbf G_{\mathrm Q}$ 为精英组合方向，$\mathbf D_{\mathrm{sm}}$ 为控制点局部平滑增量，$\rho_{\mathrm Q}$ 为逐维质量步长上界。状态融合方向和 CVF 候选为
+本文取 $\omega_{\mathrm Q}=0.60$。对内部控制点序列 $\{\mathbf q_k\}_{k=1}^{K}$，当 $k=2,\ldots,K-1$ 时，局部平滑增量定义为
+\begin{equation}
+    \Delta\mathbf q_{\mathrm{sm},k}
+    =0.10(\mathbf q_{k-1}-2\mathbf q_k+\mathbf q_{k+1}),
+    \label{eq:quality-smoothing}
+\end{equation}
+两端增量取 $\Delta\mathbf q_{\mathrm{sm},1}=\Delta\mathbf q_{\mathrm{sm},K}=\mathbf 0$，再将全部增量向量化为 $\mathbf D_{\mathrm{sm}}$。式 \eqref{eq:quality-step} 中 $\mathbf G_{\mathrm Q}$ 为最优解与采样精英的组合方向，逐维质量步长上界取 $\boldsymbol\rho_{\mathrm Q}=0.05(\mathbf u-\mathbf l)$。状态融合方向和 CVF 候选为
 \begin{equation}
     \begin{aligned}
     \mathbf{D}_s
@@ -417,7 +432,7 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously}
     \max\!\left\{1,\operatorname{round}(r_{s_t}N)\right\}
     \label{eq:cvf-quota}
 \end{equation}
-每代先按当前标量适应度排序，并从近可行的不可行个体中筛选触发对象。F/P 状态优先处理排序靠前的候选，R 状态放宽排序限制；三种状态的名义触发比例分别为 $r_{\mathrm F}=0.06$、$r_{\mathrm P}=0.06$ 和 $r_{\mathrm R}=0.04$。一旦种群已经产生可行最优解，则每 $3$ 代检查一次，单代比例不超过 $0.03$。其余几何缓冲、截断和局部修复筛选均作为固定实现常数，在三个场景中保持不变。
+本文将满足 $\varepsilon_v<V(\mathbf X_i)\leq15$ 的个体定义为近可行不可行个体。每代先按当前标量适应度排序；F/P 状态从排序前 $45\%$ 中筛选近可行对象，R 状态则在全部近可行对象中筛选。三种状态的名义触发比例分别为 $r_{\mathrm F}=0.06$、$r_{\mathrm P}=0.06$ 和 $r_{\mathrm R}=0.04$。一旦种群已经产生可行最优解，则每 $3$ 代检查一次，单代比例不超过 $0.03$。其余几何缓冲和截断常数在三个场景中保持不变。
 
 每个触发个体先评价基础候选；若生成 CVF 候选，则二者按局部规则比较：
 \begin{equation}
@@ -430,7 +445,7 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{is defined analogously}
     J(\mathbf{X}_{\mathrm{AE}})
     \label{eq:local-cvf-accept}
 \end{equation}
-式 \eqref{eq:local-cvf-accept} 是 Deb 优先且目标不增的保守局部门控：CVF 候选必须同时满足两项条件，否则保留基础候选。稀疏可行性保持发生在候选生成之后，仅对少量候选进行碰撞、禁飞区和转弯修复，并施加局部风险降低校正。
+式 \eqref{eq:local-cvf-accept} 是 Deb 优先且目标不增的保守局部门控：CVF 候选必须同时满足两项条件，否则保留基础候选。稀疏可行性保持发生在候选生成之后：当 $\tau\geq0.15$ 时，仅从标量适应度前 $30\%$ 中选择满足 $\varepsilon_v<V(\mathbf Y)\leq25$ 的候选，单代数量不超过 $\max\{1,\operatorname{round}(0.08N)\}$。每个候选只执行一次碰撞、禁飞区和转弯局部修复及风险降低校正，且仅当修复结果按 Deb 规则优于修复前候选时才予以保留。
 
 至此，CVF-AE 将初始化先验、状态化介入、局部移动建议和候选保留边界连接为闭环；基础 AE 始终承担主体搜索，CVF 仅在必要时提供受限修正。
 

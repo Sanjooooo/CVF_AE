@@ -157,19 +157,12 @@
     \right]^\mathsf T
     \label{eq:constraint-vector}
 \end{equation}
-为与当前代码和实验记录保持一致，本文以四个非负分量之和定义总违反分数
+本文以四个非负分量之和定义总违反分数
 \begin{equation}
     V(\mathbf{X}) =
     C_{\mathrm{obs}} + C_{\mathrm{nfz}} + C_{\mathrm{curv}} + C_{\mathrm{alt}}
     \label{eq:total-violation}
 \end{equation}
-本文实现直接采用总违反分数阈值判定可行性，即当且仅当 $V(\mathbf{X})\leq\varepsilon_v$ 时路径可行，其中 $\varepsilon_v=10^{-10}$ 仅用于抑制浮点误差。由于各分量均非负，该严格总和阈值要求障碍物、禁飞区、高度和转弯约束同时在数值容差内无违反。$V$ 是实现相关违反分数，只用于当前代码中的不可行解排序和诊断；它不表示统一物理量纲下的约束距离，也不解释安全约束的物理严重性。
+采用总违反分数阈值判定可行性，即当且仅当 $V(\mathbf{X})\leq\varepsilon_v$ 时路径可行，其中 $\varepsilon_v=10^{-10}$ 仅用于抑制浮点误差。由于各分量均非负，该严格总和阈值要求障碍物、禁飞区、高度和转弯约束在 $M$ 个离散路径采样点及相邻离散段上同时满足数值容差。因而，本文报告的可行性是固定采样评价器下的数值可行性，不等同于对采样点之间连续轨迹的碰撞认证。$V$ 仅作为不可行候选的总违反分数参与比较，不用于度量安全裕度。
 
-候选解比较采用 Deb 可行性优先规则。对两个候选解 $\mathbf{X}_a$ 和 $\mathbf{X}_b$，若仅一个解可行，则可行解优先；若二者均可行，则 $J$ 更小者优先；若二者均不可行，则 $V$ 更小者优先；若 $V$ 相同，再以 $J$ 作为次级判据。该规则使不可行候选的排序倾向于降低实现相关违反分数，并在可行候选之间比较路径质量。图 \ref{fig:deb-feasibility-criterion} 给出该比较流程。上述不可行解排序口径与本文实验实现一致。第 \ref{sec:method} 节将进一步说明 CVF-AE 如何利用这一可行性信息构造约束可行性方向。
-
-\begin{figure}[tbp]
-    \centering
-    \includegraphics[width=0.94\linewidth]{deb_feasibility_criterion_flowchart.png}
-    \caption{Deb 可行性优先准则的候选解比较流程。候选替换与最优解更新均按该准则执行。}
-    \label{fig:deb-feasibility-criterion}
-\end{figure}
+候选解比较采用 Deb 可行性优先规则。对两个候选解 $\mathbf{X}_a$ 和 $\mathbf{X}_b$，若仅一个解可行，则可行解优先；若二者均可行，则 $J$ 更小者优先；若二者均不可行，则 $V$ 更小者优先；若 $V$ 相同，再以 $J$ 作为次级判据。该规则使不可行候选的排序倾向于降低实现相关违反分数，并在可行候选之间比较路径质量。第 \ref{sec:method} 节将进一步说明 CVF-AE 如何利用这一可行性信息构造约束可行性方向。

@@ -1,0 +1,20 @@
+\begin{table}[!t]
+\centering
+\caption{消融版本的补充数值结果}
+\label{tab:ablation-key-metrics}
+\scriptsize
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrr@{}}
+\toprule
+Var. & $\bar J_1$ & $\bar J_2$ & $\bar J_3$ &
+$\bar n_{\mathrm{eval}}$ & $n_{\mathrm{trig},3}$ \\
+\midrule
+V0 & 297.8318 & 300.6612 & 348.5856 & 9495.0 & 86.8 \\
+V1 & 306.1985 & 303.7697 & 355.8347 & 9387.6 & 0.0 \\
+V2 & 298.3037 & 301.8164 & 361.3123 & 9482.9 & 72.5 \\
+V3 & 306.3793 & 303.3114 & 372.2255 & 9122.2 & 88.7 \\
+V4 & 316.9964 & 313.2191 & 556.7515 & 9660.9 & 417.9 \\
+V5 & 654.0475 & 1597.4829 & 1643.7320 & 9030.0 & 0.0 \\
+\bottomrule
+\end{tabular*}
+\parbox{\linewidth}{\scriptsize 注：$\bar J_k$ 为 Scene $k$ 的平均最终适应度；$\bar n_{\mathrm{eval}}$ 为三个场景的平均函数评价次数；$n_{\mathrm{trig},3}$ 为 Scene 3 的平均 CVF 触发数。}
+\end{table}

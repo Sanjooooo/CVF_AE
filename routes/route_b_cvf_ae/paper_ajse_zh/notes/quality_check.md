@@ -218,3 +218,165 @@
 - [x] Reframed Section 4 as a layered test of the loop: overall value, mechanism removal, distribution-level evidence, and sparse-intervention cost. The ablation opening now maps V4, V2, V1, V3, and V5 to their respective mechanism roles without claiming that the conservative acceptance gate was independently ablated.
 - [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, or rerun-label warning.
 - [x] Rendered and reviewed pages 5, 7, 8, and 9. The added bridges, Section 4 framing, and ablation introduction do not overlap figures/tables or cause abnormal whitespace.
+
+## 2026-07-18 Results Evidence Hierarchy Revision
+
+- [x] Removed the cross-scenario `Aux. flag` column from the main comparison table. Auxiliary trajectory-review markers are now explicitly limited to representative-path visualization and review, not ranking or statistical evidence.
+- [x] Rewrote the main-comparison discussion in evidence order: feasibility, scalar-fitness rank, run distribution, and qualitative path interpretation. The convergence plot is explicitly limited to the equal-iteration search process and is not used as function-evaluation efficiency or strict convergence-speed evidence.
+- [x] Expanded ablation interpretation to V1--V4, including the conditional Scene 3 role of state adaptation and the lower-evaluation yet worse-quality V3 result. Removed the unsupported parameter-robustness sentence.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, or rerun-label warning.
+- [x] Rendered and reviewed pages 8--11. The narrower main table and expanded result discussion are legible, with no overlap, clipping, or abnormal whitespace.
+
+## 2026-07-18 Saved-result audit
+
+- [x] Read-only audit of the formal selected-seven result package confirmed 30 stored runs for each paper scene and algorithm, with a 300-iteration `bestHist` and final path retained in every run record.
+- [x] The main records retain final feasibility, runtime, and function-evaluation counts for all algorithms. The evaluation counts are not identical across algorithms, so the manuscript correctly limits common controls to population size and iteration count.
+- [x] Per-iteration feasibility histories, state histories, and first-feasible iteration/time are retained only for CVF-AE. They must not support a new cross-algorithm claim about time-to-feasibility without a purpose-built rerun that records equivalent histories for every method.
+- [x] Final-path review metrics are available for all stored runs, but the present manuscript continues to treat the threshold-based flags as auxiliary visual/review information rather than ranking or statistical evidence.
+
+## 2026-07-18 Trajectory-figure reduction
+
+- [x] Removed the Scene 1 representative-path panels and replaced the former two cross-column main-comparison trajectory figures with one compact single-column 2x2 figure: top and 3D views for Scenes 2 and 3 only.
+- [x] Retained both spatial views where they add distinct qualitative information, while keeping the representative paths explicitly outside optimization, ranking, and statistical evidence.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, rerun-label, or float-only-page warning.
+- [x] Rendered and reviewed pages 9--11. The compact trajectory figure, ablation figure, convergence figure, tables, and surrounding text are mixed across the pages without clipping, overlap, or a figure-only page.
+
+## 2026-07-18 Ranking wording
+
+- [x] Replaced the defensive wording about a new constraint-priority ranking with a positive description: scene ranks are calculated from mean scalar fitness and reported alongside feasibility.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, rerun-label, or float-only-page warning.
+
+## 2026-07-18 3D trajectory-scale correction
+
+- [x] Added `redraw_selected7_3d_trajectory_figures.m`, a read-only result-record renderer for the Scene 2/3 3D representative paths. It does not call the optimizer or alter selection, tables, statistics, or experiment settings.
+- [x] Re-rendered the two 3D panels with an internal compact legend, a larger axes footprint, a tighter export range, and a layout ratio that compensates for 3D projection whitespace.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, rerun-label, or float-only-page warning.
+- [x] Rendered and reviewed page 9. The top and 3D panels now have comparable visual area without clipping or overlap.
+
+## 2026-07-18 3D trajectory complete-frame correction
+
+- [x] Replaced axes-only export with full-figure export in `redraw_selected7_3d_trajectory_figures.m`. The Scene 2/3 3D views now use a near-square canvas matching the plan views, while preserving the lower coordinate frame, start region, and obstacle bases.
+- [x] Set the four Figure 5 subfigures to the same `0.41\linewidth` width after making the 3D source panels near-square; no result record, representative-run selection, experiment setting, table, or statistic was changed.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, or overfull warning.
+- [x] Rendered and reviewed page 9. All four trajectory panels are complete, with no lower-edge clipping, overlap, or float-only page.
+
+## 2026-07-18 Reverted 3D trajectory redraw
+
+- [x] At the author's request, restored the version-controlled original Scene 2/3 3D trajectory images and removed the temporary redraw script. The compact Figure 5 remains at equal subfigure widths.
+- [x] No optimization, saved result record, representative-run selection, table, statistic, or manuscript text was changed by this reversion.
+
+## 2026-07-18 Trajectory-panel grouping
+
+- [x] Reordered compact Figure 5 into a plan-view row (Scenes 2 and 3) followed by a 3D-view row (Scenes 2 and 3). The plan views use `0.40\linewidth`; the two original 3D images use `0.49\linewidth` to compensate for their shorter projected canvas.
+- [x] Increased the two plan-view subfigures to `0.44\linewidth`, reducing their inter-panel whitespace while retaining the larger `0.49\linewidth` 3D row.
+
+## 2026-07-18 Results-float compaction
+
+- [x] Changed the boxplot from a forced in-place float to a top-eligible single-column float, allowing the two columns to fill naturally around the distribution discussion.
+- [x] Changed the cross-column convergence figure from a bottom-only float to a top-eligible float, so it can precede and remain close to its convergence analysis rather than being deferred behind subsequent material.
+
+## 2026-07-18 Results-figure final layout
+
+- [x] Promoted the three-panel boxplot to a top-eligible two-column figure. This gives the distribution panels a readable scale and avoids the large one-column height mismatch with the representative-path figure.
+- [x] Retained the convergence plot as a top-eligible two-column figure and restored the representative-path figure to in-place placement. The rendered layout places the Figure 3/4 sequence at the top of the following page rather than deferring Figure 4 to a later page bottom.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. Rendered review of pages 9--10 found no clipping, overlap, float-only page, or large single-column void.
+
+## 2026-07-18 Boxplot Analysis Before Figure
+
+- [x] Moved the Figure 3 distribution-analysis paragraph before the boxplot and changed the boxplot to a bottom-eligible single-column float. This lets the text lead into the visual evidence without depending on an in-place float.
+- [x] Expanded the main comparison, ablation, and statistics/overhead interpretation using only existing table and figure evidence. Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. Rendered review of pages 9--11 found no clipping, overlap, float-only page, or abnormal whitespace.
+
+## 2026-07-19 Results Narrative Evidence Chain
+
+- [x] Reorganized Section 4 around a continuous evidence chain: scenario-wise main comparison, repeated-run distributions, iteration-level search behavior, representative path geometry, module ablation, statistical comparison, and sparse evaluation overhead.
+- [x] Kept the Scene 2 MSCSO exception explicit, avoided cross-scene averaging of scalar fitness, and did not add a redundant Figure-12-style aggregate bar chart because the scenarios have non-comparable scalar-fitness scales.
+- [x] Placed the Figure 3 analysis before its bottom-eligible float, moved the convergence and overhead discussions before their corresponding floats, and retained the compact Figure 5 in-place to avoid a float-only page.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, rerun-label, or float-only-page warning. Rendered review of pages 8--11 found no clipping or overlap. Source scans found no TODO, local absolute path, or prohibited comparison terminology.
+
+## 2026-07-27 Main-comparison Table Replacement
+
+- [x] Removed the main-comparison table from the manuscript because its scene-wise fitness mean/std repeated the evidence already shown by the three boxplots.
+- [x] Added a two-panel summary figure that reports only complementary evidence: scene-wise feasibility rates and the three-scene average rank. The detailed table source remains archived but is no longer referenced by the manuscript.
+- [x] Replaced the feasibility grouped bars with three scene-wise line series over the fixed algorithm order. Distinct muted colors, line styles, and markers keep overlapping high-feasibility values identifiable without drawing seven crowded algorithm curves.
+- [x] Converted the summary from a cross-column figure to a compact single-column figure. The feasibility and average-rank panels are stacked vertically at `0.95\linewidth` and `0.68\linewidth`, respectively, so both remain readable without occupying both columns.
+- [x] Added `make_cvf_ae_main_summary_figure.m`, which reads the frozen selected-7 CSV summaries and does not run an optimizer or alter experiment records.
+- [x] Preserved the fixed seven-algorithm order and reused the muted SCI palette from the selected-7 figures. The Section 4 evidence chain is now summary feasibility/rank, fitness distributions, iteration behavior, and representative path geometry.
+- [x] MATLAB Code Analyzer reported no issues. Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, rerun-label, or float-only-page warning. Rendered review of pages 8--11 found no clipping, overlap, or abnormal whitespace.
+
+## 2026-07-27 Ablation-table Density Reduction
+
+- [x] Removed the dense ablation table from the manuscript and retained its source file only as an archived result record.
+- [x] Added a single-column two-panel summary figure: a Scene 1--3 rank heatmap for V0--V5 and a three-scene feasibility-rate line chart. The two panels separate relative quality from feasibility loss without repeating all table cells.
+- [x] Kept the key numerical evidence in prose, including V0 rank/feasibility, V4 Scene 3 feasibility and CVF-trigger change, V5 feasibility loss, and the V1--V3 fitness/evaluation comparisons.
+- [x] Added `make_cvf_ae_ablation_summary_figure.m`, which reads the frozen formal ablation CSV and does not run the optimizer or change experiment records.
+- [x] MATLAB Code Analyzer reported no issues. Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, rerun-label, or float-only-page warning.
+- [x] Rendered and reviewed page 10. Figures 7 and 8 remain legible in adjacent columns, their analysis follows continuously, and no clipping, overlap, isolated fragment line, or abnormal whitespace remains.
+
+## 2026-07-27 Ablation-summary Side-by-side Layout
+
+- [x] Regenerated both Figure 7 panels on identical `650x560` MATLAB canvases and enlarged their shared normalized main-axes rectangle to `[0.10, 0.14, 0.88, 0.74]`, bringing the visible plot area close to Figure 3.
+- [x] Reordered the panels so feasibility is on the left and the rank heatmap is on the right. Removed the separate heatmap colorbar because every cell already carries its exact rank annotation.
+- [x] Replaced tight PNG export with fixed-canvas `print -dpng -r300`; both paper PNGs are exactly `2031x1750`, so equal LaTeX widths produce equal visual dimensions.
+- [x] Placed Figures 7(a) and 7(b) side by side at `0.49\linewidth` within one column. MATLAB Code Analyzer reported no issues.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. Page 10 review confirmed equal axes width and height, Figure-3-scale visual area, readable annotations, and no clipping, overlap, or abnormal whitespace.
+
+## 2026-07-27 Main-summary Side-by-side Layout
+
+- [x] Changed the feasibility-figure canvas from `1080x560` to `650x560`, matching the average-rank figure, and regenerated both images from the frozen selected-seven CSV summaries.
+- [x] Reallocated the feasibility axes margins and rotated the seven algorithm labels by 32 degrees so the compact canvas remains unclipped and readable.
+- [x] Assigned both plots the identical normalized axes rectangle `[0.20, 0.19, 0.75, 0.66]` and reset the feasibility axes after creating its outside legend, preventing the legend from compressing panel (a).
+- [x] Placed Figures 3(a) and 3(b) side by side at equal `0.49\linewidth` widths within a single-column float.
+- [x] MATLAB Code Analyzer reported no issues. Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. Rendered review of page 9 confirmed equal axes width and height, readable labels, and no clipping, overlap, or abnormal whitespace.
+
+## 2026-07-27 Ablation Evidence Completion and Figure 8 Reduction
+
+- [x] Added a six-row single-column table containing only the exact ablation metrics cited in the discussion: the three scene-wise mean final fitness values, the three-scene mean evaluation count, and the Scene 3 mean CVF-trigger count.
+- [x] Kept Figure 7 responsible for feasibility and rank trends, so the compact table restores numerical traceability without reinstating the archived 18-row table or repeating feasibility, ranks, standard deviations, and trigger-success counts.
+- [x] Removed the redundant Scene 2 top-view panel from Figure 8 and retained only the Scene 3 representative 3-D path, which supplies the altitude and obstacle-geometry evidence not already covered by the main-comparison top views.
+- [x] Revised the ablation discussion to cite the compact table explicitly for the V0--V4 fitness, trigger, and evaluation-count claims. No experiment, result, or ablation definition was changed.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. The log has no LaTeX Error, undefined reference/citation, overfull, or rerun-label warning. Rendered review of pages 9--11 found the new table and Figure 8 legible, unclipped, and free of abnormal whitespace.
+
+## 2026-07-27 Figure 7 Rank Colorbar Restoration
+
+- [x] Restored the vertical colorbar to the right of the Figure 7 rank heatmap, with integer ticks from 1 to 6 and the label `Rank`.
+- [x] Set explicit positions for the heatmap axes and colorbar so MATLAB does not apply uncontrolled axes compression. The canvas, panel order, annotations, frozen data, and muted palette remain unchanged.
+- [x] MATLAB Code Analyzer reported no issues. Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. Page 10 review confirmed that the colorbar, tick labels, heatmap values, and neighboring feasibility panel are visible without clipping or overlap.
+
+## 2026-07-27 Table 4 Single-column Width Expansion
+
+- [x] Expanded the compact ablation table to exactly `\linewidth` using `tabular*` and elastic inter-column spacing. The table remains single-column and retains the same font size, values, headings, and note.
+- [x] Recompiled with `xelatex -> xelatex`; `main.pdf` remains 13 Letter pages. Page 10 review confirmed evenly distributed columns, full-width rules, aligned notes, and no clipping, overlap, or column overflow.
+
+## 2026-07-27 Full-audit Priority Fixes and Figure Alternatives
+
+- [x] Removed final violation and the trajectory review marker from the formal metric list. The fixed-threshold marker remains explicitly limited to path visualization and result review.
+- [x] Defined reported feasibility as numerical feasibility under the fixed $M$-sample evaluator and added the absence of continuous collision certification or adaptive segment refinement to the limitations.
+- [x] Added compact implementation-consistent definitions for random difference indices, the quality smoothing increment, near-feasible CVF triggering, and sparse repair retention. No non-paper state branch or optional implementation branch was introduced.
+- [x] Clarified the scene-dependent altitude upper bounds and defined `Main`, `Abl.`, `Rate`, and `Ratio` in the runtime-table note.
+- [x] Replaced causal or complementarity wording in the ablation discussion with evidence-bounded phrasing while retaining the approved representative-path interpretation.
+- [x] Redrew Figure 2 as a single-column vertical schematic with sample-to-control mapping and active vector synthesis. Figure 3(a) and Figure 7(a) are now unconnected point plots; Figure 4 includes white diamond mean markers and a matching caption/prose definition.
+- [x] Created review-only alternatives under `figures/review_previews/`: Figure 5 with late-iteration insets, a Table 5 Cliff's-delta/Holm heatmap, and a Table 6 sparse-trigger/evaluation-ratio chart. These previews are not referenced by the manuscript.
+- [x] All official and preview figures read frozen CSV/MAT records only. No optimizer, experiment, statistical test, scene, algorithm set, or ablation definition was rerun or changed.
+- [x] MATLAB Code Analyzer reported no issues for the new/updated figure generators. Final `xelatex -> xelatex` compilation produced 13 Letter pages with no LaTeX Error, undefined reference/citation, overfull box, or rerun-label warning.
+- [x] Rendered review of pages 6 and 8--11 found readable labels, balanced columns, and no clipping, overlap, float-only page, or abnormal whitespace. Active TeX and rendered-PDF scans found no TODO, local absolute path, or prohibited comparison terminology.
+
+## 2026-07-27 Figure 2, Figure 5, and Significance Heatmap Promotion
+
+- [x] Redrew Figure 2 so its global and local views use the same three color-coded pressure vectors. The upper panel shows sample-to-control mapping; the lower panel translates those same vectors to a common origin and displays their mean direction.
+- [x] Reduced Figure 2's source-canvas physical size and enlarged its labels so the vector correspondence remains readable after single-column scaling. Updated the method prose and caption to match the revised mechanism exactly.
+- [x] Promoted the Figure 5 inset alternative to the manuscript. All three late-iteration insets now use the same normalized position and dimensions on equal-size main axes.
+- [x] Replaced the dense significance table with the approved Cliff's-delta/Holm heatmap, including the restored diverging colorbar and cell-level $+$/$=$/$-$ relations. The archived table source remains in the project but is no longer input by the manuscript.
+- [x] Kept the evaluation-overhead result as the existing compact table without changing its source content or format. Its displayed number changed automatically after removal of the preceding significance table.
+- [x] Added dedicated frozen-data generators `make_cvf_ae_convergence_inset_figure.m` and `make_cvf_ae_significance_heatmap.m`; no optimizer, statistical test, experiment, or ablation was rerun.
+- [x] MATLAB Code Analyzer reported no issues for all three active generators. Final `xelatex -> xelatex` compilation produced 13 Letter pages with no LaTeX Error, undefined reference/citation, or overfull box.
+- [x] Rendered review of pages 6, 10, and 11 confirmed readable Figure 2 labels, aligned Figure 5 insets, a complete heatmap colorbar, an intact overhead table, balanced columns, and no clipping or abnormal whitespace. Active-source scans found no TODO, local absolute path, or prohibited comparison terminology.
+
+## 2026-07-28 Figure 1 Final Selection
+
+- [x] Removed the Deb feasibility-priority flowchart and its manuscript reference. The complete Deb comparison rule remains in the problem-formulation prose.
+- [x] Rejected the old flowchart as a final Figure 1 because it repeated a standard rule, contained inconsistent candidate notation, and reduced the prominence of the paper's method contribution.
+- [x] Added a new single-column Figure 1 that connects constraint-aware initialization, F/P/R state scheduling, sparse CVF candidate generation, conservative acceptance, sparse repair, and population feedback.
+- [x] The framework contains only the paper's formal F/P/R states and active algorithm path; no optional implementation branch or non-paper state is shown.
+- [x] Fixed the framework immediately after the Section 3.2 narrative so the text introduces the four questions before the figure. The pressure-mapping schematic is now Figure 2.
+- [x] The dedicated generator `make_cvf_ae_closed_loop_framework.m` passed MATLAB Code Analyzer and creates both PNG and vector PDF outputs without running an optimizer.
+- [x] Final `xelatex -> xelatex` compilation remains 13 Letter pages with no LaTeX Error, undefined reference/citation, or overfull box. Rendered pages 4--6 show correct narrative order, readable labels, balanced columns, and no abnormal whitespace.
