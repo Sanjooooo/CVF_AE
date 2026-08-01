@@ -72,7 +72,6 @@ cfg.baseSeed = 20260711;
 cfg.resultDir = fullfile(resultRoot, condition.Name);
 cfg.resumeExisting = true;
 cfg.verbose = true;
-cfg.useLiteFAEAE = true;
 cfg.saveFigures = false;
 cfg.showSingleRunFigure = false;
 cfg.showBatchFigure = false;

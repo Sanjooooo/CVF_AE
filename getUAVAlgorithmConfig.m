@@ -1,5 +1,5 @@
 function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
-%GETUAVALGORITHMCONFIG Return algorithm-specific config for UAV comparison.
+%GETUAVALGORITHMCONFIG Return selected-seven algorithm configuration.
 %
 % Inputs:
 %   algName - algorithm name
@@ -9,6 +9,9 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
 % Output:
 %   algCfg  - algorithm-specific configuration
 
+    if nargin < 3 || isempty(cfg)
+        cfg = struct();
+    end
     algName = upper(algName);
 
     algCfg = struct();
@@ -55,31 +58,6 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.useReferenceInit = false;
             algCfg.referenceInitRatio = 0.0;
 
-        case 'WOA'
-            algCfg.b = 1.0;
-            algCfg.useReferenceInit = false;
-            algCfg.referenceInitRatio = 0.0;
-
-        case 'DBO'
-            algCfg.k = 0.10;
-            algCfg.b = 0.30;
-            algCfg.s = 0.50;
-            algCfg.useReferenceInit = false;
-            algCfg.referenceInitRatio = 0.0;
-
-        case 'CPO'
-            algCfg.defenseCycle = 4;
-            algCfg.useReferenceInit = false;
-            algCfg.referenceInitRatio = 0.0;
-
-        case {'GDESAO', 'GDSAO'}
-            algCfg.name = 'GDSAO';
-            algCfg.useReferenceInit = false;
-            algCfg.referenceInitRatio = 0.0;
-            algCfg.gdesao.ddfBase = 0.35;
-            algCfg.gdesao.ddfRange = 0.25;
-            algCfg.gdesao.ddfSlope = 0.6;
-
         case {'ERIME', 'ELRIME'}
             algCfg.name = 'ERIME';
             algCfg.useReferenceInit = false;
@@ -100,16 +78,6 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.mscso.c1 = 1.5;
             algCfg.mscso.c2 = 1.5;
 
-        case {'COVE-AE', 'COVE_AE', 'COVEAE'}
-            algCfg.name = 'COVE-AE';
-            algCfg.useReferenceInit = true;
-            algCfg.referenceInitRatio = 0.7;
-
-            algCfg.useConstraintStateInit = true;
-            algCfg.useStateTransition = true;
-            algCfg.useViolationFeedback = false;
-            algCfg.useSparseRepairReuse = true;
-
         case {'CVF-AE', 'CVF_AE', 'CVFAE'}
             algCfg.name = 'CVF-AE';
             algCfg.useReferenceInit = true;
@@ -126,32 +94,8 @@ function algCfg = getUAVAlgorithmConfig(algName, params, cfg)
             algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
             algCfg.cvfAe.refinementInterval = 8;
 
-        case {'CVF-AE-SA-LITE', 'CVF_AE_SA_LITE', 'CVFAESALITE'}
-            algCfg.name = 'CVF-AE-SA-lite';
-            algCfg.useReferenceInit = true;
-            algCfg.referenceInitRatio = 0.7;
-
-            algCfg.useConstraintStateInit = true;
-            algCfg.useCVF = true;
-            algCfg.useStateAdaptiveCVF = true;
-            algCfg.useConservativeStateAdaptiveCVF = true;
-            algCfg.useSparseRepairReuse = true;
-            algCfg.cvfAe.conservativeStateAdaptive = true;
-            algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
-            algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
-            algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
-            algCfg.cvfAe.refinementInterval = 8;
-
-        case 'FAEAE'
-            algCfg.useReferenceInit = true;
-            algCfg.referenceInitRatio = 0.7;
-
-            algCfg.useAOS = true;
-            algCfg.useRepair = true;
-            algCfg.useRegen = true;
-
         otherwise
-            error('Unknown UAV algorithm: %s', algName);
+            error('Unsupported selected-seven algorithm: %s', algName);
     end
 
     % ------------------------------------------------------------

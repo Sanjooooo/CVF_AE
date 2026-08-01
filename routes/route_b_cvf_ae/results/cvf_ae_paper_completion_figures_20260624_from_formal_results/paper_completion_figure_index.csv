@@ -1,5 +1,0 @@
-Figure,PNG,PDF,SuggestedPlacement,Purpose,Status
-Parameter sensitivity,cvf_ae_parameter_sensitivity.png,cvf_ae_parameter_sensitivity.pdf,main-text,Key CVF parameter robustness,ready
-Strong-algorithm boxplots,cvf_ae_boxplots_strong_algorithms.png,cvf_ae_boxplots_strong_algorithms.pdf,main-text,Distribution comparison against strong methods,ready
-All-algorithm boxplots,cvf_ae_boxplots_all_algorithms_log.png,cvf_ae_boxplots_all_algorithms_log.pdf,supplement,Full 11-algorithm distribution comparison,ready
-CVF-AE method flowchart,cvf_ae_method_flowchart.png,cvf_ae_method_flowchart.pdf,main-text,Overall CVF-AE algorithm procedure,ready

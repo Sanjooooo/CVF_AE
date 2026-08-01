@@ -1,0 +1,2 @@
+Scene,Algorithm,Mean,Std,Rank,Feasibility,AvgRuntime,AvgNEvals,AvgFirstFeasibleIter,AvgRepairCount,AvgRepairSuccessCount,AvgViabilityFieldCount,AvgViabilityFieldSuccessCount
+4,CVF-AE,344.242892302983,18.8064941590281,1,1,6.76020745,9362.66666666667,0,243.8,164.633333333333,88.8666666666667,61.2666666666667

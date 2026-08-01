@@ -26,6 +26,11 @@ run_records/
 *_summary_workspace.mat
 uav_comparison_results.mat
 
+# Local-only migration archives and formal MATLAB run records
+archive/cleanup_20260801/direct_removal_candidates/
+archive/cleanup_20260801/route_b_historical_results/
+routes/route_b_cvf_ae/results/**/*.mat
+
 !routes/route_b_cvf_ae/paper_ajse_zh/figures/
 !routes/route_b_cvf_ae/paper_ajse_zh/figures/*.png
 !routes/route_b_cvf_ae/paper_ajse_zh/figures/*.pdf

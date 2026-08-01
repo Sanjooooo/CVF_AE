@@ -8,7 +8,7 @@ function outputs = make_cvf_ae_ablation_summary_figure(sourceDir, figureDir)
 projectRoot = fileparts(mfilename('fullpath'));
 if nargin < 1 || isempty(sourceDir)
     sourceDir = fullfile(projectRoot, 'routes', 'route_b_cvf_ae', 'results', ...
-        'cvf_ae_paper_results_package_20260624_from_formal_results');
+        'cvf_ae_corrected_ablation_paper_artifacts_20260730');
 end
 if nargin < 2 || isempty(figureDir)
     figureDir = fullfile(projectRoot, 'routes', 'route_b_cvf_ae', ...

@@ -1,5 +1,16 @@
 # CVF-AE Route B Project Log
 
+## 2026-08-01 - Route B active-chain cleanup and historical migration
+
+- Reduced the statically required Route B MATLAB chain from 58 files to 40 files, plus the optional closed-loop framework figure generator.
+- Restricted the main comparison dispatcher and algorithm configuration to the formal seven algorithms: AE, PSO, GWO, HHO, ERIME, MSCSO, and CVF-AE.
+- Replaced the corrected-ablation artifact dependency on historical comparison packages with a focused six-variant Scene 3 representative-path generator.
+- Moved 54 obsolete Route B MATLAB files to `archive/cleanup_20260801/route_b_old_code/`; no files were deleted.
+- Moved 27 historical Route B result directories and the obsolete mixed representative-path subtree to `archive/cleanup_20260801/route_b_historical_results/`.
+- Retained only the five current result directories: the selected-seven formal run, its paper artifacts, corrected ablation formal run and paper artifacts, and the internal template-initialization ablation.
+- Kept the external formal MAT backup at `D:/MATLAB/Project/COVE_AE_matlab_formal_mat_backup_20260801` with a verified SHA-256 manifest.
+- Verified that the active dependency graph has no missing files, old algorithm symbols are absent from the active chain, all active paper figures exist, and the current LaTeX log has no errors, undefined references/citations, or overfull boxes.
+
 ## 2026-07-07 Method section restructuring
 
 Scope:

@@ -1,43 +1,41 @@
-# File Organization
+# File organization
 
-This project now separates route-specific research materials from shared MATLAB infrastructure.
+The active workspace is organized around the CVF-AE Route B paper and its frozen
+formal results. Route A, CEC frameworks, superseded Route B code, historical
+results, and deprecated paper figures are stored in the local cleanup archive.
 
-## Top-Level Layout
+## Active layout
 
-- `routes/route_a_cove_ae/`
-  - Historical Route A materials for the COVE-AE reset/diagnostic line.
-  - Contains prior diagnostic and ablation result folders under `results/`.
-  - Kept for traceability, not as the current paper direction.
-
-- `routes/route_b_cvf_ae/`
-  - Current Route B materials for the `CVF-AE` strong-innovation line.
-  - Contains the active CVF-AE project plan, todo list, and paper outline under `docs/`.
-  - Future CVF-AE-specific code, diagnostics, and results should be placed here when they are created.
-
-- `docs/`
-  - Shared project log and general project documentation.
-  - `PROJECT_LOG.md` remains the chronological record for the whole project.
-
+- `routes/route_b_cvf_ae/paper_ajse_zh/`
+  - Current Chinese manuscript, tables, figures, bibliography, and quality notes.
+- `routes/route_b_cvf_ae/results/`
+  - Five retained current result directories: selected-seven formal comparison,
+    selected-seven paper artifacts, corrected formal ablation, corrected ablation
+    paper artifacts, and the internal template-initialization ablation.
+- `routes/route_b_cvf_ae/experiments/`
+  - Internal template-initialization ablation and its isolated initialization
+    override.
+- `routes/route_b_cvf_ae/docs/`
+  - Route B project history, manuscript notes, and the maintained execution-chain
+    definition in `CVF_AE_ACTIVE_PIPELINE.md`.
 - MATLAB `.m` files in the project root
-  - Shared runnable MATLAB infrastructure.
-  - These files are intentionally kept at the root for now so existing MATLAB scripts continue to run without path changes.
-  - Route-specific implementations should be separated only when the corresponding path setup is added.
+  - Functions required by the current selected-seven comparison, corrected
+    ablation, and paper-artifact chains. They remain at the root so MATLAB can run
+    the maintained entry points without additional path setup.
 
-- `cec2017_framework/`, `experiments/`, `legacy_docs/`
-  - Existing auxiliary or legacy assets.
+## Local archive
 
-## Current Rule
+`archive/cleanup_20260801/` preserves migrated content by category and original
+relative path. Nothing in this archive is required by the current Route B call
+chain. Binary archive files may remain ignored by Git and should therefore be
+treated as local recovery material.
 
-Do not mix new CVF-AE route-B materials into route-A result folders.
+The checksum-verified backup of current formal `.mat` records is stored outside
+the repository at `D:/MATLAB/Project/COVE_AE_matlab_formal_mat_backup_20260801/`.
 
-Use:
+## Maintenance rule
 
-- Route A historical results: `routes/route_a_cove_ae/results/`
-- Route B planning/docs: `routes/route_b_cvf_ae/docs/`
-- Future Route B results: `routes/route_b_cvf_ae/results/`
-
-## MATLAB Path Note
-
-The route split currently organizes documents and results. Core MATLAB functions remain in the project root to avoid breaking scripts that call functions by name from the current folder.
-
-If future code is moved into route-specific folders, add an explicit path setup script first.
+New formal runs must use the maintained entry points documented in
+`routes/route_b_cvf_ae/docs/CVF_AE_ACTIVE_PIPELINE.md`. Do not restore historical
+comparison algorithms or split-result fallbacks into the selected-seven pipeline
+unless the experimental protocol is intentionally revised.

@@ -1,5 +1,0 @@
-ComparisonGroup,Scope,NumComparisons,Wins,Ties,Losses,MedianCliffsDelta,MeanCliffsDelta
-all,all-scenes,15,9,6,0,0.582222222222222,0.541925925925926
-all,Scene 1,5,4,1,0,0.86,0.735555555555556
-all,Scene 2,5,3,2,0,0.393333333333333,0.506666666666667
-all,Scene 3,5,2,3,0,0.224444444444444,0.383555555555556

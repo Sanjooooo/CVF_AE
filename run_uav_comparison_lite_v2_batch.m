@@ -1,6 +1,6 @@
 function summary = run_uav_comparison_lite_v2_batch(cfg)
 %RUN_UAV_COMPARISON_LITE_V2_BATCH
-% UAV main-comparison batch for COVE-AE and baseline planners.
+% Route B selected-seven main-comparison batch.
 %
 % Output files:
 % - uav_comparison_runs.csv
@@ -15,14 +15,15 @@ function summary = run_uav_comparison_lite_v2_batch(cfg)
 % - run_records folder
 
 if nargin < 1 || isempty(cfg)
-    cfg = getUAVComparisonConfig('formal');
+    cfg = struct();
 end
 
 if ~isfield(cfg, 'sceneIds') || isempty(cfg.sceneIds)
     cfg.sceneIds = [1, 2, 4];
 end
 if ~isfield(cfg, 'algorithms') || isempty(cfg.algorithms)
-    cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', 'WOA', 'COVE-AE'};
+    cfg.algorithms = {'AE', 'PSO', 'GWO', 'HHO', ...
+        'ERIME', 'MSCSO', 'CVF-AE'};
 end
 if ~isfield(cfg, 'nRuns') || isempty(cfg.nRuns)
     cfg.nRuns = 30;
@@ -31,11 +32,19 @@ if ~isfield(cfg, 'baseSeed') || isempty(cfg.baseSeed)
     cfg.baseSeed = 20260328;
 end
 if ~isfield(cfg, 'resultDir') || isempty(cfg.resultDir)
-    cfg.resultDir = fullfile(pwd, ['results_uav_lite_v2_formal_' datestr(now, 'yyyymmdd_HHMMSS')]);
+    projectRoot = fileparts(mfilename('fullpath'));
+    cfg.resultDir = fullfile(projectRoot, 'routes', 'route_b_cvf_ae', ...
+        'results', ['cvf_ae_selected7_main_comparison_formal_' ...
+        datestr(now, 'yyyymmdd_HHMMSS')]);
 end
-if ~isfield(cfg, 'useLiteFAEAE')
-    cfg.useLiteFAEAE = true;
-end
+
+allowedAlgorithms = ["AE", "PSO", "GWO", "HHO", ...
+    "ERIME", "MSCSO", "CVF-AE"];
+requestedAlgorithms = upper(string(cfg.algorithms));
+unknownAlgorithms = setdiff(requestedAlgorithms, allowedAlgorithms);
+assert(isempty(unknownAlgorithms), ...
+    'Unsupported Route B comparison algorithm(s): %s', ...
+    strjoin(cellstr(unknownAlgorithms), ', '));
 
 if ~exist(cfg.resultDir, 'dir')
     mkdir(cfg.resultDir);
@@ -106,7 +115,8 @@ for s = 1:nScenes
                 end
 
                 if ~loadedExisting
-                    result = localRunSingle(algName, objFun, params, map, refX, algCfg, runSeed, cfg.useLiteFAEAE);
+                    result = localRunSingle( ...
+                        algName, objFun, params, map, refX, algCfg, runSeed);
                 end
                 elapsed = toc(tRun);
 
@@ -202,7 +212,7 @@ fprintf('  %s\n', runDir);
 end
 
 % ========================================================================
-function result = localRunSingle(algName, objFun, params, map, refX, algCfg, runSeed, useLiteFAEAE)
+function result = localRunSingle(algName, objFun, params, map, refX, algCfg, runSeed)
 switch upper(algName)
     case 'AE'
         result = optimizer_AE_uav(objFun, params, map, refX, algCfg, runSeed);
@@ -212,30 +222,14 @@ switch upper(algName)
         result = optimizer_GWO_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'HHO'
         result = optimizer_HHO_uav(objFun, params, map, refX, algCfg, runSeed);
-    case 'WOA'
-        result = optimizer_WOA_uav(objFun, params, map, refX, algCfg, runSeed);
-    case 'DBO'
-        result = optimizer_DBO_uav(objFun, params, map, refX, algCfg, runSeed);
-    case 'CPO'
-        result = optimizer_CPO_uav(objFun, params, map, refX, algCfg, runSeed);
-    case {'GDESAO', 'GDSAO'}
-        result = optimizer_GDESAO_uav(objFun, params, map, refX, algCfg, runSeed);
     case {'ERIME', 'ELRIME'}
         result = optimizer_ERIME_uav(objFun, params, map, refX, algCfg, runSeed);
     case 'MSCSO'
         result = optimizer_MSCSO_uav(objFun, params, map, refX, algCfg, runSeed);
     case {'CVF-AE', 'CVF_AE', 'CVFAE'}
         result = optimizer_CVF_AE_uav(objFun, params, map, refX, algCfg, runSeed);
-    case {'COVE-AE', 'COVE_AE', 'COVEAE'}
-        result = optimizer_COVE_AE_uav(objFun, params, map, refX, algCfg, runSeed);
-    case 'FAEAE'
-        if useLiteFAEAE
-            result = optimizer_FAEAE_lite_v2_uav(objFun, params, map, refX, algCfg, runSeed);
-        else
-            result = optimizer_FAEAE_uav(objFun, params, map, refX, algCfg, runSeed);
-        end
     otherwise
-        error('Unknown UAV algorithm: %s', algName);
+        error('Unsupported Route B comparison algorithm: %s', algName);
 end
 end
 

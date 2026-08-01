@@ -1,23 +1,23 @@
 function out = make_cvf_ae_selected7_paper_artifacts(mainDir, recentDir, outDir)
 %MAKE_CVF_AE_SELECTED7_PAPER_ARTIFACTS Rebuild paper artifacts for selected algorithms.
 %
-% This script rebuilds paper tables and figures from CSV/MAT run records.
-% It supports either a unified result directory or a split directory pair.
+% This script rebuilds paper tables and figures from the frozen unified
+% selected-seven CSV/MAT run records. Explicit split sources remain accepted
+% only for recovery of an older export.
 
 projectRoot = fileparts(mfilename('fullpath'));
 addpath(projectRoot);
 
 if nargin < 1 || isempty(mainDir)
     mainDir = fullfile(projectRoot, 'routes', 'route_b_cvf_ae', 'results', ...
-        'cvf_ae_main_comparison_formal_conservative_20260623_091132');
+        'cvf_ae_selected7_main_comparison_formal_20260707_101155');
 end
 if nargin < 2 || isempty(recentDir)
-    recentDir = fullfile(projectRoot, 'routes', 'route_b_cvf_ae', 'results', ...
-        'cvf_ae_main_comparison_recent_improved_formal_20260623_161229');
+    recentDir = mainDir;
 end
 if nargin < 3 || isempty(outDir)
     outDir = fullfile(projectRoot, 'routes', 'route_b_cvf_ae', 'results', ...
-        'cvf_ae_selected7_paper_artifacts_20260706');
+        'cvf_ae_selected7_paper_artifacts_rerun_20260707_101155');
 end
 if ~exist(outDir, 'dir')
     mkdir(outDir);

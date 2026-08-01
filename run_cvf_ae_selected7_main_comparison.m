@@ -23,7 +23,6 @@ cfg.baseSeed = 20260707;
 cfg.resultDir = resultDir;
 cfg.resumeExisting = true;
 cfg.verbose = true;
-cfg.useLiteFAEAE = true;
 cfg.saveFigures = false;
 cfg.showSingleRunFigure = false;
 cfg.showBatchFigure = false;

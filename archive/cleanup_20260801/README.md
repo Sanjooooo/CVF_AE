@@ -84,6 +84,18 @@ comparison/ablation figures were moved from
 - `selected7_convergence_with_late_insets.png`
 - `selected7_effect_size_heatmap.png`
 
+### `route_b_old_code/`
+
+Fifty-four MATLAB files outside the maintained Route B execution and paper
+artifact chains. See `ROUTE_B_MIGRATION.md` for the exact list and the active
+dependency boundary used for classification.
+
+### `route_b_historical_results/`
+
+Twenty-seven superseded Route B result directories plus the former mixed
+main/extended/ablation representative-path subtree. Original project-relative
+paths are preserved. See `ROUTE_B_MIGRATION.md` for the exact list.
+
 ## Protected current-paper assets
 
 The 13 graphics referenced by the current manuscript were not moved. The unused
