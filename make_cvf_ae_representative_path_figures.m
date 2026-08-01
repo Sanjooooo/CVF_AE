@@ -296,9 +296,6 @@ if topView
 else
     viewName = '3d';
 end
-title(sprintf('%s | Scene %d representative paths (%s)', figSetName, paperSceneId, upper(viewName)), ...
-    'Interpreter', 'none');
-
 pngPath = fullfile(outDir, sprintf('%s_scene%d_representative_%s.png', figSetName, paperSceneId, viewName));
 figPath = fullfile(outDir, sprintf('%s_scene%d_representative_%s.fig', figSetName, paperSceneId, viewName));
 savefig(fig, figPath);

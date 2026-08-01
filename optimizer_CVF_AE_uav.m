@@ -397,19 +397,16 @@ end
 function [state, memory] = localConservativeAdaptiveCVFState(observedState, bestDetail, memory, params)
 bestIsFeasible = isstruct(bestDetail) && isfield(bestDetail, 'isFeasible') && bestDetail.isFeasible;
 requestedId = 2;
-requestedName = 'ConservativePreservation';
 
 if ~bestIsFeasible && ...
         (~observedState.hasFeasible || ...
         observedState.feasibleRatio <= params.cvfAe.adaptiveFormationFeasibleRatio || ...
         observedState.meanViolation >= params.cvfAe.adaptiveFormationViolation)
     requestedId = 1;
-    requestedName = 'ConservativeFormation';
 elseif observedState.isStagnant && ...
         observedState.feasibleRatio < params.cvfAe.adaptiveRecoveryFeasibleRatio && ...
         observedState.meanViolation >= params.cvfAe.adaptiveRecoveryViolation
     requestedId = 4;
-    requestedName = 'ConservativeRecovery';
 end
 
 if requestedId == 2
@@ -438,7 +435,7 @@ switch memory.activeId
         state.name = 'ConservativeRecovery';
     otherwise
         state.id = 2;
-        state.name = requestedName;
+        state.name = 'ConservativePreservation';
 end
 end
 

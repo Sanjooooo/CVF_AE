@@ -12,7 +12,8 @@ detail = [];
 info = struct('nEvals', 0, 'repairCount', 0, 'repairSuccessCount', 0);
 
 useStateInit = localGetFlag(algCfg, 'useConstraintStateInit', true);
-useSparseRepair = localGetFlag(algCfg, 'useSparseRepairReuse', true);
+useInitialSparseRepair = localGetFlag(algCfg, 'useInitialSparseRepair', ...
+    localGetFlag(algCfg, 'useSparseRepairReuse', true));
 cfg = localDefaultInitParams(params);
 
 if isempty(refCtrl)
@@ -48,7 +49,7 @@ for j = 1:N
     detail(j) = d;
 end
 
-if useSparseRepair && cfg.initialRepairQuota > 0
+if useInitialSparseRepair && cfg.initialRepairQuota > 0
     [~, order] = sort(localViolationVector(detail), 'ascend');
     quota = min(cfg.initialRepairQuota, N);
     for kk = 1:quota

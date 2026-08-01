@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="960" viewBox="0 0 1600 960">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,4 L0,8 z" fill="#596166"/>
+    </marker>
+    <style>
+      .t { font-family: "Times New Roman", serif; fill: #1f2428; }
+      .panel { stroke-width: 2; stroke-dasharray: 9 5; rx: 10; }
+      .box { fill: #fff; stroke-width: 1.6; rx: 8; }
+      .flow { fill: none; stroke: #596166; stroke-width: 2; marker-end: url(#arrow); }
+      .thin { fill: none; stroke: #6c7479; stroke-width: 1.5; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="25" y="20" width="1550" height="915" rx="22" fill="#fff" stroke="#b8b8b8" stroke-width="2"/>
+  <text class="t" x="800" y="70" text-anchor="middle" font-size="28" font-weight="bold" font-style="italic">CVF-AE Framework for Constraint-Aware 3-D UAV Path Planning</text>
+  <text class="t" x="800" y="101" text-anchor="middle" font-size="15" fill="#5b6267">CVF supplies sparse, bounded local guidance while the AE backbone retains the primary global-search role</text>
+
+  <rect x="650" y="145" width="880" height="735" rx="18" fill="none" stroke="#7d8387" stroke-width="2" stroke-dasharray="12 7"/>
+  <text class="t" x="680" y="177" font-size="19" font-weight="bold" font-style="italic" fill="#555b60">Adaptive candidate-generation loop</text>
+
+  <rect class="panel" x="55" y="180" width="240" height="360" fill="#e2f0e9" stroke="#3f8161"/>
+  <text class="t" x="175" y="207" text-anchor="middle" font-size="17" font-weight="bold" font-style="italic" fill="#285942">Environment &amp; Task</text>
+  <text class="t" x="175" y="226" text-anchor="middle" font-size="17" font-weight="bold" font-style="italic" fill="#285942">Inputs</text>
+  <g class="t" font-size="14" text-anchor="middle">
+    <rect class="box" x="82" y="252" width="186" height="50" stroke="#3f8161"/><text x="175" y="283">3-D environment map</text>
+    <rect class="box" x="82" y="320" width="186" height="50" stroke="#3f8161"/><text x="175" y="351">Obstacles · NFZ · risk field</text>
+    <rect class="box" x="82" y="388" width="186" height="50" stroke="#3f8161"/><text x="175" y="419">Start / goal / flight bounds</text>
+    <rect class="box" x="82" y="456" width="186" height="60" stroke="#3f8161"/><text x="175" y="480">Path encoding and</text><text x="175" y="499">evaluation settings</text>
+  </g>
+
+  <rect class="panel" x="335" y="180" width="285" height="360" fill="#dceaf5" stroke="#2a6f9e"/>
+  <circle cx="367" cy="211" r="18" fill="#2a6f9e" stroke="#fff" stroke-width="1.5"/><text class="t" x="367" y="217" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">1</text>
+  <text class="t" x="485" y="205" text-anchor="middle" font-size="17" font-weight="bold">PHASE 1</text>
+  <text class="t" x="485" y="229" text-anchor="middle" font-size="18" font-weight="bold" font-style="italic" fill="#1f5275">Constraint-aware Initialization</text>
+  <g class="t" font-size="14" text-anchor="middle">
+    <rect class="box" x="375" y="262" width="205" height="48" stroke="#2a6f9e"/><text x="478" y="292">Coarse 3-D A* reference path</text>
+    <rect class="box" x="375" y="326" width="205" height="48" stroke="#2a6f9e"/><text x="478" y="356">Resample to K control points</text>
+    <rect class="box" x="375" y="390" width="205" height="56" stroke="#2a6f9e"/><text x="478" y="414">Guided perturbation +</text><text x="478" y="433">random population</text>
+    <rect class="box" x="375" y="462" width="205" height="56" stroke="#2a6f9e"/><text x="478" y="486">Boundary projection and</text><text x="478" y="505">Deb screening</text>
+  </g>
+  <path class="thin" d="M478 310 V326"/><path class="thin" d="M478 374 V390"/><path class="thin" d="M478 446 V462"/>
+
+  <rect class="panel" x="685" y="205" width="350" height="270" fill="#f7ebc2" stroke="#a67816"/>
+  <circle cx="717" cy="235" r="18" fill="#a67816" stroke="#fff" stroke-width="1.5"/><text class="t" x="717" y="241" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">2</text>
+  <text class="t" x="865" y="230" text-anchor="middle" font-size="17" font-weight="bold">PHASE 2</text>
+  <text class="t" x="865" y="254" text-anchor="middle" font-size="18" font-weight="bold" font-style="italic" fill="#6e510c">F/P/R State Scheduling</text>
+  <rect class="box" x="720" y="278" width="280" height="60" stroke="#a67816"/>
+  <text class="t" x="860" y="301" text-anchor="middle" font-size="14">Population observation</text>
+  <text class="t" x="860" y="324" text-anchor="middle" font-size="15" font-weight="bold">ρ<tspan baseline-shift="sub" font-size="11">f</tspan> · V̄ · D<tspan baseline-shift="sub" font-size="11">pop</tspan> · ΔJ<tspan baseline-shift="sub" font-size="11">recent</tspan></text>
+  <rect class="box" x="720" y="362" width="120" height="54" stroke="#a67816"/><text class="t" x="780" y="383" text-anchor="middle" font-size="13">Requested state</text><text class="t" x="780" y="404" text-anchor="middle" font-size="15" font-weight="bold">q<tspan baseline-shift="sub" font-size="11">t</tspan></text>
+  <rect class="box" x="860" y="362" width="140" height="54" stroke="#a67816" fill="#fff9e8"/><text class="t" x="930" y="384" text-anchor="middle" font-size="13">F/R: two-generation</text><text class="t" x="930" y="402" text-anchor="middle" font-size="13">confirmation</text>
+  <rect class="box" x="760" y="430" width="200" height="34" stroke="#a67816"/><text class="t" x="860" y="452" text-anchor="middle" font-size="14">Active state s<tspan baseline-shift="sub" font-size="10">t</tspan> ∈ {F, P, R}</text>
+  <path class="thin" d="M860 338 V350 H780 V362"/><path class="thin" d="M840 389 H860"/><path class="thin" d="M930 416 V423 H860 V430"/>
+
+  <rect class="panel" x="1070" y="205" width="415" height="455" fill="#e9e2f5" stroke="#6b4fa3"/>
+  <circle cx="1102" cy="235" r="18" fill="#6b4fa3" stroke="#fff" stroke-width="1.5"/><text class="t" x="1102" y="241" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">3</text>
+  <text class="t" x="1280" y="230" text-anchor="middle" font-size="17" font-weight="bold">PHASE 3</text>
+  <text class="t" x="1280" y="254" text-anchor="middle" font-size="18" font-weight="bold" font-style="italic" fill="#4c3378">Sparse Candidate Construction</text>
+  <rect class="box" x="1100" y="282" width="170" height="65" stroke="#2a6f9e" stroke-width="1.8"/><text class="t" x="1185" y="306" text-anchor="middle" font-size="14" font-weight="bold">AE backbone</text><text class="t" x="1185" y="329" text-anchor="middle" font-size="13">Generate and evaluate X<tspan baseline-shift="sub" font-size="10">AE</tspan></text>
+  <polygon points="1382,278 1450,317 1382,356 1315,317" fill="#fff4e8" stroke="#b85318" stroke-width="1.8"/><text class="t" x="1382" y="311" text-anchor="middle" font-size="14" font-weight="bold">Sparse CVF</text><text class="t" x="1382" y="330" text-anchor="middle" font-size="14" font-weight="bold">trigger?</text>
+  <path class="thin" d="M1270 317 H1315"/>
+  <rect class="box" x="1100" y="390" width="180" height="105" stroke="#6b4fa3"/><text class="t" x="1190" y="414" text-anchor="middle" font-size="14" font-weight="bold">Constraint pressures</text><text class="t" x="1190" y="441" text-anchor="middle" font-size="13">obstacle · NFZ · risk</text><text class="t" x="1190" y="465" text-anchor="middle" font-size="13">altitude · curvature · boundary</text>
+  <rect class="box" x="1310" y="402" width="145" height="82" stroke="#6b4fa3"/><text class="t" x="1383" y="426" text-anchor="middle" font-size="14" font-weight="bold">Quality direction</text><text class="t" x="1383" y="449" text-anchor="middle" font-size="12">best / elite improvement</text><text class="t" x="1383" y="468" text-anchor="middle" font-size="12">with smoothing</text>
+  <path class="thin" d="M1382 356 V374 H1190 V390"/><path class="thin" d="M1382 356 V402"/>
+  <rect class="box" x="1110" y="535" width="330" height="78" stroke="#6b4fa3" stroke-width="1.8"/><text class="t" x="1275" y="562" text-anchor="middle" font-size="14">State-weighted fusion + bounded projection</text><text class="t" x="1275" y="589" text-anchor="middle" font-size="15" font-weight="bold">X<tspan baseline-shift="sub" font-size="11">CVF</tspan> = Π<tspan baseline-shift="sub" font-size="11">Ω</tspan>(AE + CVF + quality)</text>
+  <path class="thin" d="M1190 495 V535"/><path class="thin" d="M1383 484 V510 H1275 V535"/>
+
+  <rect class="panel" x="685" y="515" width="350" height="350" fill="#f6e2d2" stroke="#b85318"/>
+  <circle cx="717" cy="545" r="18" fill="#b85318" stroke="#fff" stroke-width="1.5"/><text class="t" x="717" y="551" text-anchor="middle" font-size="16" font-weight="bold" fill="#fff">4</text>
+  <text class="t" x="865" y="540" text-anchor="middle" font-size="17" font-weight="bold">PHASE 4</text>
+  <text class="t" x="865" y="564" text-anchor="middle" font-size="18" font-weight="bold" font-style="italic" fill="#78330f">Conservative Retention</text>
+  <rect class="box" x="720" y="588" width="280" height="68" stroke="#b85318"/><text class="t" x="860" y="611" text-anchor="middle" font-size="14" font-weight="bold">Local gate</text><text class="t" x="860" y="636" text-anchor="middle" font-size="13">X<tspan baseline-shift="sub" font-size="10">CVF</tspan> ≺<tspan baseline-shift="sub" font-size="10">Deb</tspan> X<tspan baseline-shift="sub" font-size="10">AE</tspan> and J(X<tspan baseline-shift="sub" font-size="10">CVF</tspan>) ≤ J(X<tspan baseline-shift="sub" font-size="10">AE</tspan>)</text>
+  <rect class="box" x="720" y="680" width="120" height="58" stroke="#b85318"/><text class="t" x="780" y="704" text-anchor="middle" font-size="13">Select Y</text><text class="t" x="780" y="724" text-anchor="middle" font-size="12">X<tspan baseline-shift="sub" font-size="9">CVF</tspan> or X<tspan baseline-shift="sub" font-size="9">AE</tspan></text>
+  <rect class="box" x="865" y="680" width="135" height="58" stroke="#b85318"/><text class="t" x="933" y="703" text-anchor="middle" font-size="12">Sparse feasibility</text><text class="t" x="933" y="722" text-anchor="middle" font-size="12">retention / repair</text>
+  <rect class="box" x="735" y="760" width="210" height="48" stroke="#596166"/><text class="t" x="840" y="789" text-anchor="middle" font-size="13">Deb update + current best</text>
+  <polygon points="989,748 1023,783 989,818 955,783" fill="#fff" stroke="#596166" stroke-width="1.5"/><text class="t" x="989" y="779" text-anchor="middle" font-size="11" font-weight="bold">Stop?</text>
+  <path class="thin" d="M860 656 V668 H780 V680"/><path class="thin" d="M840 709 H865"/><path class="thin" d="M933 738 V750 H840 V760"/><path class="thin" d="M945 784 H955"/>
+
+  <rect x="335" y="660" width="285" height="165" rx="12" fill="#e2f0e9" stroke="#3f8161" stroke-width="2"/>
+  <text class="t" x="478" y="694" text-anchor="middle" font-size="16" font-weight="bold" font-style="italic" fill="#285942">OUTPUT</text>
+  <rect class="box" x="370" y="720" width="215" height="54" stroke="#3f8161" stroke-width="1.8"/><text class="t" x="478" y="753" text-anchor="middle" font-size="17" font-weight="bold">Best feasible 3-D path</text>
+  <text class="t" x="478" y="798" text-anchor="middle" font-size="12" fill="#496257">Control-point sequence and sampled 3-D trajectory</text>
+
+  <path class="flow" d="M295 360 H320 V286 H375"/><text class="t" x="315" y="345" text-anchor="middle" font-size="12" font-style="italic">planning data</text>
+  <path class="flow" d="M580 490 H650 V308 H720"/><text class="t" x="645" y="391" text-anchor="middle" font-size="12" font-style="italic">initial population</text>
+  <path class="flow" d="M960 447 H1045 V315 H1100"/><text class="t" x="1044" y="390" text-anchor="middle" font-size="12" font-style="italic">state-conditioned</text>
+  <path class="flow" d="M1110 574 H1050 V622 H1000"/><text class="t" x="1048" y="595" text-anchor="middle" font-size="12" font-style="italic">evaluate X<tspan baseline-shift="sub" font-size="9">CVF</tspan></text>
+  <path class="flow" d="M1382 356 H1500 V709 H1000"/><text class="t" x="1460" y="381" text-anchor="middle" font-size="12" font-style="italic" fill="#8c431a">No: retain X<tspan baseline-shift="sub" font-size="9">AE</tspan></text>
+  <path class="flow" d="M989 818 V850 H620 V743"/><text class="t" x="800" y="847" text-anchor="middle" font-size="12" font-style="italic" fill="#3f8161">Yes</text>
+  <path class="flow" d="M1023 783 H1048 V308 H1000"/><text class="t" x="1057" y="705" font-size="12" font-style="italic" transform="rotate(-90 1057 705)">No · population feedback</text>
+</svg>

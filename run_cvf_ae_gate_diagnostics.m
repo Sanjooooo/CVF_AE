@@ -166,6 +166,7 @@ algCfg.useConstraintStateInit = true;
 algCfg.useCVF = true;
 algCfg.useStateAdaptiveCVF = true;
 algCfg.useSparseRepairReuse = true;
+algCfg.useInitialSparseRepair = true;
 algCfg.runner = 'CVF_AE';
 
 switch upper(strtrim(algName))
@@ -176,28 +177,20 @@ switch upper(strtrim(algName))
         algCfg.useSparseRepairReuse = false;
     case {'CVF-AE', 'CVF_AE'}
         algCfg.runner = 'CVF_AE';
-        algCfg.useConservativeStateAdaptiveCVF = true;
-        algCfg.cvfAe.conservativeStateAdaptive = true;
-        algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
-        algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
-        algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
-        algCfg.cvfAe.refinementInterval = 8;
+        algCfg = localEnableConservativeStateAdaptiveCVF(algCfg, params);
     case {'CVF-AE-SA-LITE', 'CVF_AE_SA_LITE', ...
           'CVF-AE-CONSERVATIVESTATEADAPTIVE', 'CVF_AE_CONSERVATIVE_STATE_ADAPTIVE'}
         algCfg.name = 'CVF-AE-SA-lite';
         algCfg.runner = 'CVF_AE';
-        algCfg.useConservativeStateAdaptiveCVF = true;
-        algCfg.cvfAe.conservativeStateAdaptive = true;
-        algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
-        algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
-        algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
-        algCfg.cvfAe.refinementInterval = 8;
+        algCfg = localEnableConservativeStateAdaptiveCVF(algCfg, params);
     case {'CVF-AE-W/O-CVF', 'CVF_AE_W/O_CVF'}
         algCfg.runner = 'CVF_AE';
         algCfg.useCVF = false;
+        algCfg = localEnableConservativeStateAdaptiveCVF(algCfg, params);
     case {'CVF-AE-W/O-INIT', 'CVF_AE_W/O_INIT'}
         algCfg.runner = 'CVF_AE';
         algCfg.useConstraintStateInit = false;
+        algCfg = localEnableConservativeStateAdaptiveCVF(algCfg, params);
     case {'CVF-AE-W/O-STATEADAPTIVECVF', 'CVF_AE_W/O_STATEADAPTIVECVF', ...
           'CVF-AE-W/O-STATE-ADAPTIVE-CVF', 'CVF_AE_W/O_STATE_ADAPTIVE_CVF'}
         algCfg.runner = 'CVF_AE';
@@ -206,9 +199,20 @@ switch upper(strtrim(algName))
           'CVF-AE-W/O-SPARSE-PRESERVATION', 'CVF_AE_W/O_SPARSE_PRESERVATION'}
         algCfg.runner = 'CVF_AE';
         algCfg.useSparseRepairReuse = false;
+        algCfg.useInitialSparseRepair = true;
+        algCfg = localEnableConservativeStateAdaptiveCVF(algCfg, params);
     otherwise
         error('Unknown CVF-AE gate algorithm: %s', algName);
 end
+end
+
+function algCfg = localEnableConservativeStateAdaptiveCVF(algCfg, params)
+algCfg.useConservativeStateAdaptiveCVF = true;
+algCfg.cvfAe.conservativeStateAdaptive = true;
+algCfg.cvfAe.maxPerIterFormation = max(1, round(0.06 * params.popSize));
+algCfg.cvfAe.maxPerIterRecovery = max(1, round(0.04 * params.popSize));
+algCfg.cvfAe.maxPerIterRefinement = max(1, round(0.01 * params.popSize));
+algCfg.cvfAe.refinementInterval = 8;
 end
 
 function result = localRunAlgorithm(objFun, params, map, refX, algCfg, runSeed)

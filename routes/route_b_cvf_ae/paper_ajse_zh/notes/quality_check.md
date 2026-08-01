@@ -380,3 +380,44 @@
 - [x] Fixed the framework immediately after the Section 3.2 narrative so the text introduces the four questions before the figure. The pressure-mapping schematic is now Figure 2.
 - [x] The dedicated generator `make_cvf_ae_closed_loop_framework.m` passed MATLAB Code Analyzer and creates both PNG and vector PDF outputs without running an optimizer.
 - [x] Final `xelatex -> xelatex` compilation remains 13 Letter pages with no LaTeX Error, undefined reference/citation, or overfull box. Rendered pages 4--6 show correct narrative order, readable labels, balanced columns, and no abnormal whitespace.
+
+## 2026-07-29 Framework Figure Removal
+
+- [x] Removed the CVF-AE closed-loop framework figure, its caption, label, and dedicated figure-introduction sentence from Section 3.2.
+- [x] Retained the compact four-question narrative and Algorithms 1--2, which now provide the method overview without repeating the same process in a framework figure.
+- [x] Kept the framework source assets and editable Draw.io draft as unreferenced backup material; no figure asset, generator, experiment, or result was deleted or rerun.
+- [x] Final `xelatex -> xelatex` compilation produced 13 Letter pages with no LaTeX Error, undefined reference/citation, overfull box, or stale `fig:cvf-ae-framework` reference in active TeX.
+- [x] Rendered review of pages 4--5 confirmed complete pseudocode, balanced columns, and a direct transition from the Section 3.2 narrative to Section 3.2.1 without clipping, overlap, or abnormal whitespace.
+
+## 2026-07-30 User-Redrawn CVF Pressure Figure Trial
+
+- [x] Replaced the active Figure 1 PDF with the user-redrawn editable-Draw.io export and updated the caption to describe representative dominant pressure sources, sample-to-control mapping, averaging, curvature pressure, and final CVF synthesis.
+- [x] Synchronized the surrounding method prose: colors identify representative dominant sources, actual sampled pressure combines active non-curvature components with the applicable state weights, and curvature is added after sample-pressure averaging at the control point.
+- [x] Retained the requested single-column `figure` environment with `width=\linewidth`; no cross-column layout change was made.
+- [x] Final `xelatex -> xelatex` compilation produced 13 Letter pages with no LaTeX Error, undefined reference/citation, or overfull box.
+- [x] Rendered review of page 6 found no clipping, overlap, or abnormal whitespace. The single-column trial is structurally valid, but its internal panel titles, legend, and lower synthesis labels are visibly smaller than the surrounding paper text.
+
+## 2026-07-30 Chapter 3 Priority Condensation
+
+- [x] Condensed the constraint-aware initialization paragraph while preserving the reference-path role, boundary handling, fixed corridor template, common Deb screening, and iterative weak direction.
+- [x] Shortened the Figure 1 lead-in and the transition to bounded fusion by removing explanations already carried by the figure, equations, and subsection structure.
+- [x] Consolidated component clipping and CVF strength scaling into one equation, and combined the norm threshold with its piecewise clipping rule. The implementation order, parameter values, and resulting direction are unchanged.
+- [x] Reordered the quality-direction definition so the smoothing increment is defined before use, then removed prose that repeated the displayed equation.
+- [x] Final `xelatex -> xelatex` compilation produced 13 Letter pages with no LaTeX Error, undefined reference/citation, overfull box, or rerun-label warning.
+- [x] Active-source scans found no TODO, local absolute path, prohibited comparison terminology, or stale reference to the removed CVF-strength equation. Rendered review of pages 5--7 found no clipping, overlap, broken equation, or abnormal whitespace.
+
+## 2026-07-30 Final Chinese-manuscript Consistency Audit
+
+- [x] Corrected the ablation control variables so V1, V3, and V4 inherit the same conservative F/P/R scheduler as V0. V3 now disables iterative sparse preservation while retaining the one-shot initialization repair through an independent flag.
+- [x] A small regression confirmed that all affected variants report only the formal F/P/R states, V1 generates no CVF candidate, and V3 performs no iterative sparse repair.
+- [x] Re-ran the affected V1/V3/V4 variants for three scenes, 30 independent runs, `N=30`, and `T=300`; combined them with the unchanged V0/V2/V5 records to form 540 validated rows in `cvf_ae_formal_ablation_corrected_20260730_v2`.
+- [x] Verified complete state histories, zero CVF triggers for V1, and at most the initialization repair quota for V3. Parallel scene batches were not used for wall-clock comparisons; the manuscript reports only function-evaluation and trigger ratios.
+- [x] Regenerated the active ablation feasibility, rank, and representative-path figures from the corrected records. Updated both the active compact table and the archived full table to the same values.
+- [x] Synchronized the abstract, ablation discussion, conclusion, and overhead table. V0 ranks first in all three ablation scenes; the V0/w/o-CVF evaluation ratios are `1.002`, `1.001`, and `1.010`, with a three-scene mean extra evaluation count of about `0.44%`.
+- [x] Aligned the pseudocode and formulas with the implementation: request state `q_t` versus active state `s_t`, Deb-only retention of repaired candidates, generation-level best update, reference-height preference, state-varying noise scaling, and the implemented complexity terms.
+- [x] Added an explicit non-curvature pressure definition and final curvature synthesis equation, removed a non-implemented risk denominator epsilon, and translated the remaining English boundary-formula placeholder.
+- [x] Corrected the Wang and Fu article-number metadata and added the Deb constraint-handling citation. All 22 rendered references resolve, with no missing or duplicate cited key.
+- [x] Replaced the stale MATLAB R2022b environment line with R2024b, matching the only installed executable and the corrected formal-ablation run environment.
+- [x] MATLAB Code Analyzer reported zero issue for the optimizer, corrected-artifact generator, and representative-path generator. The runner/initializer checks retain only pre-existing performance and API-modernization advisories (dynamic struct growth and `datestr`/`now`), with no correctness diagnostic.
+- [x] Final `bibtex -> xelatex -> xelatex` plus a later `xelatex -> xelatex` pass produced 13 Letter pages. The log has zero LaTeX Error, undefined reference/citation, overfull box, or rerun warning.
+- [x] Active-source and rendered-PDF scans found no TODO, local absolute path, prohibited algorithm/scene terminology, stale ablation value, or internal correction wording. All 13 rendered pages were reviewed; figures, tables, equations, section transitions, and bibliography columns are unclipped, non-overlapping, and visually balanced.
