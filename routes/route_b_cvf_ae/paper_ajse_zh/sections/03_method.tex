@@ -1,11 +1,34 @@
 ﻿\section{CVF-AE 方法}
 \label{sec:method}
 
-CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础自适应进化搜索，而将其置于候选生成阶段：障碍物、禁飞区、高度、转弯、边界和风险信息先构造为有界方向增量，再仅作用于少量关键候选，使约束违反信息在评价前提供局部移动建议，同时保留基础搜索的全局探索职责。
+CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础自适应进化搜索，而将其置于候选生成阶段：障碍物、禁飞区、高度、转弯、边界和风险等局部约束与质量信息先构造为有界方向增量，再仅作用于少量关键候选，使这些信息在评价前提供局部移动建议，同时保留基础搜索的全局探索职责。
 
 \subsection{基础 AE 与 CVF-AE 流程}
 
 算法 \ref{alg:base-ae} 与算法 \ref{alg:cvf-ae} 分别概括基础 AE 和 CVF-AE 的流程。两者共享第 \ref{sec:problem-formulation} 节中的路径编码、目标函数、违反分数、边界投影和 Deb 规则。基础 AE 使用固定的平衡进化算子；CVF-AE 仅在稀疏触发时生成额外的约束引导候选，并采用更严格的局部门控。
+
+基础 AE 的候选由固定平衡进化方向、凸组合和边界投影构成：
+\begin{equation}
+    \mathbf{X}_{\mathrm{AE}} =
+    \Pi_{\Omega}
+    \left(
+    (1-\eta_t-\mu_t)(\mathbf{X}_i+\mathbf{D}_{\mathrm{AE}})
+    +\eta_t\mathbf{X}_i+\mu_t\mathbf{X}_{\mathrm{elite}}
+    \right)
+    \label{eq:ae-candidate}
+\end{equation}
+其中 $\Pi_{\Omega}(\cdot)$ 为边界投影，$\mathbf{X}_{\mathrm{elite}}$ 为精英池采样个体。令 $\tau=t/T$，$\mathbf d_{\mathrm{best}}=\mathbf X^*-\mathbf X_i$，$\mathbf d_{\mathrm{elite}}=\bar{\mathbf X}_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{sample}}=\mathbf X_{\mathrm{elite}}-\mathbf X_i$。从除当前个体 $i$ 外的其余 $N-1$ 个种群成员中，等概率且不重复地随机选取四个不同的索引，记为 $a,b,c,d$，并定义 $\mathbf d_{ab}=\mathbf X_a-\mathbf X_b$、$\mathbf d_{cd}=\mathbf X_c-\mathbf X_d$；另有 $\boldsymbol\xi\sim\mathcal U([-1,1]^{3K})$。其方向为
+\begin{equation}
+    \begin{aligned}
+    \mathbf D_{\mathrm{AE}}
+    ={}&a_e\mathbf r_e\odot\mathbf d_{\mathrm{elite}}
+    +a_b\mathbf r_b\odot\mathbf d_{\mathrm{best}}\\
+    &+a_d\bigl(\omega_d\mathbf d_{ab}+(1-\omega_d)\mathbf d_{cd}\bigr)
+    +a_s\mathbf r_s\odot\mathbf d_{\mathrm{sample}}\\
+    &+a_u\rho_t\boldsymbol\xi\odot(\mathbf u-\mathbf l)
+    \end{aligned}
+\label{eq:ae-base-direction}
+\end{equation}
 
 \begin{algorithm}[H]
 \caption{基础 AE 路径搜索流程}
@@ -45,19 +68,19 @@ CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础
 \For{$t=1$ to $T$}
     \State 计算请求状态 $q_t$，并通过保守调度得到生效状态 $s_t$
     \For{$i=1$ to $N$}
-        \State 按生效状态构造内部基础候选 $\mathbf{X}_{\mathrm{AE}}$
-        \State 评价 $\mathbf{X}_{\mathrm{AE}}$ 的目标值和违反量
+        \State 按生效状态构造内部基础候选 $\mathbf{X}_{\mathrm{AE}}^{(s_t)}$
+        \State 评价 $\mathbf{X}_{\mathrm{AE}}^{(s_t)}$ 的目标值和违反量
         \If{个体 $i$ 满足 CVF 稀疏触发条件}
             \State 构造 $\mathbf{D}_{\mathrm{CVF}}$ 与 $\mathbf{D}_{\mathrm{Q}}$
             \State 按式 \eqref{eq:cvf-candidate} 生成 $\mathbf{X}_{\mathrm{CVF}}$
             \State 评价 $\mathbf{X}_{\mathrm{CVF}}$ 的目标值和违反量
-            \If{$\mathbf{X}_{\mathrm{CVF}} \prec_{\mathrm{Deb}} \mathbf{X}_{\mathrm{AE}}$ 且 $J(\mathbf{X}_{\mathrm{CVF}})\leq J(\mathbf{X}_{\mathrm{AE}})$}
+            \If{$\mathbf{X}_{\mathrm{CVF}} \prec_{\mathrm{Deb}} \mathbf{X}_{\mathrm{AE}}^{(s_t)}$ 且 $J(\mathbf{X}_{\mathrm{CVF}})\leq J(\mathbf{X}_{\mathrm{AE}}^{(s_t)})$}
                 \State $\mathbf{Y}\gets \mathbf{X}_{\mathrm{CVF}}$
             \Else
-                \State $\mathbf{Y}\gets \mathbf{X}_{\mathrm{AE}}$
+                \State $\mathbf{Y}\gets \mathbf{X}_{\mathrm{AE}}^{(s_t)}$
             \EndIf
         \Else
-            \State $\mathbf{Y}\gets \mathbf{X}_{\mathrm{AE}}$
+            \State $\mathbf{Y}\gets \mathbf{X}_{\mathrm{AE}}^{(s_t)}$
         \EndIf
         \If{$\mathbf{Y}$ 被选入稀疏可行性保持集合}
             \State 生成并评价局部修复候选 $\mathbf{X}_{\mathrm{rep}}$
@@ -76,29 +99,8 @@ CVF-AE 不以约束可行性场（Constraint Viability Field, CVF）替代基础
 \end{algorithm}
 % \FloatBarrier
 
-基础 AE 的候选由固定平衡进化方向、凸组合和边界投影构成：
-\begin{equation}
-    \mathbf{X}_{\mathrm{AE}} =
-    \Pi_{\Omega}
-    \left(
-    (1-\eta_t-\mu_t)(\mathbf{X}_i+\mathbf{D}_{\mathrm{AE}})
-    +\eta_t\mathbf{X}_i+\mu_t\mathbf{X}_{\mathrm{elite}}
-    \right)
-    \label{eq:ae-candidate}
-\end{equation}
-其中 $\Pi_{\Omega}(\cdot)$ 为边界投影，$\mathbf{X}_{\mathrm{elite}}$ 为精英池采样个体。令 $\tau=t/T$，$\mathbf d_{\mathrm{best}}=\mathbf X^*-\mathbf X_i$，$\mathbf d_{\mathrm{elite}}=\bar{\mathbf X}_{\mathrm{elite}}-\mathbf X_i$，$\mathbf d_{\mathrm{sample}}=\mathbf X_{\mathrm{elite}}-\mathbf X_i$。从 $\{1,\ldots,N\}\setminus\{i\}$ 中无放回均匀抽取四个互异索引 $a,b,c,d$，并定义 $\mathbf d_{ab}=\mathbf X_a-\mathbf X_b$、$\mathbf d_{cd}=\mathbf X_c-\mathbf X_d$；另有 $\boldsymbol\xi\sim\mathcal U([-1,1]^{3K})$。其方向为
-\begin{equation}
-    \begin{aligned}
-    \mathbf D_{\mathrm{AE}}
-    ={}&a_e\mathbf r_e\odot\mathbf d_{\mathrm{elite}}
-    +a_b\mathbf r_b\odot\mathbf d_{\mathrm{best}}\\
-    &+a_d\bigl(\omega_d\mathbf d_{ab}+(1-\omega_d)\mathbf d_{cd}\bigr)
-    +a_s\mathbf r_s\odot\mathbf d_{\mathrm{sample}}\\
-    &+a_u\rho_t\boldsymbol\xi\odot(\mathbf u-\mathbf l)
-    \end{aligned}
-\label{eq:ae-base-direction}
-\end{equation}
-其中各 $\mathbf r$ 为 $[0,1]^{3K}$ 上的独立随机向量，$\odot$ 表示逐维乘积；$a_e$、$a_b$、$a_d$、$a_s$ 和 $a_u$ 为平衡精英、最优、差分、采样与随机扰动的固定调度系数，$\omega_d$ 为差分组合权重，$\eta_t$ 和 $\mu_t$ 为随进程平滑变化的凸组合系数。上述设置在所有场景中保持一致。
+
+其中各 $\mathbf r$ 为 $[0,1]^{3K}$ 上的独立随机向量，$\odot$ 表示逐维乘积；$a_e$、$a_b$、$a_d$、$a_s$ 和 $a_u$ 为平衡精英、最优、差分、采样与随机扰动的固定调度系数，$\omega_d$ 为差分组合权重，$\eta_t$ 和 $\mu_t$ 为随进程平滑变化的凸组合系数，并满足 $\eta_t,\mu_t\geq0$ 及 $\eta_t+\mu_t\leq1$。上述设置在所有场景中保持一致。
 
 \subsection{CVF-AE 算法设计}
 
@@ -106,7 +108,7 @@ CVF-AE 的新增环节形成连续闭环，而非彼此独立的模块：约束�
 
 \subsubsection{约束感知初始化与参考弱引导}
 
-CVF-AE 在随机初始化之外引入低分辨率参考控制序列，并重采样为与路径编码一致的内部控制点。该序列由平面分辨率 \SI{5}{m}、垂向分辨率 \SI{4}{m} 的三维栅格 A* 在占据、风险、边界和高度偏好代价上搜索得到；它仅作为 CVF-AE 的内部初始化与弱方向先验，不参与基线比较。记参考控制点为 $\{\mathbf q^{\mathrm{ref}}_k\}_{k=1}^{K}$，其向量化形式为
+CVF-AE 在随机初始化之外引入低分辨率参考控制序列，并重采样为与路径编码一致的内部控制点。该序列由平面分辨率 \SI{5}{m}、垂向分辨率 \SI{4}{m} 的三维栅格 A* 在占据、风险、边界和高度偏好代价上搜索得到。记参考控制点为 $\{\mathbf q^{\mathrm{ref}}_k\}_{k=1}^{K}$，其向量化形式为
 \begin{equation}
     \mathbf X_{\mathrm{ref}}=
     \mathrm{vec}\left(
@@ -122,7 +124,7 @@ CVF-AE 在随机初始化之外引入低分辨率参考控制序列，并重采�
     \max\left(
     r_{\min},
     \frac{c_d d_{\mathrm{clr}}(\mathbf q^{\mathrm{ref}}_k)}
-    {1+c_\phi \phi(\mathbf q^{\mathrm{ref}}_k)}
+    {1+c_\phi r_{\mathrm{obj}}(\mathbf q^{\mathrm{ref}}_k)}
     \right)
     \label{eq:init-radius}
 \end{equation}
@@ -137,13 +139,13 @@ CVF-AE 在随机初始化之外引入低分辨率参考控制序列，并重采�
     \boldsymbol\epsilon_{i,k}\sim\mathcal U([-r_k,r_k]^3)
     \label{eq:guided-init}
 \end{equation}
-其中 $d_{\mathrm{clr}}(\cdot)$ 为到障碍物、禁飞区、高度边界和水平边界的最小裕度，$\phi(\cdot)$ 为风险场强度，$c_d$、$c_\phi$ 和 $r_{\min}$ 控制扰动范围。硬约束内的扰动点经边界投影和局部外推处理，其余个体均匀初始化；复杂布局以固定走廊控制点模板扩展初始覆盖。全部个体按同一评价函数和 Deb 规则筛选，参考序列在迭代阶段仅提供弱方向 $\mathbf d_{\mathrm{ref}}$。
+其中，上标 $(0)$ 表示初始化（第 $0$ 代），下标 $i$ 和 $k$ 分别表示种群个体与内部控制点索引。对第 $i$ 个引导个体，$\{\mathbf q^{(0)}_{i,k}\}_{k=1}^{K}$ 按式 \eqref{eq:path-control-vector} 拼接为初始决策向量 $\mathbf X_i^{(0)}\in\mathbb R^{3K}$。$d_{\mathrm{clr}}(\cdot)$ 和 $r_{\mathrm{obj}}(\cdot)$ 分别为局部最小裕度和风险密度，$c_d$、$c_\phi$、$r_{\min}$ 分别控制净空缩放、风险收缩和最小扰动半径。生成点经投影和局部处理后进入种群；其余个体均匀初始化，复杂布局可加入固定走廊控制点模板。所有个体均按同一评价函数和 Deb 规则筛选，参考序列在迭代中仅提供弱方向 $\mathbf d_{\mathrm{ref}}$。
 
-约束感知初始化只能改善搜索开始时进入潜在可行走廊的机会，不能决定后续各代是否仍应施加约束引导。因此，CVF-AE 进一步依据群体的可行性、违反程度和搜索进展识别介入时机。
+该初始化仅提供进入潜在可行走廊的起点；后续介入由群体可行性、违反程度和搜索进展共同决定。
 
 \subsubsection{状态识别与保守调度}
 
-令 $\rho_f$、$\bar{V}$ 和 $\Delta J_{\mathrm{recent}}$ 分别表示可行率、平均违反量和最近 $w$ 个已完成迭代的目标改进：
+令 $\mathbf X_t^*$ 为第 $t$ 代按 Deb 规则选取的最优个体，$J_t^*=J(\mathbf X_t^*)$。$\rho_f$、$\bar{V}$ 和 $\Delta J_{\mathrm{recent}}$ 分别表示可行率、平均违反量和最近 $w$ 个已完成迭代的目标改进：
 \begin{equation}
     \rho_f=\frac{1}{N}\sum_{i=1}^{N}\mathbb I(\mathbf X_i\ \mathrm{feasible}),
     \qquad
@@ -156,17 +158,17 @@ CVF-AE 在随机初始化之外引入低分辨率参考控制序列，并重采�
     \qquad w=15
     \label{eq:recent-improvement}
 \end{equation}
-当历史长度超过窗口 $w$ 且 $\Delta J_{\mathrm{recent}}<10^{-4}$ 时认为搜索停滞。设 $\chi_{\mathrm{stag}}$ 为该事件的示性函数，则保守调度在形成、保持和恢复三种状态之间切换：
+当历史长度超过窗口 $w$ 且 $\Delta J_{\mathrm{recent}}<10^{-4}$ 时认为搜索停滞。原始识别器还记录质量细化状态，所采用的保守调度仅激活形成、保持和恢复三种状态。设 $\chi_{\mathrm{stag}}$ 为停滞事件的示性函数，则请求状态为
 \begin{equation}
     q_t=
     \begin{cases}
-    \mathrm{F}, & \neg\mathrm{feasible}(\mathbf X^*)\land(\rho_f\leq0.10\lor\bar V\geq18)\\
+    \mathrm{F}, & \neg\mathrm{feasible}(\mathbf X^*)\\
     \mathrm{R}, & \chi_{\mathrm{stag}}=1\land\rho_f<0.55\land\bar V\geq6\\
     \mathrm{P}, & \mathrm{otherwise}
     \end{cases}
     \label{eq:conservative-state}
 \end{equation}
-其中 $q_t$ 为请求状态，$\mathrm{F}$、$\mathrm{P}$ 和 $\mathrm{R}$ 分别表示形成、保持和恢复。形成条件优先于恢复条件；非保持请求需连续确认 $2$ 代，确认后的生效状态记为 $s_t$。
+其中 $q_t$ 为请求状态，$\mathrm{F}$、$\mathrm{P}$ 和 $\mathrm{R}$ 分别表示形成、保持和恢复。$\mathbf X^*$ 按 Deb 规则选取，因此 $\neg\mathrm{feasible}(\mathbf X^*)$ 等价于当前种群尚无可行个体；形成条件优先于恢复条件。非保持请求需连续确认 $2$ 代，确认后的生效状态记为 $s_t$。
 
 CVF-AE 在每个生效状态下先构造内部基础候选。令 $\mathbf d_{\mathrm{ref}}=\mathbf X_{\mathrm{ref}}-\mathbf X_i$，并沿用前文的 $\mathbf d_{\mathrm{best}}$、$\mathbf d_{\mathrm{elite}}$、$\mathbf d_{\mathrm{sample}}$、$\mathbf d_{ab}$ 和 $\mathbf d_{cd}$，则
 \begin{equation}
@@ -183,7 +185,17 @@ CVF-AE 在每个生效状态下先构造内部基础候选。令 $\mathbf d_{\ma
     \end{aligned}
     \label{eq:ae-state-direction}
 \end{equation}
-其中各 $\mathbf r$ 为独立均匀随机向量，$\boldsymbol\xi$、$\boldsymbol\zeta$ 分别为 $[-1,1]^{3K}$ 上的均匀扰动和标准高斯扰动；$c_b$ 至 $c_g$ 由状态确定，部分系数随进程 $\tau=t/T$ 平滑变化。其内部基础候选为 $\mathbf X_{\mathrm{AE}}=\Pi_{\Omega}((1-\nu_s)(\mathbf X_i+\mathbf D_{\mathrm{AE}}^{(s_t)})+\nu_s\mathbf X_{\mathrm{elite}})$，其中 $\nu_s$ 随进程缓慢增加，并在形成状态额外增强精英锚定。三种状态的方向侧重及固定 CVF 候选融合权重见表 \ref{tab:cvf-state-coefficients}；该状态化候选仅属于 CVF-AE，不属于主对比中的基础 AE。
+其中各 $\mathbf r$ 为独立均匀随机向量，$\boldsymbol\xi$、$\boldsymbol\zeta$ 分别为 $[-1,1]^{3K}$ 上的均匀扰动和标准高斯扰动；$c_b$ 至 $c_g$ 由状态确定，部分系数随进程 $\tau=t/T$ 平滑变化。其状态化内部基础候选为
+\begin{equation}
+    \mathbf X_{\mathrm{AE}}^{(s_t)}=
+    \Pi_{\Omega}
+    \left(
+    (1-\nu_s)(\mathbf X_i+\mathbf D_{\mathrm{AE}}^{(s_t)})
+    +\nu_s\mathbf X_{\mathrm{elite}}
+    \right)
+    \label{eq:state-ae-candidate}
+\end{equation}
+其中 $\nu_s$ 随进程缓慢增加，并在形成状态额外增强精英锚定。三种状态的方向侧重及固定 CVF 候选融合权重见表 \ref{tab:cvf-state-coefficients}。
 
 \begin{table}[tbp]
 \centering
@@ -203,7 +215,7 @@ $\mathrm{R}$ & 差分恢复与高斯扰动 & $(.90,.28,.04)$\\
 
 \subsubsection{CVF 构建与压力分量}
 
-CVF 不是目标或约束函数的解析梯度，而是在控制点空间中由局部约束压力构造的有界候选方向。给定低密度路径采样集 $\widetilde{\mathcal P}=\{\widetilde{\mathbf p}_m\}_{m=1}^{\widetilde M}$，采样点压力先分配到最近内部控制点：
+CVF 不依赖目标或约束函数的解析梯度，也不要求连续可微的势函数假设；它在控制点空间中将局部约束信息编码为有界、分段的候选修正方向。给定低密度路径采样集 $\widetilde{\mathcal P}=\{\widetilde{\mathbf p}_m\}_{m=1}^{\widetilde M}$，采样点压力先分配到最近内部控制点：
 \begin{equation}
     k^*(m)=\arg\min_{1\leq k\leq K}\|\widetilde{\mathbf p}_m-\mathbf{q}_k\|_2
     \label{eq:nearest-control}
@@ -221,17 +233,31 @@ CVF 不是目标或约束函数的解析梯度，而是在控制点空间中由�
     \end{aligned}
     \label{eq:cvf-field}
 \end{equation}
-其中 $\mathbf f_c(\widetilde{\mathbf p}_m)$ 为采样点处第 $c$ 类压力方向，$\eta_c(s_t)$ 为生效状态相关权重；局部违反程度由分量幅值体现。形成状态加强障碍物、禁飞区和高度压力，保持状态采用较均衡的分量组合，恢复状态整体减弱约束牵引但保留障碍物和禁飞区方向。各状态使用固定权重，且不随测试场景调节。
-若多个采样点映射到同一控制点，则按命中次数平均压力。记 $n_k$ 为映射到第 $k$ 个控制点且压力非零的采样点数量，非曲率增量为
+其中 $\mathbf f_c(\widetilde{\mathbf p}_m)$ 为采样点处第 $c$ 类压力方向，$\eta_c(s_t)$ 为生效状态相关权重；局部违反程度由分量幅值体现。对于含有多个空间元素的分量，先对同类元素的压力求和：
+\begin{equation}
+\begin{aligned}
+\mathbf f_{\mathrm{obs}}(\mathbf p)&=\sum_{\mathcal B_j\in\mathcal O}\mathbf f_{\mathrm{obs}}(\mathbf p;\mathcal B_j),\\
+\mathbf f_{\mathrm{nfz}}(\mathbf p)&=\sum_{\mathcal Z_j\in\mathcal Z}\mathbf f_{\mathrm{nfz}}(\mathbf p;\mathcal Z_j),\\
+\mathbf f_{\mathrm{risk}}(\mathbf p)&=\sum_h\mathbf f_{\mathrm{risk}}(\mathbf p;\mathcal H_h).
+\end{aligned}
+\label{eq:cvf-component-aggregation}
+\end{equation}
+形成状态加强障碍物、禁飞区和高度压力，保持状态采用较均衡的分量组合，恢复状态整体减弱约束牵引但保留障碍物和禁飞区方向。各状态使用固定权重，且不随测试场景调节；关键固定参数统一列于表 \ref{tab:common-setup}。
+若多个采样点映射到同一控制点，则按命中次数平均压力。记
+\begin{equation}
+    n_k=\sum_{m=1}^{\widetilde M}\mathbb I\!\left(k^*(m)=k\ \land\ \|\mathbf F(\widetilde{\mathbf p}_m)\|_2>0\right)
+    \label{eq:cvf-hit-count}
+\end{equation}
+为映射到第 $k$ 个控制点且压力非零的采样点数量，非曲率增量为
 \begin{equation}
     \Delta \mathbf q_k^{\mathrm{path}}=
     \begin{cases}
-    \dfrac{1}{n_k}\sum_{m:k^*(m)=k}\mathbf F(\widetilde{\mathbf p}_m), & n_k>0\\[6pt]
+    \dfrac{1}{n_k}\sum_{m:k^*(m)=k,\ \|\mathbf F(\widetilde{\mathbf p}_m)\|_2>0}\mathbf F(\widetilde{\mathbf p}_m), & n_k>0\\[6pt]
     \mathbf 0, & n_k=0
     \end{cases}
     \label{eq:cvf-average-pressure}
 \end{equation}
-图 \ref{fig:cvf-pressure-mapping-inset} 展示代表性采样压力向 $\mathbf q_k$ 的映射、平移平均及其与曲率分量合成 $\Delta\mathbf q_k$ 的过程。
+图 \ref{fig:cvf-pressure-mapping-inset} 示意采样压力到控制点 $\mathbf q_k$ 的映射、压力平移与平均，以及与曲率分量的合成过程。
 
 \begin{figure}[tbp]
     \centering
@@ -254,6 +280,7 @@ CVF 不是目标或约束函数的解析梯度，而是在控制点空间中由�
     \frac{r_o-d_o}{r_o}\frac{\mathbf d_o}{d_o}
     \label{eq:obstacle-buffer-pressure}
 \end{equation}
+当 $d_o>r_o$ 时，该分量为 $\mathbf 0$。
 若 $\mathbf p$ 位于障碍物内部，则选择最近的水平外侧面法向 $\mathbf n_{\min}$，并令
 \begin{equation}
     \mathbf f_{\mathrm{obs}}(\mathbf p;\mathcal B)=
@@ -263,13 +290,13 @@ CVF 不是目标或约束函数的解析梯度，而是在控制点空间中由�
 其中 $d_{\min}$ 为到最近水平面的穿透深度，$r_o$ 为障碍缓冲半径，$\lambda_z$ 为固定垂向缩放系数。
 
 \paragraph{禁飞区分量}
-设柱状禁飞区为 $\mathcal Z=(\mathbf c_z,r_z,z_l,z_u)$。若 $p_z\notin [z_l,z_u]$，该分量为零；否则令 $\mathbf d_z=[p_x-c_{z,x},p_y-c_{z,y},0]^\mathsf T$，$d_z=\|\mathbf d_z\|_2$，并定义
+设第 $j$ 个柱状禁飞区为 $\mathcal Z_j=(\mathbf c_j,r_j,z_j^-,z_j^+)$。若 $p_z\notin [z_j^-,z_j^+]$，该分量为零；否则令 $\mathbf d_j=[p_x-c_{j,x},p_y-c_{j,y},0]^\mathsf T$，$d_j=\|\mathbf d_j\|_2$，并定义
 \begin{equation}
-    \mathbf f_{\mathrm{nfz}}(\mathbf p;\mathcal Z)=
+    \mathbf f_{\mathrm{nfz}}(\mathbf p;\mathcal Z_j)=
     \begin{cases}
-    (r_z-d_z+r_n)\dfrac{\mathbf d_z}{d_z}, & d_z\leq r_z\\[6pt]
-    \dfrac{r_z+r_n-d_z}{r_n}\dfrac{\mathbf d_z}{d_z}, & r_z<d_z\leq r_z+r_n\\[6pt]
-    \mathbf 0, & d_z>r_z+r_n
+    (r_j-d_j+r_n)\dfrac{\mathbf d_j}{d_j}, & d_j\leq r_j\\[6pt]
+    \dfrac{r_j+r_n-d_j}{r_n}\dfrac{\mathbf d_j}{d_j}, & r_j<d_j\leq r_j+r_n\\[6pt]
+    \mathbf 0, & d_j>r_j+r_n
     \end{cases}
     \label{eq:nfz-pressure}
 \end{equation}
@@ -278,14 +305,14 @@ CVF 不是目标或约束函数的解析梯度，而是在控制点空间中由�
 \paragraph{风险分量}
 对风险热点 $\mathcal H_h=(\mathbf c_h,\sigma_h,a_h)$，令 $\widetilde{\mathbf d}_h=[p_x-c_{h,x},p_y-c_{h,y},\lambda_z(p_z-c_{h,z})]^\mathsf T$，并定义
 \begin{equation}
-    \phi_h(\mathbf p)=
+    \phi_h^{\mathrm{CVF}}(\mathbf p)=
     a_h\exp\left(-\frac{\|\widetilde{\mathbf d}_h\|_2^2}{2\sigma_h^2}\right)
     \label{eq:risk-hotspot}
 \end{equation}
-仅当 $\phi_h(\mathbf p)>\phi_0$ 时触发风险压力：
+仅当 $\phi_h^{\mathrm{CVF}}(\mathbf p)>\phi_0$ 时触发风险压力：
 \begin{equation}
     \mathbf f_{\mathrm{risk}}(\mathbf p;\mathcal H_h)=
-    \kappa_r(\phi_h(\mathbf p)-\phi_0)
+    \kappa_r(\phi_h^{\mathrm{CVF}}(\mathbf p)-\phi_0)
     \frac{\widetilde{\mathbf d}_h}{\|\widetilde{\mathbf d}_h\|_2}
     \label{eq:risk-pressure}
 \end{equation}
@@ -304,7 +331,13 @@ z_u-p_z, & p_z>z_u\\
 \end{cases}
 \label{eq:altitude-pressure}
 \end{equation}
-并叠加弱参考高度项 $\lambda_{\mathrm{ref}}(z_{\mathrm{ref}}-p_z)$，其中 $b_z$ 为高度缓冲宽度，$\lambda_{\mathrm{ref}}$ 为固定弱引导系数。水平边界分量为
+将该标量与弱参考高度项组合为三维高度压力
+\begin{equation}
+    \mathbf f_{\mathrm{alt}}(\mathbf p)=
+    \left[0,\ 0,\ f_{\mathrm{alt},z}(\mathbf p)+\lambda_{\mathrm{ref}}(z_{\mathrm{ref}}-p_z)\right]^\mathsf T,
+    \label{eq:altitude-pressure-vector}
+\end{equation}
+其中 $b_z$ 为高度缓冲宽度，$\lambda_{\mathrm{ref}}$ 为固定弱引导系数。水平边界分量为
 \begin{equation}
 \begin{aligned}
 f_{\mathrm{bnd},x}(\mathbf p)&=
@@ -317,7 +350,13 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{按同样方式定义}
 \end{aligned}
 \label{eq:boundary-pressure}
 \end{equation}
-其中 $b_b$ 为水平边界缓冲宽度，硬边界仍由投影保证。
+相应的三维边界压力写为
+\begin{equation}
+    \mathbf f_{\mathrm{bnd}}(\mathbf p)=
+    \left[f_{\mathrm{bnd},x}(\mathbf p),\ f_{\mathrm{bnd},y}(\mathbf p),\ 0\right]^\mathsf T.
+    \label{eq:boundary-pressure-vector}
+\end{equation}
+其中 $b_b$ 为 CVF 的水平边界压力宽度；硬边界仍由投影保证。
 
 \paragraph{转弯分量}
 若连续控制点形成的局部转角 $\vartheta_k$ 接近或超过阈值，则施加局部平滑方向。$\vartheta_k$ 按式 \eqref{eq:turning-angle} 计算，但以控制点 $\mathbf q_k$ 替代采样点 $\mathbf p_m$：
@@ -338,13 +377,14 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{按同样方式定义}
     \Delta\mathbf q_k
     =
     \Delta\mathbf q_k^{\mathrm{path}}
+    +
     \eta_{\mathrm{curv}}(s_t)\mathbf F_{k,\mathrm{curv}}
     \label{eq:cvf-control-increment}
 \end{equation}
 
-为限制局部压力的叠加幅度，CVF 候选还需经过有界融合、稀疏触发和保守接收。
-
 \subsubsection{有界融合与稀疏接收}
+
+上述压力仅提供局部移动建议。为避免其叠加后过度改变主体搜索，CVF-AE 依次限制步长、融合质量方向，并仅对少量候选执行保守接收。
 
 将全部内部控制点增量向量化后得到未截断 CVF 步长：
 \begin{equation}
@@ -383,7 +423,7 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{按同样方式定义}
     \end{gathered}
     \label{eq:norm-clip}
 \end{equation}
-其中 $\kappa_{\mathrm{cvf}}$ 为 CVF 强度系数，$\rho_{\mathrm{step}}$ 和 $\rho_{\mathrm{norm}}$ 限制单次引导步长；$\mathrm{clip}(\cdot,\rho)$ 表示逐维对称截断。
+其中 $\kappa_{\mathrm{cvf}}$ 控制总体强度，$\rho_{\mathrm{step}}$ 和 $\rho_{\mathrm{norm}}$ 分别限制逐维和整体步长。
 
 质量引导方向 $\mathbf D_{\mathrm Q}$ 由当前最优解、采样精英个体和控制点平滑项共同构成。对内部控制点序列 $\{\mathbf q_k\}_{k=1}^{K}$，当 $k=2,\ldots,K-1$ 时，局部平滑增量为
 \begin{equation}
@@ -420,7 +460,7 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{按同样方式定义}
     \end{aligned}
     \label{eq:cvf-candidate}
 \end{equation}
-基础候选 $\mathbf{X}_{\mathrm{AE}}$ 始终生成，CVF 候选 $\mathbf{X}_{\mathrm{CVF}}$ 仅对触发个体生成。
+状态化内部基础候选 $\mathbf{X}_{\mathrm{AE}}^{(s_t)}$ 始终生成，CVF 候选 $\mathbf{X}_{\mathrm{CVF}}$ 仅对触发个体生成。
 
 设第 $t$ 代状态为 $s_t$，对应触发比例为 $r_{s_t}$，则
 \begin{equation}
@@ -428,26 +468,24 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{按同样方式定义}
     \max\!\left\{1,\operatorname{round}(r_{s_t}N)\right\}
     \label{eq:cvf-quota}
 \end{equation}
-本文将满足 $\varepsilon_v<V(\mathbf X_i)\leq15$ 的个体定义为近可行不可行个体。每代先按当前标量适应度排序；F/P 状态从排序前 $45\%$ 中筛选近可行对象，R 状态则在全部近可行对象中筛选。三种状态的名义触发比例分别为 $r_{\mathrm F}=0.06$、$r_{\mathrm P}=0.06$ 和 $r_{\mathrm R}=0.04$。一旦种群已经产生可行最优解，则每 $3$ 代检查一次，单代比例不超过 $0.03$。其余几何缓冲和截断常数在三个场景中保持不变。
+本文将满足 $\varepsilon_v<V(\mathbf X_i)\leq15$ 的个体定义为近可行不可行个体。F/P 状态仅在当前标量适应度前 $45\%$ 的此类对象中触发，R 状态允许全部此类对象；三种状态的名义比例分别为 $r_{\mathrm F}=0.06$、$r_{\mathrm P}=0.06$ 和 $r_{\mathrm R}=0.04$。出现可行最优解后，CVF 每 $3$ 代检查一次，且单代比例不超过 $0.03$。
 
 每个触发个体先评价基础候选；若生成 CVF 候选，则二者按局部规则比较：
 \begin{equation}
     \mathbf{X}_{\mathrm{CVF}}
     \prec_{\mathrm{Deb}}
-    \mathbf{X}_{\mathrm{AE}},
+    \mathbf{X}_{\mathrm{AE}}^{(s_t)},
     \qquad
     J(\mathbf{X}_{\mathrm{CVF}})
     \leq
-    J(\mathbf{X}_{\mathrm{AE}})
+    J(\mathbf{X}_{\mathrm{AE}}^{(s_t)})
     \label{eq:local-cvf-accept}
 \end{equation}
-式 \eqref{eq:local-cvf-accept} 是 Deb 优先且目标不增的保守局部门控：CVF 候选必须同时满足两项条件，否则保留基础候选。稀疏可行性保持发生在候选生成之后：当 $\tau\geq0.15$ 时，仅从标量适应度前 $30\%$ 中选择满足 $\varepsilon_v<V(\mathbf Y)\leq25$ 的候选，单代数量不超过 $\max\{1,\operatorname{round}(0.08N)\}$。每个候选只执行一次碰撞、禁飞区和转弯局部修复及风险降低校正，且仅当修复结果按 Deb 规则优于修复前候选时才予以保留。
-
-至此，CVF-AE 将初始化先验、状态化介入、局部移动建议和候选保留边界连接为闭环；基础 AE 始终承担主体搜索，CVF 仅在必要时提供受限修正。
+式 \eqref{eq:local-cvf-accept} 要求 CVF 候选同时在 Deb 顺序更优且综合适应度不增加，否则保留状态化内部基础候选。随后，当 $\tau\geq0.15$ 时，仅对标量适应度前 $30\%$ 且满足 $\varepsilon_v<V(\mathbf Y)\leq25$ 的少量候选执行一次局部修复，单代数量不超过 $\max\{1,\operatorname{round}(0.08N)\}$；修复结果仅在 Deb 规则下更优时保留。
 
 \subsection{算法复杂度}
 
-设种群规模为 $N$，最大迭代次数为 $T$，完整路径评价采样点数为 $M$，CVF 低密度采样点数为 $\widetilde M$，内部控制点数为 $K$，空间约束元素数为 $G$。基础搜索的候选评价次数为 $O(TN)$，单次路径评价代价为
+以下以完整路径评价为主导计算成本，并沿用前文的种群、迭代、路径采样和控制点记号；令 $G$ 表示参与路径检查的空间元素总数。基础搜索的候选评价次数为 $O(TN)$，单次路径评价代价为
 \begin{equation}
     O\big(M(G+K)\big)
 \end{equation}
@@ -458,4 +496,13 @@ f_{\mathrm{bnd},y}(\mathbf p)&\ \text{按同样方式定义}
     T\{N_{\mathrm{cvf}}[M+\widetilde M]+N_{\mathrm{rep}}M\}(G+K)
     \right)
 \end{equation}
-初始化阶段至多对 $N_{\mathrm{init}}$ 个体执行一次修复，另有一次包含 $Q$ 个栅格节点的 A* 参考搜索，其一次性工作量分别为 $O(N_{\mathrm{init}}M(G+K))$ 和 $O(Q^2)$；后者对应本文采用数组扫描开放集的实现。由于 $N_{\mathrm{cvf}}$、$N_{\mathrm{rep}}\ll N$，迭代阶段的额外开销主要由少量触发个体承担。
+初始化时需完成 $N$ 个初始个体的评价，至多对 $N_{\mathrm{init}}$ 个体执行一次修复，其一次性主导开销为
+\begin{equation}
+O\bigl((N+N_{\mathrm{init}})M(G+K)\bigr)
+\label{eq:initialization-complexity}
+\end{equation}
+参考路径预处理另包含 $O(QG)$ 的栅格占据与代价构造，以及 $O(Q^2)$ 的数组扫描式 A* 核心搜索。候选向量更新、状态统计和种群排序不涉及完整路径评价，未纳入上述主导成本。由于 $N_{\mathrm{cvf}}$、$N_{\mathrm{rep}}\ll N$，迭代阶段的额外开销主要由少量触发个体承担，CVF-AE 的主导渐近复杂度仍为
+\begin{equation}
+O\bigl(TNM(G+K)\bigr)
+\label{eq:dominant-complexity}
+\end{equation}

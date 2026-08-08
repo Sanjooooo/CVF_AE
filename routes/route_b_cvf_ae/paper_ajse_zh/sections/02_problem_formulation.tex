@@ -2,7 +2,7 @@
 
 \label{sec:problem-formulation}
 
-本文研究强约束三维低空无人机路径规划问题。给定三维飞行空间、起点、终点、障碍物、禁飞区和高度约束，目标是在安全可行前提下生成平滑路径。与仅最小化长度的规划不同，低空飞行还需兼顾能耗、风险暴露、高度偏好、转弯平滑性和边界裕度。因此，本文将路径规划写成带约束的连续优化问题，并采用可行性优先准则比较候选解。
+本文研究强约束三维低空无人机路径规划问题。给定三维飞行空间、起点、终点、障碍物、禁飞区和高度约束，目标是在安全可行前提下生成平滑路径。与仅最小化长度的规划不同，低空飞行还需兼顾能耗、风险暴露和转弯平滑性，并同时满足高度与空间边界约束。因此，本文将路径规划写成带约束的连续优化问题，并采用可行性优先准则比较候选解。
 
 \subsection{三维路径表示}
 
@@ -35,10 +35,10 @@
 对任一路径 $\mathcal{P}(\mathbf{X})$，本文采用综合路径质量代理目标
 \begin{equation}
     J(\mathbf{X}) =
-    w_L L + w_E E + w_R R + w_S S + w_H H + w_B B + P_c
+    w_L L + w_E E + w_R R + w_S S + P_c
     \label{eq:objective}
 \end{equation}
-其中 $L,E,R,S,H,B$ 分别表示长度、能耗、风险、平滑性、高度偏好和边界代价，$w_L,w_E,w_R,w_S,w_H,w_B$ 为对应权重。惩罚项 $P_c$ 写为
+其中 $L,E,R,S$ 分别表示长度、能耗、风险和平滑性，$w_L,w_E,w_R,w_S$ 为对应权重。惩罚项 $P_c$ 写为
 \begin{equation}
     P_c = \lambda_{\mathrm{obs}} C_{\mathrm{obs}}
     + \lambda_{\mathrm{nfz}} C_{\mathrm{nfz}}
@@ -52,8 +52,12 @@
     \Delta l_m=\|\Delta \mathbf{p}_m\|_2+\epsilon_l
     \label{eq:segment-definition}
 \end{equation}
-其中 $m=1,\ldots,M-1$，$\epsilon_l$ 为防止零长度除法的极小常数，路径长度项为 $L=\sum_{m=1}^{M-1}\Delta l_m$。
-设 $\mathbf{w}_m$ 为第 $m$ 段起点处的风场向量，$\widehat{\mathbf d}_m=\Delta\mathbf p_m/\Delta l_m$ 为段方向，$\widehat{\mathbf w}_m=\mathbf w_m/(\|\mathbf w_m\|_2+\epsilon_l)$ 为风向单位向量。风阻相关项写为
+其中 $m=1,\ldots,M-1$，$\epsilon_l$ 为防止零长度除法的极小常数。路径长度项定义为
+\begin{equation}
+    L=\sum_{m=1}^{M-1}\Delta l_m
+    \label{eq:length-term}
+\end{equation}
+设 $\mathbf{w}_m$ 为第 $m$ 段起点处的风场向量，$\widehat{\mathbf d}_m=\Delta\mathbf p_m/\Delta l_m$ 为带除零保护的段方向，$\widehat{\mathbf w}_m=\mathbf w_m/(\|\mathbf w_m\|_2+\epsilon_l)$ 为带除零保护的风向方向。风阻相关项写为
 \begin{equation}
     \Phi_m=\|\mathbf w_m\|_2
     \left(1-\widehat{\mathbf d}_m^\mathsf{T}\widehat{\mathbf w}_m\right)
@@ -67,32 +71,23 @@
     \right)
     \label{eq:energy-term}
 \end{equation}
-其中 $\Delta z_m=z_{m+1}-z_m$，$a_1,a_2,a_3$ 为能耗系数。若 $r(\mathbf p_m)$ 为采样点风险值，则风险项为 $R=\sum_{m=1}^{M-1}r(\mathbf p_m)\Delta l_m$。平滑性项为 $S=\sum_{m=2}^{M-1}\|\mathbf p_{m+1}-2\mathbf p_m+\mathbf p_{m-1}\|_2^2$，高度偏好项为 $H=\sum_{m=1}^{M}(z_m-z_{\mathrm{ref}})^2$，其中 $z_{\mathrm{ref}}$ 为场景给定的参考巡航高度。
-边界项抑制路径贴近水平规划边界。以 $x$ 方向为例，若规划空间为 $[x_{\min},x_{\max}]\times[y_{\min},y_{\max}]$，边界安全裕度为 $m_b$，则
+其中 $\Delta z_m=z_{m+1}-z_m$，$a_1,a_2,a_3$ 为能耗系数。若 $r_{\mathrm{obj}}(\mathbf p_m)$ 为评价器使用的采样点风险密度，则风险项定义为
 \begin{equation}
-    B=\sum_{m=1}^{M}
-    \left[
-    b_x(\mathbf p_m)+b_y(\mathbf p_m)
-    \right]
-    \label{eq:boundary-term}
+    R=\sum_{m=1}^{M-1}r_{\mathrm{obj}}(\mathbf p_m)\Delta l_m
+    \label{eq:risk-term}
 \end{equation}
-\begingroup\small
+平滑性项定义为
 \begin{equation}
-    b_x(\mathbf p_m)=
-    \max(0,x_{\min}+m_b-x_m)^2+
-    \max(0,x_m-(x_{\max}-m_b))^2
-    \label{eq:boundary-x}
+    S=\sum_{m=2}^{M-1}\|\mathbf p_{m+1}-2\mathbf p_m+\mathbf p_{m-1}\|_2^2
+    \label{eq:smoothness-term}
 \end{equation}
-\endgroup
-其中 $b_y(\mathbf p_m)$ 对 $y$ 方向作同样定义。式 \eqref{eq:energy-term}--\eqref{eq:boundary-x} 为固定采样设置下的路径质量代理项，不解释为严格飞行动力学或真实能耗模型；硬约束违反由下文单独判断。$P_c$ 仅是评价阶段惩罚，候选接收仍显式使用违反量和可行性优先准则。
+式 \eqref{eq:energy-term} 所定义的项为固定采样设置下的路径质量代理，不解释为严格飞行动力学或真实能耗模型；硬约束违反由下文单独判断。
 
 \subsection{约束条件}
 
-路径需满足以下工程约束。
-
 \paragraph{空间边界约束}
-每个内部控制点和采样点均应位于三维规划空间范围内，即 $\mathbf{l}\leq \mathbf{q}_k \leq \mathbf{u}$，$k=1,\ldots,K$，其中 $\mathbf{l}$ 和 $\mathbf{u}$ 为决策变量下界和上界。
-候选控制点越界时先投影回规划盒内。由于本文采用的 open-uniform B 样条基函数非负且和为 $1$，路径点可写成控制点的凸组合；若起点、终点和内部控制点均位于同一规划盒内，则采样路径不会越出该盒。边界代价 $B$ 只用于惩罚靠近水平边界的低裕度路径，不再作为硬边界判定。
+设 $\mathbf l_0,\mathbf u_0\in\mathbb R^3$ 为单个控制点的下界和上界，并令 $\mathbf l=[\mathbf l_0^\mathsf T,\ldots,\mathbf l_0^\mathsf T]^\mathsf T$、$\mathbf u=[\mathbf u_0^\mathsf T,\ldots,\mathbf u_0^\mathsf T]^\mathsf T$。决策空间为 $\Omega=\{\mathbf X\in\mathbb R^{3K}:\mathbf l\leq\mathbf X\leq\mathbf u\}$；每个内部控制点和采样点均应位于对应的三维规划空间范围内，即 $\mathbf l_0\leq \mathbf q_k\leq\mathbf u_0$，$k=1,\ldots,K$。
+候选控制点越界时先通过 $\Pi_{\Omega}(\cdot)$ 投影回规划盒内。由于本文采用的 open-uniform B 样条基函数非负且和为 $1$，路径点可写成控制点的凸组合；若起点、终点和内部控制点均位于同一规划盒内，则采样路径不会越出该盒。参考路径中的边界偏好仅提供软引导，不构成目标函数项或额外硬边界判定。
 
 \paragraph{障碍物约束}
 设障碍物集合为 $\mathcal{O}$。采样点不得进入障碍物，即 $\mathbf{p}_m \notin \mathcal{O}$，$m=1,\ldots,M$。
@@ -121,7 +116,7 @@
     \left[\max(0,z_{\min}-z_m)+\max(0,z_m-z_{\max})\right]
     \label{eq:altitude-violation}
 \end{equation}
-不同场景可采用不同高度上界和参考高度，以反映低空走廊收紧要求。
+不同场景可采用不同高度上界和参考高度 $z_{\mathrm{ref}}$，以反映低空走廊收紧要求；$z_{\mathrm{ref}}$ 仅用于初始化和 CVF 的软引导，不参与适应度函数。
 
 \paragraph{转弯约束}
 令 $\mathbf v_m=\mathbf p_{m+1}-\mathbf p_m$。连续路径段形成的转弯角定义为
@@ -141,8 +136,12 @@
     \label{eq:turning-angle}
 \end{equation}
 其中 $\mathrm{clip}(x,-1,1)$ 表示将标量 $x$ 截断到 $[-1,1]$，用于避免数值舍入导致反余弦输入越界。
-路径转弯角不应超过允许上限 $\theta_{\max}$，即 $\theta_m \leq \theta_{\max}$，$m=2,\ldots,M-1$；超出部分累计为 $C_{\mathrm{curv}}=\sum_{m=2}^{M-1}\max(0,\theta_m-\theta_{\max})$，
-从而将急转弯或局部折线化路径识别为不可行或低质量候选。
+路径转弯角不应超过允许上限 $\theta_{\max}$，即 $\theta_m \leq \theta_{\max}$，$m=2,\ldots,M-1$；超出部分累计为
+\begin{equation}
+    C_{\mathrm{curv}}=\sum_{m=2}^{M-1}\max(0,\theta_m-\theta_{\max}),
+    \label{eq:curvature-violation}
+\end{equation}
+从而将急转弯或局部折线化路径识别为不可行候选。
 
 \subsection{可行性准则}
 
@@ -163,6 +162,6 @@
     C_{\mathrm{obs}} + C_{\mathrm{nfz}} + C_{\mathrm{curv}} + C_{\mathrm{alt}}
     \label{eq:total-violation}
 \end{equation}
-采用总违反分数阈值判定可行性，即当且仅当 $V(\mathbf{X})\leq\varepsilon_v$ 时路径可行，其中 $\varepsilon_v=10^{-10}$ 仅用于抑制浮点误差。由于各分量均非负，该严格总和阈值要求障碍物、禁飞区和高度约束在 $M$ 个离散采样点上满足数值容差，并要求由相邻离散段计算的转弯角满足阈值。因而，本文报告的可行性是固定采样评价器下的数值可行性，不等同于对采样点之间连续轨迹的碰撞认证。$V$ 仅作为不可行候选的总违反分数参与比较，不用于度量安全裕度。
+采用总违反分数阈值判定可行性，即当且仅当 $V(\mathbf{X})\leq\varepsilon_v$ 时路径可行，其中 $\varepsilon_v=10^{-10}$ 仅用于抑制浮点误差。各分量非负，因而该判定仅表示固定采样点和离散转弯角满足数值容差，而非采样点间连续轨迹的碰撞认证。$V$ 是依赖地图单位、采样数和弧度制的经验聚合分数，仅用于不可行候选的排序和阈值判断。
 
-候选解比较采用 Deb 可行性优先规则 \citep{Deb2000ConstraintHandling}。对两个候选解 $\mathbf{X}_a$ 和 $\mathbf{X}_b$，若仅一个解可行，则可行解优先；若二者均可行，则 $J$ 更小者优先；若二者均不可行，则 $V$ 更小者优先；若 $V$ 相同，再以 $J$ 作为次级判据。该规则使不可行候选的排序倾向于降低总违反分数，并在可行候选之间比较路径质量。第 \ref{sec:method} 节将进一步说明 CVF-AE 如何利用这一可行性信息构造约束可行性方向。
+候选解比较采用 Deb 可行性优先规则 \citep{Deb2000ConstraintHandling}。对两个候选解 $\mathbf{X}_a$ 和 $\mathbf{X}_b$，若仅一个解可行，则可行解优先；若二者均可行，则含惩罚综合适应度 $J$ 更小者优先；若二者均不可行，则 $V$ 更小者优先；若 $V$ 相同，再以 $J$ 作为次级判据。该规则使不可行候选的排序倾向于降低总违反分数，并在可行候选之间比较综合适应度。第 \ref{sec:method} 节将进一步说明 CVF-AE 如何利用这一可行性信息构造约束可行性方向。

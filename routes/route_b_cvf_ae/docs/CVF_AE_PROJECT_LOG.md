@@ -1,5 +1,412 @@
 # CVF-AE Route B Project Log
 
+## 2026-08-08 - Two-column float spacing compacted
+
+Scope:
+
+- enabled ragged-bottom two-column composition so LaTeX no longer stretches vertical glue between a column-top float and the following body text to force equal column bottoms;
+- reduced the normal text-to-float separation from 9 pt to 7 pt while retaining a small stretch/shrink tolerance;
+- retained the existing top-float placement for Figure 3 and all scientific content, data, tables, and figures.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; the former page-level underfull-vbox diagnostics are absent after the ragged-bottom change, while pre-existing underfull-hbox diagnostics remain;
+- rendered and visually checked the affected Chapter 4 page: Figure~3 now has normal compact separation from the following body text, and the adjacent Figure~2, Table~3, and Section~4.2 content remain legible and free of clipping or overlap.
+
+## 2026-08-08 - Conclusion evidence paragraph condensed
+
+Scope:
+
+- condensed the second conclusion paragraph to report only the experimental evidence that directly supports the proposed closed-loop design: overall feasibility/rank, dense-scene quality, ablation dependencies, and sparse-evaluation overhead;
+- removed the detailed per-method distribution comparison and scene-specific exception from the conclusion while retaining them in the results chapter;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the condensed conclusion page: the shortened evidence paragraph, future-work paragraph, and subsequent declarations remain legible and free of clipping or overlap.
+
+## 2026-08-08 - Conclusion rewritten around method contribution and evidence
+
+Scope:
+
+- rewrote the conclusion to foreground the CVF-AE closed-loop innovation: constraint-aware initialization, state-conditioned intervention, bounded CVF correction, and conservative local acceptance;
+- strengthened the result summary using only reported evidence: three-scene feasibility, average rank, the dense Scene 3 comparison, distribution-test summary, ablation outcomes, and sparse-evaluation overhead;
+- condensed the future-work discussion to a short statement of the main external-validity and deployment directions;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the conclusion page: the three-paragraph conclusion, its transition to acknowledgments and declarations, and the adjacent reference column are legible and free of clipping or overlap.
+
+## 2026-08-07 - Complexity heading and equation numbering adjusted
+
+Scope:
+
+- restored the Section 3.3 heading to ``算法复杂度'';
+- converted the initialization-cost and final dominant-complexity expressions to numbered display equations, without changing their content;
+- synchronized the Chapter 3 study-guide heading;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the revised Section 3.3: the restored heading and the consecutively numbered equations (54)--(57) are legible, with no clipping, overlap, or abnormal section transition.
+
+## 2026-08-07 - Dominant-evaluation complexity clarified
+
+Scope:
+
+- renamed Section 3.3 to specify that it reports dominant path-evaluation complexity rather than every implementation-level operation;
+- retained the existing base-search and sparse-CVF formulas, added the missing initial-population evaluation cost, and stated the resulting dominant asymptotic term;
+- separated reference-path grid construction $O(QG)$ from the array-scanned A* core search $O(Q^2)$, and noted that sorting, state statistics, and candidate-vector operations are outside this evaluation-cost accounting;
+- synchronized the Chapter 3 study guide with the revised complexity account;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the revised Section 3.3: all three displayed complexity expressions, the Section 3.3 heading, and the transition to Chapter 4 are legible and free of clipping or overlap.
+
+## 2026-08-07 - Reference-path boundary-margin detail removed
+
+Scope:
+
+- removed the reference-path boundary preference margin $m_b$, its fixed value, and its quadratic-cost trigger from the manuscript method text and parameter table;
+- retained the high-level statement that the A* reference path uses a boundary preference, and retained $b_b$ because it directly parameterizes CVF boundary pressure;
+- did not modify MATLAB code, frozen experimental data, result values, figures, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the revised Section 3.2.1 and Table~3 pages: no undefined $m_b$ reference, clipping, overlap, or abnormal spacing remains.
+
+## 2026-08-07 - Boundary-margin wording clarified
+
+Scope:
+
+- replaced the abstract description of $m_b$ with the explicit A* reference-path condition: a quadratic boundary-preference cost is added only when a grid point lies within $m_b$ of a horizontal boundary;
+- removed the now-redundant reminder in the CVF boundary-pressure paragraph that $b_b$ differs from $m_b$, while retaining the definition of $b_b$ and the projection-based hard-boundary statement;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the revised Section 3.2.1 page: the explicit $m_b$ condition is legible, fits the two-column layout, and does not introduce clipping or overlap.
+
+## 2026-08-07 - Method-text consolidation and reference-margin definition
+
+Scope:
+
+- removed five repetitive implementation-boundary explanations from Section 3.2, while retaining the corresponding formulas and candidate-generation rules;
+- revised the Figure 1 lead-in to describe the visible mapping, averaging, and curvature-synthesis process without naming an unlabelled final increment;
+- stated explicitly that obstacle pressure is zero outside its buffer; distinguished the averaged path-pressure increment from the final increment only through the retained equations;
+- moved the first formal introduction of the reference-path boundary preference margin $m_b$ to Section 3.2.1 and defined it as the horizontal distance at which its quadratic reference-path cost begins, with $m_b=\SI{12}{m}$;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the revised Section 3.2 pages: the $m_b$ definition, Figure~1 lead-in, obstacle-buffer condition, and subsequent risk/height/curvature transition are legible and free of clipping or overlap.
+
+## 2026-08-06 - Cross-reference added for scene setup
+
+Scope:
+
+- added a formal cross-reference to Table~2 in the paragraph that introduces the three-dimensional planning space and the progressive scene constraints;
+- did not modify MATLAB code, frozen experimental data, result values, tables, figures, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the Chapter 4 opening page: the new Table~2 reference resolves correctly, with normal line wrapping and no clipping or overlap.
+
+## 2026-08-06 - Chapter 4 opening condensed
+
+Scope:
+
+- condensed the opening paragraph of the results-and-discussion chapter while retaining the evidence sequence, primary outcomes, supporting analyses, statistical/overhead roles, and the limited purpose of representative-path review markers;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+  - ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page two-column PDF;
+  - the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+  - rendered and visually checked the Chapter 4 opening pages: the condensed introduction, Section 4.1 heading, both setup tables, and the transition to the main comparison remain legible and free of clipping or overlap.
+
+## 2026-08-06 - State-conditioned internal base candidate displayed separately
+
+Scope:
+
+- converted the state-conditioned internal base-candidate definition $\mathbf X_{\mathrm{AE}}^{(s_t)}$ in Section 3.2.2 from inline mathematics to a numbered display equation, without changing its definition or use;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page Letter two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the page containing the new display equation: it is legible, balanced with the preceding state-direction equation, and does not cause clipping, overlap, or an abnormal section transition.
+
+## 2026-08-06 - Section 3.2 transition and wording compression
+
+Scope:
+
+- added a concise opening transition to Section 3.2.4: local CVF pressures must be step-limited, blended with quality guidance, and conservatively accepted so that they do not overtake the base search;
+- condensed the long closing explanation of Section 3.2.1 and the parameter/implementation-detail-heavy closing paragraphs of Section 3.2.4, while retaining the definitions, trigger thresholds, repair conditions, and acceptance rules required to reproduce the stated method;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page Letter two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout;
+- rendered and visually checked the Chapter 3 pages containing the revised Section 3.2.1 and the full Section 3.2.4, including its transition to Section 3.3 and Chapter 4: formulas, headings, line breaks, table/figure placement, and two-column balance are normal, with no clipping or overlap.
+
+## 2026-08-06 - Initialization-index definition and stateful base-candidate notation
+
+Scope:
+
+- defined the initialization superscript and the individual/control-point indices in $\mathbf q^{(0)}_{i,k}$, and stated that the $K$ initialized control points are concatenated into $\mathbf X_i^{(0)}\in\mathbb R^{3K}$;
+- retained $\mathbf X_{\mathrm{AE}}$ for the fixed balanced candidate of the standalone base AE, and renamed the distinct CVF-AE state-dependent internal base candidate to $\mathbf X_{\mathrm{AE}}^{(s_t)}$ throughout Algorithm 2, its definition, candidate comparison, and the Chapter 3 study note;
+- did not alter the corresponding MATLAB variable names, candidate-generation logic, frozen experimental data, results, or experimental settings.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page Letter two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout.
+
+## 2026-08-05 - Differential-index sampling wording clarification
+
+Scope:
+
+- replaced the set-difference notation in the Section 3 base-AE direction definition with a direct Chinese description: four different indices $a,b,c,d$ are selected uniformly without replacement from the $N-1$ population members other than the current individual $i$;
+- synchronized the same wording in `paper_ajse_zh/notes/chapter3_study_guide.md`;
+- did not change the sampling rule, formula, MATLAB code, frozen experimental data, result values, or any experimental setting.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page Letter two-column PDF;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout.
+
+## 2026-08-04 - Chapter 3 Markdown learning notes synchronized to current manuscript
+
+Scope:
+
+- replaced `paper_ajse_zh/notes/chapter3_study_guide.md` with a beginner-oriented guide that preserves its former chapter-by-chapter learning structure while synchronizing all definitions with the current Section 3 manuscript;
+- updated the request-state formation condition, two-generation confirmation rule, state-specific internal AE direction, pressure aggregation and control-point averaging, distinct CVF and objective risk fields, bounded fusion, sparse CVF qualification/quota, local repair, and full complexity expression including one-off A* and initialization costs;
+- retained the explicit distinction between reference/pressure soft guidance, hard constraints, and the formal objective, and clarified that CVF is a bounded piecewise candidate-direction mechanism rather than an analytic gradient;
+- did not modify manuscript source, MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- checked the updated Markdown headings against the previous learning-note structure and checked its formulas and numerical thresholds against the current `sections/03_method.tex`;
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page Letter two-column PDF; the Markdown note is not imported into the manuscript, so the compilation preserves manuscript content;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout.
+
+## 2026-08-04 - Chapter 2 Markdown learning notes
+
+Scope:
+
+- created `paper_ajse_zh/notes/chapter2_study_guide.md`, a beginner-oriented Markdown companion to Chapter 2;
+- explained every Chapter 2 formula in sequence, including symbol meanings, modelling derivations, parameter roles, numerical examples, the distinction between objective $J$ and feasibility score $V$, and the Deb comparison order;
+- made explicit that $z_{\mathrm{ref}}$ and $m_b$ are soft guidance only and are neither independent objective terms nor hard constraints; distinguished $m_b$ from the method-layer CVF buffer width $b_b$;
+- did not modify the manuscript source, MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- checked the Markdown source for its title, all 18 Chapter 2 equation tags, key parameter values, and the absence of a claim that reference guidance enters the formal objective;
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully and overwrote `paper_ajse_zh/main.pdf` with the resulting 13-page Letter two-column PDF, as required by the project workflow; the Markdown note is not imported into the manuscript, so this compilation does not alter manuscript content;
+- the compile log contains no LaTeX Error, undefined reference/citation, rerun-label, or overfull warning; existing underfull box diagnostics remain in the unchanged manuscript layout.
+
+## 2026-08-04 - Chapter 2--3 learning notes document
+
+Scope:
+
+- created `docs/CVF_AE_Chapter2_3_Study_Notes.docx`, a beginner-oriented learning note for Chapters 2 and 3 that explains the modelling purpose, symbols, objective and constraint formulas, parameter roles, and CVF-AE iteration flow;
+- did not modify the manuscript source, MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- checked the generated DOCX structure: its headings, 86 paragraphs, and 15 explanatory tables were successfully read back from the output file;
+- attempted visual rendering. LibreOffice is unavailable on this computer, and a read-only headless Word PDF export timed out without producing an output file; therefore, visual raster verification was not completed.
+
+## 2026-08-04 - Base-candidate convex-coefficient condition
+
+Scope:
+
+- stated explicitly that the time-varying base-candidate coefficients satisfy $\eta_t,\mu_t\geq0$ and $\eta_t+\mu_t\leq1$, completing the stated convex-combination condition;
+- did not modify MATLAB code, frozen experimental data, result values, figures, tables, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the revised base-candidate formula explanation; line flow and mathematical notation are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Statistical-term line-break cleanup
+
+Scope:
+
+- bound the English statistical term ``Cliff's delta'' and its citation as one nonbreaking phrase, preventing the trailing word and citation from being separated from the preceding sentence by a floating figure;
+- did not modify method content, parameters, MATLAB code, frozen experimental data, result values, figures, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the experimental-setup and main-comparison transition pages; the statistical sentence and floating figure placement are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Consolidated experimental and CVF-AE parameter presentation
+
+Scope:
+
+- removed the detailed stand-alone CVF-AE parameter table from the method section, retaining Table 1 solely for the three-state candidate-fusion mechanism;
+- expanded the experimental-configuration table into a compact joint presentation of public experimental settings and key fixed CVF-AE parameters, while omitting duplicated explanatory prose from the energy, reference, and boundary entries;
+- clarified in the surrounding text which entries are shared by all algorithms and which are CVF-AE-specific, so that the combined table does not imply that baselines use CVF-AE mechanisms;
+- did not modify MATLAB code, frozen experimental data, result values, figures, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the method transition and combined parameter table; table hierarchy, line wrapping, and two-column flow are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Localized parameter-definition placement and curvature display
+
+Scope:
+
+- removed the consolidated reference-height and boundary-preference explanation from the objective subsection, leaving those parameters to be introduced where they are used;
+- defined the reference-height symbol $z_{\mathrm{ref}}$ in the altitude-constraint paragraph, removed the premature CVF boundary-width mention from the spatial-boundary paragraph, and retained the separate $m_b$ explanation only as a reference-path soft preference;
+- converted the curvature-violation sum to a displayed equation and aligned its wording with the numerical feasibility rule by identifying excess turning as infeasibility rather than an alternative low-quality status;
+- did not alter MATLAB code, frozen experimental data, result values, figures, tables, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the revised objective, boundary, altitude, and turning-constraint pages; formula placement and two-column flow are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Formula and parameter-definition completeness revision
+
+Scope:
+
+- corrected the initialization-radius denominator to use the defined evaluator risk density $r_{\mathrm{obj}}$, and specified the roles of its net-clearance, risk-shrink, and minimum-radius coefficients;
+- defined the decision set $\Omega$ and its single-control-point bounds, corrected the problem statement so that height and boundary requirements are not presented as formal objective terms, and separated the reference-path boundary preference $m_b$ from the CVF boundary-pressure width $b_b$;
+- added explicit multi-element aggregation for obstacle, no-fly-zone, and risk pressures; defined the nonzero pressure hit count; made altitude and boundary pressures explicit three-dimensional vectors; and removed the overloaded individual no-fly-zone and altitude-limit notation;
+- defined $J_t^*$ for the state-improvement equation and added a CVF-AE key-parameter table covering initialization, state scheduling, low-density sampling, clipping, geometry/risk/turning pressures, and state component weights;
+- did not modify MATLAB code, frozen experimental data, result values, figures, statistical tests, or experimental execution.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the revised problem-formulation and method pages, including the new parameter table; formulas, table layout, and two-column flow are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Contribution-claim wording refinement
+
+Scope:
+
+- refined the first contribution to distinguish local constraint information from risk and turning-quality information, avoiding the inaccurate implication that every CVF component is a constraint violation;
+- refined the third contribution so that the limited scope of sparse feasibility preservation is stated as a conservative design intention rather than an independently established causal effect;
+- did not alter the CVF-AE method, equations, frozen experimental data, results, figures, tables, or MATLAB code.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the contribution list and its transition to Section 2; text flow and list layout are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Introduction three-stage narrative restructuring
+
+Scope:
+
+- restructured the introduction into a three-stage narrative: concise problem framing, named peer-work and study-pain-point discussion, then the CVF-AE response and contributions;
+- paired the literature discussion with the concrete mechanisms of Darlan, Niu, Chen, Wang, Meng, Khatib, and Liu, replacing broad grouped descriptions with “author--method” statements;
+- clarified the methodological need as pre-evaluation local constraint direction, sparse state-based intervention, and conservative replacement, then connected these needs directly to the CVF-AE design;
+- removed a residual duplicate transition before the contribution list; no method equation, frozen experimental data, result, table, figure, or MATLAB code was changed.
+
+Verification:
+
+- ran `xelatex -> bibtex -> xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the title/abstract/introduction pages; the three-stage introduction flow, citation numbering, contribution transition, and two-column layout are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Literature-claim audit and mechanism-level positioning
+
+Scope:
+
+- verified the identity and mechanism relevance of the recent UAV path-planning references used in the introduction, prioritizing publisher or DOI records for the two surveys, domain-specific evolutionary operators, continuous ant-colony optimization with waypoint repair, biased sampling/candidate evaluation/path reconfiguration, evolutionary multitasking, recent swarm optimizers, and rotation artificial potential fields;
+- replaced the introduction's broad grouping of recent work with mechanism-level positioning: domain-specific operators, waypoint repair, biased sampling/candidate evaluation/path reconfiguration, and adaptive operator selection/knowledge fusion now correspond directly to their respective citations;
+- revised the potential-field comparison to state the different problem addressed by CVF-AE rather than making a broad negative claim about all existing potential-field methods;
+- added `paper_ajse_zh/notes/citation_claim_map.md`, an internal claim--reference--difference map for future English rewriting and citation additions;
+- retained all existing cited references and did not alter the method, experimental design, frozen data, tables, figures, or statistical results.
+
+Verification:
+
+- checked the revised introduction against the cited publication records and verified that its mechanism descriptions match the cited works;
+- ran `xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the abstract, introduction, and Section 2 transition pages; citation numbering, column flow, and equation layout are normal;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Figure-caption evidence alignment
+
+Scope:
+
+- audited each formal result figure and table against its in-text interpretation, with emphasis on the distinction among aggregate comparison, distributional comparison, representative-path visualization, ablation attribution, statistical comparison, and evaluation overhead;
+- revised the main-summary caption to state that its average scene rank is based on final fitness, consistent with the frozen selected-seven summary records;
+- revised the main-comparison and ablation representative-path captions to state that the displayed runs are selected by a uniform rule and are used only for geometric-form review;
+- revised the ablation-summary caption to state directly that its two panels report three-scene feasibility and per-scene rank;
+- did not modify any figure asset, table value, ranking, statistical result, MATLAB code, or experimental data.
+
+Verification:
+
+- verified the frozen `selected7_summary_long.csv` ordering: the displayed scene ranks are ordered by final mean fitness;
+- ran `xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the main-comparison, ablation, statistical, and evaluation-overhead pages; captions, figures, tables, and column balance are readable, with no clipping or overlap;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output.
+
+## 2026-08-03 - Contribution-evidence narrative alignment
+
+Scope:
+
+- reviewed the abstract, introduction, results discussion, and conclusion as a single contribution-evidence chain; the three stated contribution lines, main-comparison claims, ablation attribution, statistical qualification, and evaluation-overhead statement are mutually consistent with the frozen evidence;
+- revised the abstract to characterize the CVF output as a local constraint-aware direction, which covers both feasibility-oriented and quality-related pressure components without narrowing the claim to feasibility alone;
+- aligned the conclusion with the method definition: CVF encodes local constraint information into bounded, piecewise control-point candidate-correction directions and does not require an analytic gradient or continuously differentiable potential-function assumption;
+- replaced the remaining process-oriented phrase “当前任务” with “所考虑任务”; no numerical result, method equation, ablation definition, or experimental claim was changed.
+
+Verification:
+
+- ran `xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked the abstract/introduction page and the conclusion continuation page; no clipping, overlap, broken equation, or abnormal whitespace was observed;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output;
+- no MATLAB code, frozen experimental records, figures, tables, or statistical results were modified.
+
+## 2026-08-03 - Manuscript formulation clarification and display-equation update
+
+Scope:
+
+- revised the CVF construction statement in `paper_ajse_zh/sections/03_method.tex` to describe CVF as a bounded, piecewise candidate-correction direction that does not require analytic gradients or a continuously differentiable potential-function assumption;
+- retained the method claim at the implemented level: local constraint information is encoded in control-point space for candidate generation, without changing the CVF equations, parameters, MATLAB implementation, experimental data, or reported results;
+- converted the definitions of the path-length, energy, risk, smoothness, and penalty terms in Section 2.2 into clear display equations; added labels for the newly separated length, risk, and smoothness equations;
+- revised the feasibility wording to distinguish fixed-sampling numerical feasibility from continuous collision certification, and clarified that the aggregate violation score is used only for infeasible-candidate ranking and thresholding;
+- replaced process-oriented wording such as “正式评价” and “本文报告的正式适应度” with manuscript-oriented terms such as “目标函数权重” and “适应度函数”.
+
+Verification:
+
+- ran `xelatex -> xelatex` successfully; the Chinese manuscript remains a 13-page Letter two-column document;
+- rendered and visually checked pages 2--3 for the display equations and page 5 for the revised CVF statement; no clipping, overlap, broken equation, or abnormal whitespace was observed;
+- overwrote `paper_ajse_zh/main.pdf` with the verified compilation output;
+- no MATLAB code, frozen experimental records, figures, tables, or statistical results were modified.
+
 ## 2026-08-01 - Route B active-chain cleanup and historical migration
 
 - Reduced the statically required Route B MATLAB chain from 58 files to 40 files, plus the optional closed-loop framework figure generator.
